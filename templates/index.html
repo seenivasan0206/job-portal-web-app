@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Andika&family=Saira+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Dream Jobs - Find Your Dream Career</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Saira Condensed", sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Video Background - Full Screen */
+        .video-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+        }
+
+        /* Overlay for better readability */
+        .video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.85), rgba(118, 75, 162, 0.85));
+            z-index: -1;
+        }
+
+        /* Header */
+        header {
+            width: 100%;
+            position: fixed;
+            top: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(90deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+            padding: 12px 50px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-section img {
+            height: 55px;
+            transition: transform 0.3s;
+        }
+
+        .logo-section img:hover {
+            transform: scale(1.05);
+        }
+
+        .logo-section h2 {
+            font-size: 26px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        nav {
+            display: flex;
+            gap: 35px;
+            align-items: center;
+        }
+
+        .dropbtn {
+            background: none;
+            border: none;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #333;
+            padding: 10px 0;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .dropbtn::after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            transition: width 0.3s;
+        }
+
+        .dropbtn:hover::after {
+            width: 100%;
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-content {
+            position: absolute;
+            top: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.98);
+            width: 450px;
+            padding: 25px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+            border-radius: 15px;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 999;
+            backdrop-filter: blur(20px);
+        }
+
+        .dropdown:hover .dropdown-content {
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(-50%) translateY(5px);
+        }
+
+        .dropdown-content.services {
+            width: 320px;
+            left: 0;
+            transform: none;
+        }
+
+        .dropdown:hover .dropdown-content.services {
+            transform: translateY(5px);
+        }
+
+        .dropdown-content table {
+            width: 100%;
+            font-size: 14px;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        .dropdown-content th {
+            padding-bottom: 12px;
+            text-align: left;
+            color: #667eea;
+            border-bottom: 2px solid #f0f0f0;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .dropdown-content td {
+            padding: 10px 0;
+        }
+
+        .dropdown-content a {
+            text-decoration: none;
+            color: #444;
+            display: block;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .dropdown-content a:hover {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .employer-login-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+        }
+
+        .employer-login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+
+        /* Main Container */
+        .main-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 150px 80px 80px;
+            min-height: 100vh;
+            gap: 50px;
+        }
+
+        .left-content {
+            width: 55%;
+            color: white;
+            animation: fadeInLeft 0.8s ease-out;
+        }
+
+        @keyframes fadeInLeft {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .left-content h1 {
+            font-size: 52px;
+            margin-bottom: 25px;
+            line-height: 1.2;
+            text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+        }
+
+        .left-content h1 span {
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .left-content h2 {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 15px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .left-content h2 i {
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .left-content p {
+            font-size: 18px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .fontp {
+            font-family: "Andika", sans-serif;
+        }
+
+        .signup-btn {
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            color: #333;
+            padding: 15px 40px;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            transition: all 0.3s;
+            box-shadow: 0 5px 25px rgba(255, 215, 0, 0.4);
+        }
+
+        .signup-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 35px rgba(255, 215, 0, 0.5);
+        }
+
+        .right-content {
+            width: 38%;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            animation: fadeInRight 0.8s ease-out;
+            animation-delay: 0.2s;
+            animation-fill-mode: both;
+        }
+
+        @keyframes fadeInRight {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .right-content h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .right-content h3 i {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 14px 18px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+        }
+
+        .search-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+
+        /* Auth Popups */
+        #show-form, #show-employer-form {
+            display: none;
+        }
+
+        .auth-popup {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9));
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.4s;
+            z-index: 2000;
+        }
+
+        #show-form:checked ~ .user-auth-popup,
+        #show-employer-form:checked ~ .employer-auth-popup {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .auth-box {
+            width: 450px;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            position: relative;
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.4s;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+        }
+
+        #show-form:checked ~ .user-auth-popup .auth-box,
+        #show-employer-form:checked ~ .employer-auth-popup .auth-box {
+            transform: scale(1) translateY(0);
+        }
+
+        .auth-box input, .auth-box select {
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .auth-box input:focus, .auth-box select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+        }
+
+        .auth-box button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 15px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .auth-box button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+
+        .otp-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .otp-row input {
+            flex: 3;
+            margin-bottom: 0;
+        }
+
+        .otp-row button {
+            flex: 1;
+            margin-bottom: 0;
+            font-size: 12px;
+            padding: 14px 8px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .form-switch {
+            text-align: center;
+            margin-top: 18px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 14px;
+            font-weight: 600;
+            display: block;
+        }
+
+        .form-switch:hover {
+            opacity: 0.8;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 18px;
+            right: 22px;
+            font-size: 32px;
+            font-weight: bold;
+            color: #999;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            color: #667eea;
+            transform: rotate(90deg);
+        }
+
+        /* Notifications */
+        #toast-container {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .toast {
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: slideInRight 0.4s forwards;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            color: white;
+            min-width: 280px;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .toast-success { background: linear-gradient(135deg, #28a745, #20c997); }
+        .toast-error { background: linear-gradient(135deg, #dc3545, #e74c3c); }
+        .toast-info { background: linear-gradient(135deg, #667eea, #764ba2); }
+
+        /* Job Results */
+        .job-result-card {
+            background: white;
+            padding: 18px;
+            margin-top: 12px;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            animation: fadeInUp 0.4s ease-out;
+            position: relative;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .job-result-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .job-result-card h4 {
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .job-result-card p {
+            color: #666;
+            font-size: 13px;
+            margin: 4px 0;
+        }
+
+        .apply-sm-btn {
+            position: absolute;
+            right: 18px;
+            bottom: 18px;
+            padding: 8px 18px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .apply-sm-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.5);
+        }
+
+        .apply-sm-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-container {
+                padding: 130px 40px 60px;
+            }
+            
+            .left-content h1 {
+                font-size: 42px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            header {
+                padding: 12px 30px;
+            }
+
+            nav {
+                gap: 20px;
+            }
+
+            .dropbtn {
+                font-size: 14px;
+            }
+
+            .main-container {
+                flex-direction: column;
+                padding: 120px 30px 50px;
+                gap: 30px;
+            }
+
+            .left-content, .right-content {
+                width: 100%;
+            }
+
+            .left-content h1 {
+                font-size: 36px;
+            }
+
+            .dropdown-content {
+                display: none;
+                width: 350px;
+            }
+
+            .dropdown:hover .dropdown-content {
+                display: block;
+            }
+
+            .dropdown-content.services {
+                width: 280px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 10px 20px;
+            }
+
+            .logo-section img {
+                height: 40px;
+            }
+
+            .logo-section h2 {
+                font-size: 20px;
+            }
+
+            .mobile-menu-btn {
+                display: block !important;
+                font-size: 24px;
+                cursor: pointer;
+                background: none;
+                border: none;
+                color: #333;
+                padding: 5px;
+            }
+
+            nav {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: white;
+                flex-direction: column;
+                padding: 20px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                gap: 0;
+            }
+
+            nav.active {
+                display: flex;
+            }
+
+            nav .dropdown {
+                width: 100%;
+            }
+
+            .dropbtn {
+                width: 100%;
+                text-align: left;
+                padding: 15px 10px;
+                border-bottom: 1px solid #eee;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .dropbtn::after {
+                display: none;
+            }
+
+            .dropdown-content {
+                position: static;
+                transform: none;
+                width: 100%;
+                box-shadow: none;
+                padding: 10px;
+                display: none;
+            }
+
+            .dropdown-content.show {
+                display: block;
+            }
+
+            .dropdown-content.services {
+                width: 100%;
+            }
+
+            .employer-login-btn {
+                margin-top: 15px;
+                text-align: center;
+            }
+
+            .main-container {
+                padding: 110px 20px 40px;
+            }
+
+            .left-content h1 {
+                font-size: 28px;
+            }
+
+            .left-content p {
+                font-size: 15px;
+            }
+
+            .right-content {
+                padding: 25px;
+            }
+
+            .auth-box {
+                width: 90%;
+                padding: 30px 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <video class="video-bg" autoplay muted loop playsinline>
+        <source src="{{ url_for('static', filename='background1.mp4') }}" type="video/mp4">
+    </video>
+    <div class="video-overlay"></div>
+    
+    <div id="toast-container"></div>
+
+    <input type="checkbox" id="show-form">
+    <input type="checkbox" id="show-employer-form">
+
+    <header>
+        <div class="logo-section">
+            <img src="{{ url_for('static', filename='dream-logo2.png') }}" alt="Dream Jobs Logo">
+            <h2>Dream Jobs</h2>
+        </div>
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
+        <nav id="main-nav">
+            <div class="dropdown" onclick="toggleDropdown(this)">
+                <button class="dropbtn"><i class="fas fa-briefcase"></i> Jobs <i class="fas fa-chevron-down"></i></button>
+                <div class="dropdown-content">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Domestic Jobs</th>
+                                <th>International Jobs</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><a href="#"><i class="fas fa-laptop-code"></i> IT & Software</a></td>
+                                <td><a href="#"><i class="fas fa-building"></i> UAE</a></td>
+                            </tr>
+                            <tr>
+                                <td><a href="#"><i class="fas fa-university"></i> Banking & Finance</a></td>
+                                <td><a href="#"><i class="fas fa-building"></i> Qatar</a></td>
+                            </tr>
+                            <tr>
+                                <td><a href="#"><i class="fas fa-user-md"></i> Healthcare</a></td>
+                                <td><a href="#"><i class="fas fa-building"></i> Saudi Arabia</a></td>
+                            </tr>
+                            <tr>
+                                <td><a href="#"><i class="fas fa-cogs"></i> Engineering</a></td>
+                                <td><a href="#"><i class="fas fa-maple-leaf"></i> Canada</a></td>
+                            </tr>
+                            <tr>
+                                <td><a href="#"><i class="fas fa-industry"></i> Manufacturing</a></td>
+                                <td><a href="#"><i class="fas fa-city"></i> Singapore</a></td>
+                            </tr>
+                            <tr>
+                                <td><a href="#"><i class="fas fa-graduation-cap"></i> Education</a></td>
+                                <td><a href="#"><i class="fas fa-globe"></i> Australia</a></td>
+                            </tr>
+                            <tr>
+                                <td><a href="#"><i class="fas fa-landmark"></i> Government</a></td>
+                                <td><a href="#"><i class="fas fa-globe-europe"></i> Europe</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="dropdown" onclick="toggleDropdown(this)">
+                <button class="dropbtn"><i class="fas fa-building"></i> Companies <i class="fas fa-chevron-down"></i></button>
+                <div class="dropdown-content">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Explore Categories</th>
+                                <th>Collections</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><a href="#"><i class="fas fa-star"></i> Unicorn</a></td>
+                                <td><a href="#"><i class="fas fa-trophy"></i> Top Companies</a></td>
+                            </tr>
+                            <tr>
+                                <td><a href="#"><i class="fas fa-globe"></i> MNC</a></td>
+                                <td><a href="#"><i class="fas fa-laptop"></i> IT Companies</a></td>
+                            </tr>
+                            <tr>
+                                <td><a href="#"><i class="fas fa-rocket"></i> Startup</a></td>
+                                <td><a href="#"><i class="fas fa-coins"></i> Fintech</a></td>
+                            </tr>
+                            <tr>
+                                <td><a href="#"><i class="fas fa-box"></i> Product Based</a></td>
+                                <td><a href="#"><i class="fas fa-medal"></i> Sponsored</a></td>
+                            </tr>
+                            <tr>
+                                <td><a href="#"><i class="fas fa-wifi"></i> Internet</a></td>
+                                <td><a href="#"><i class="fas fa-award"></i> Featured</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="dropdown" onclick="toggleDropdown(this)">
+                <button class="dropbtn"><i class="fas fa-handshake"></i> Services <i class="fas fa-chevron-down"></i></button>
+                <div class="dropdown-content services">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Our Services</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><a href="#"><i class="fas fa-plus-circle"></i> Job Posting</a></td></tr>
+                            <tr><td><a href="#"><i class="fas fa-users"></i> Candidate Shortlisting</a></td></tr>
+                            <tr><td><a href="#"><i class="fas fa-users-cog"></i> Bulk Hiring</a></td></tr>
+                            <tr><td><a href="#"><i class="fas fa-clipboard-check"></i> Assessment</a></td></tr>
+                            <tr><td><a href="#"><i class="fas fa-search-dollar"></i> Job Analysis</a></td></tr>
+                            <tr><td><a href="#"><i class="fas fa-calendar-check"></i> Interview Scheduling</a></td></tr>
+                            <tr><td><a href="#"><i class="fas fa-passport"></i> Visa Guidance</a></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <label for="show-employer-form" class="employer-login-btn">
+                <i class="fas fa-user-tie"></i> Employer Login
+            </label>
+        </nav>
+    </header>
+
+    <div class="main-container">
+        <div class="left-content">
+            <h1>Find Your <span>Dream Career</span> Today</h1>
+            <h2><i class="fas fa-bullseye"></i> Our Mission</h2>
+            <p class="fontp">
+                <b>To bridge the gap between job seekers and employers by providing a transparent, reliable, and efficient recruitment platform for both Indian and international careers.</b>
+            </p>
+            <p class="fontp">
+                Our website helps job seekers find opportunities that match their skills and interests. Whether you're a fresher or an experienced professional, Dream Jobs makes it easy to discover the right career path. We connect talented individuals with leading companies across the globe, ensuring your career aspirations become reality.
+            </p>
+            <label for="show-form" class="signup-btn">
+                <i class="fas fa-user-plus"></i> Sign Up With Us
+            </label>
+        </div>
+        
+        <div class="right-content">
+            <h3><i class="fas fa-search"></i> Search Jobs</h3>
+            <input type="text" id="search-title" class="search-box" placeholder="Job Title (e.g., Software Engineer)">
+            <input type="text" id="search-location" class="search-box" placeholder="Location (e.g., Chennai, Remote)">
+            <select id="search-exp" class="search-box">
+                <option value="">Experience Level</option>
+                <option value="Fresher">Fresher</option>
+                <option value="1-3 Years">1-3 Years</option>
+                <option value="3-5 Years">3-5 Years</option>
+                <option value="5+ Years">5+ Years</option>
+            </select>
+            <select id="search-category" class="search-box">
+                <option value="">All Categories</option>
+                <option value="IT & Software">IT & Software</option>
+                <option value="Banking & Finance">Banking & Finance</option>
+                <option value="Healthcare">Healthcare</option>
+                <option value="Engineering">Engineering</option>
+                <option value="Manufacturing">Manufacturing</option>
+                <option value="Education">Education</option>
+                <option value="Marketing">Marketing</option>
+                <option value="Other">Other</option>
+            </select>
+            <button class="search-btn" onclick="searchJobs()">
+                <i class="fas fa-search"></i> Search Jobs
+            </button>
+            <div id="result-area"></div>
+        </div>
+    </div>
+
+    <!-- User Auth Popup -->
+    <div class="auth-popup user-auth-popup">
+        <div class="auth-box">
+            <label for="show-form" class="close-btn">&times;</label>
+
+            <div id="form-signup">
+                <h2 style="color:#333; margin-bottom:20px; text-align:center;">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </h2>
+                <input type="text" id="su-name" placeholder="Full Name" required>
+                <input type="email" id="su-email" placeholder="Email Address" required>
+                <input type="tel" id="su-mobile" placeholder="Mobile Number" required>
+                <input type="password" id="su-pass" placeholder="Password" required>
+                <div class="otp-row">
+                    <input type="text" id="su-otp" placeholder="Enter OTP" maxlength="6">
+                    <button type="button" onclick="sendUserOTP('register')">Send OTP</button>
+                </div>
+                <button type="button" onclick="registerUser()">
+                    <i class="fas fa-user-plus"></i> Register
+                </button>
+                <span class="form-switch" onclick="showForm('login')">
+                    Already registered? Login
+                </span>
+            </div>
+
+            <div id="form-login" class="hidden">
+                <h2 style="color:#333; margin-bottom:20px; text-align:center;">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </h2>
+                <input type="email" id="li-email" placeholder="Email Address" required>
+                <input type="password" id="li-pass" placeholder="Password" required>
+                <button type="button" onclick="handleUserLogin()">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+                <span class="form-switch" onclick="showForm('forgot')">Forgot Password?</span>
+                <span class="form-switch" style="color:#666;" onclick="showForm('signup')">Sign Up</span>
+            </div>
+
+            <div id="form-forgot" class="hidden">
+                <h2 style="color:#333; margin-bottom:20px; text-align:center;">
+                    <i class="fas fa-key"></i> Reset Password
+                </h2>
+                <input type="email" id="fp-email" placeholder="Email Address" required>
+                <div class="otp-row">
+                    <input type="text" id="fp-otp" placeholder="Enter OTP">
+                    <button type="button" onclick="sendUserOTP('forgot')">Send OTP</button>
+                </div>
+                <input type="password" id="fp-pass" placeholder="New Password">
+                <button type="button" onclick="resetPass()">
+                    <i class="fas fa-key"></i> Reset Password
+                </button>
+                <span class="form-switch" onclick="showForm('login')">Back to Login</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employer Auth Popup -->
+    <div class="auth-popup employer-auth-popup">
+        <div class="auth-box">
+            <label for="show-employer-form" class="close-btn">&times;</label>
+
+            <div id="emp-form-register" class="hidden">
+                <h2 style="color:#333; margin-bottom:20px; text-align:center;">
+                    <i class="fas fa-building"></i> Employer Register
+                </h2>
+                <input type="text" id="emp-su-name" placeholder="Company Name" required>
+                <input type="tel" id="emp-su-mobile" placeholder="Mobile Number" required>
+                <input type="email" id="emp-su-email" placeholder="Email Address" required>
+                <input type="password" id="emp-su-pass" placeholder="Password" required>
+                <button onclick="handleEmpRegister(event)">
+                    <i class="fas fa-building"></i> Register
+                </button>
+                <span class="form-switch" onclick="showEmpForm('login')">Already registered? Login</span>
+            </div>
+
+            <div id="emp-form-login">
+                <h2 style="color:#333; margin-bottom:20px; text-align:center;">
+                    <i class="fas fa-user-tie"></i> Employer Login
+                </h2>
+                <input type="email" id="emp-li-email" placeholder="Email Address" required>
+                <input type="password" id="emp-li-pass" placeholder="Password" required>
+                <button onclick="handleEmpLogin(event)">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+                <span class="form-switch" onclick="showEmpForm('register')">Don't have an account? Register</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const nav = document.getElementById('main-nav');
+            nav.classList.toggle('active');
+        }
+
+        // Dropdown Toggle for Mobile
+        function toggleDropdown(element) {
+            if (window.innerWidth <= 768) {
+                const content = element.querySelector('.dropdown-content');
+                content.classList.toggle('show');
+            }
+        }
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(e) {
+            const nav = document.getElementById('main-nav');
+            const menuBtn = document.querySelector('.mobile-menu-btn');
+            if (nav && !nav.contains(e.target) && !menuBtn.contains(e.target)) {
+                nav.classList.remove('active');
+            }
+        });
+
+        // Toast Notification
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            let icon = 'check-circle';
+            if (type === 'error') icon = 'times-circle';
+            else if (type === 'info') icon = 'info-circle';
+            
+            toast.innerHTML = `<i class="fas fa-${icon}"></i> ${message}`;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideInRight 0.4s reverse forwards';
+                setTimeout(() => toast.remove(), 400);
+            }, 3500);
+        }
+
+        async function postReq(url, data) {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            return await res.json();
+        }
+
+        function showForm(n) {
+            document.querySelectorAll('.user-auth-popup .auth-box > div').forEach(el => el.classList.add('hidden'));
+            document.getElementById('form-' + n).classList.remove('hidden');
+        }
+
+        function showEmpForm(type) {
+            document.getElementById('emp-form-register').classList.add('hidden');
+            document.getElementById('emp-form-login').classList.add('hidden');
+            document.getElementById('emp-form-' + type).classList.remove('hidden');
+        }
+
+        async function searchJobs() {
+            const res = await postReq('/api/jobs/search', {
+                title: document.getElementById('search-title').value,
+                location: document.getElementById('search-location').value,
+                experience: document.getElementById('search-exp').value,
+                category: document.getElementById('search-category').value
+            });
+            
+            const area = document.getElementById('result-area');
+            area.innerHTML = '';
+            
+            if (!res.jobs || res.jobs.length === 0) {
+                area.innerHTML = '<p style="color:white; text-align:center; margin-top:15px;"><i class="fas fa-search" style="font-size:30px;"></i><br>No jobs found. Try different keywords.</p>';
+            } else {
+                area.innerHTML = '';
+                res.jobs.forEach((j) => {
+                    const card = document.createElement('div');
+                    card.className = 'job-result-card';
+                    card.innerHTML = `
+                        <h4>${j.title}</h4>
+                        <p><i class="fas fa-building"></i> <b>${j.company_name}</b> | <i class="fas fa-map-marker-alt"></i> ${j.location || 'N/A'}</p>
+                        <p><i class="fas fa-money-bill"></i> ${j.salary || 'Competitive Salary'}</p>
+                        <button class="apply-sm-btn" onclick="handleApplyClick(${j.id})">Apply Now</button>
+                    `;
+                    area.appendChild(card);
+                });
+                showToast(`Found ${res.jobs.length} jobs!`, 'info');
+            }
+        }
+
+        function handleApplyClick(jobId) {
+            showToast('Please login to apply for this job', 'error');
+            document.getElementById('show-form').checked = true;
+            showForm('login');
+        }
+
+        async function sendUserOTP(action) {
+            let email = (action === 'register') ? document.getElementById('su-email').value : document.getElementById('fp-email').value;
+            if (!email) {
+                showToast('Please enter email first', 'error');
+                return;
+            }
+            const res = await postReq('/api/send_otp', { email: email, action: action });
+            if (res.success) showToast(res.message, 'success');
+            else showToast('Failed to send OTP', 'error');
+        }
+
+        async function registerUser() {
+            const res = await postReq('/api/user/register', {
+                name: document.getElementById('su-name').value,
+                email: document.getElementById('su-email').value,
+                mobile: document.getElementById('su-mobile').value,
+                password: document.getElementById('su-pass').value,
+                otp: document.getElementById('su-otp').value
+            });
+
+            if (res.success) {
+                showToast(res.message, 'success');
+                setTimeout(() => window.location.href = res.redirect, 1500);
+            } else {
+                showToast(res.message || 'Error', 'error');
+            }
+        }
+
+        async function handleUserLogin() {
+            const res = await postReq('/api/user/login', {
+                email: document.getElementById('li-email').value,
+                password: document.getElementById('li-pass').value
+            });
+            if (res.success) {
+                showToast(res.message, 'success');
+                setTimeout(() => window.location.href = res.redirect, 1000);
+            } else showToast(res.message || 'Wrong Password', 'error');
+        }
+
+        async function resetPass() {
+            const res = await postReq('/api/reset_password', {
+                email: document.getElementById('fp-email').value,
+                otp: document.getElementById('fp-otp').value,
+                password: document.getElementById('fp-pass').value
+            });
+            if (res.success) {
+                showToast(res.message, 'success');
+                showForm('login');
+            } else showToast(res.message || 'Error', 'error');
+        }
+
+        async function handleEmpRegister(e) {
+            e.preventDefault();
+            const res = await postReq('/api/employer/register', {
+                name: document.getElementById('emp-su-name').value,
+                mobile: document.getElementById('emp-su-mobile').value,
+                email: document.getElementById('emp-su-email').value,
+                password: document.getElementById('emp-su-pass').value
+            });
+
+            if (res.success) {
+                showToast(res.message, 'success');
+                setTimeout(() => window.location.href = res.redirect, 1500);
+            } else {
+                showToast(res.message || 'Error', 'error');
+            }
+        }
+
+        async function handleEmpLogin(e) {
+            e.preventDefault();
+            const res = await postReq('/api/employer/login', {
+                email: document.getElementById('emp-li-email').value,
+                password: document.getElementById('emp-li-pass').value
+            });
+            if (res.success) {
+                showToast(res.message, 'success');
+                setTimeout(() => window.location.href = res.redirect, 1000);
+            } else showToast(res.message || 'Wrong Password', 'error');
+        }
+    </script>
+</body>
+
+</html>

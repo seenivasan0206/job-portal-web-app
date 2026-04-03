@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>User Dashboard - Dream Jobs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: "Saira Condensed", sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            min-height: 100vh;
+        }
+        
+        video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+            opacity: 0.15;
+        }
+        
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: linear-gradient(180deg, #1e1e2f, #2a2a40);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding-top: 20px;
+            z-index: 100;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.3);
+        }
+        
+        .sidebar-logo {
+            text-align: center;
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 10px;
+        }
+        
+        .sidebar-logo h2 {
+            font-size: 22px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .sidebar a,
+        .sidebar button {
+            display: flex;
+            align-items: center;
+            padding: 14px 25px;
+            color: #ccc;
+            text-decoration: none;
+            font-size: 15px;
+            transition: all 0.3s;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+        }
+        
+        .sidebar a:hover, .sidebar button:hover {
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.3), transparent);
+            color: #fff;
+            padding-left: 30px;
+        }
+        
+        .sidebar a.active {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .sidebar i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .notif-badge {
+            background: linear-gradient(135deg, #ff4e8a, #ff8c68);
+            color: white;
+            border-radius: 50%;
+            padding: 2px 7px;
+            font-size: 10px;
+            margin-left: auto;
+        }
+        
+        .main-content {
+            margin-left: 260px;
+            padding: 30px 40px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            margin-bottom: 25px;
+            transition: all 0.3s;
+            animation: fadeInUp 0.5s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card h2 i {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            font-family: inherit;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .job-card {
+            background: white;
+            padding: 20px;
+            margin-top: 15px;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+        }
+        
+        .job-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .job-card h3 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .job-card p {
+            color: #666;
+            font-size: 14px;
+            margin: 4px 0;
+        }
+        
+        .apply-btn {
+            margin-top: 12px;
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .apply-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+        
+        .apply-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .save-btn {
+            background: linear-gradient(135deg, #ffc107, #ff9800);
+            color: #333;
+            margin-left: 8px;
+        }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-overlay.active { display: flex; }
+        
+        .modal-box {
+            background: white;
+            width: 650px;
+            max-width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.4s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 28px;
+            color: #999;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .modal-close:hover { color: #667eea; transform: rotate(90deg); }
+        
+        .modal-header {
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h2 { color: #333; }
+        
+        .form-section-title {
+            font-size: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 20px 0 12px 0;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .gradient-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            padding: 14px 25px;
+            color: white;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        
+        .gradient-btn:hover {
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .cancel-btn {
+            background: #e0e0e0;
+            color: #333;
+            border: none;
+            padding: 14px 25px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        
+        .cancel-btn:hover { background: #d0d0d0; }
+        
+        /* Notification Dropdown */
+        #notif-dropdown {
+            position: absolute;
+            top: 55px;
+            left: 10px;
+            width: 380px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+            display: none;
+            z-index: 1000;
+            overflow: hidden;
+        }
+        
+        #notif-dropdown.show { display: block; animation: slideDown 0.3s; }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .notif-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 20px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .notif-header button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .notif-header button:hover { background: rgba(255,255,255,0.3); }
+        
+        .notif-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .notif-item {
+            padding: 18px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .notif-item:hover { background: #f8f9fa; }
+        
+        .notif-item.unread {
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.05), transparent);
+            border-left: 3px solid #667eea;
+        }
+        
+        .notif-item:last-child { border-bottom: none; }
+        
+        .notif-item h4 {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .notif-item p {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .notif-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 8px;
+        }
+        
+        .notif-empty {
+            padding: 40px;
+            text-align: center;
+            color: #999;
+        }
+        
+        .notif-empty i {
+            font-size: 40px;
+            margin-bottom: 10px;
+            color: #ddd;
+        }
+        
+        /* Resume Upload */
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+        }
+        
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        }
+        
+        .upload-area i {
+            font-size: 50px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+        
+        .upload-area p {
+            color: #666;
+            font-size: 15px;
+        }
+        
+        .match-score {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        
+        .match-high { background: linear-gradient(135deg, #28a745, #20c997); }
+        .match-medium { background: linear-gradient(135deg, #ffc107, #ff9800); }
+        .match-low { background: linear-gradient(135deg, #dc3545, #e74c3c); }
+        
+        /* Toast Notifications */
+        #toast-container {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .toast {
+            padding: 18px 25px;
+            border-radius: 12px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: slideInRight 0.4s forwards;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            font-weight: 500;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .toast-success { background: linear-gradient(135deg, #28a745, #20c997); }
+        .toast-error { background: linear-gradient(135deg, #dc3545, #e74c3c); }
+        .toast-warning { background: linear-gradient(135deg, #ffc107, #ff9800); }
+        .toast-info { background: linear-gradient(135deg, #667eea, #764ba2); }
+        
+        .toast i { font-size: 20px; }
+        
+        /* Search Filters */
+        .search-filters {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 1200px) {
+            .search-filters { grid-template-columns: repeat(2, 1fr); }
+        }
+        
+        .logout-btn {
+            background: linear-gradient(135deg, #dc3545, #e74c3c);
+            color: white !important;
+            margin: 20px;
+            border-radius: 10px;
+            text-align: center;
+            padding: 14px !important;
+        }
+        
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+        }
+    </style>
+</head>
+
+<body>
+    <video autoplay muted loop playsinline><source src="{{ url_for('static', filename='background1.mp4') }}" type="video/mp4"></video>
+    <div id="toast-container"></div>
+
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <h2><i class="fas fa-briefcase"></i> Dream Jobs</h2>
+        </div>
+        <a href="#" onclick="showSection('search')" id="nav-search" class="active"><i class="fas fa-search"></i> Find Jobs</a>
+        <a href="#" onclick="showSection('saved')" id="nav-saved"><i class="fas fa-bookmark"></i> Saved Jobs</a>
+        <a href="#" onclick="showSection('applications')" id="nav-applications"><i class="fas fa-file-alt"></i> My Applications</a>
+        <a href="#" onclick="showSection('upload')" id="nav-upload"><i class="fas fa-file-upload"></i> Upload Resume</a>
+        <a href="/user_settings"><i class="fas fa-cog"></i> Settings</a>
+        
+        <a href="#" onclick="toggleNotifDropdown(event)" style="position:relative;">
+            <i class="fas fa-bell"></i> Notifications
+            <span id="notif-count" class="notif-badge" style="display:none;">0</span>
+        </a>
+        <div id="notif-dropdown">
+            <div class="notif-header">
+                <span><i class="fas fa-bell"></i> Notifications</span>
+                <button onclick="markAllAsRead(event)">Mark all read</button>
+            </div>
+            <div class="notif-list" id="notif-list"></div>
+        </div>
+        
+        <button onclick="openLogoutModal()" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+
+    <div class="main-content">
+        <!-- Search Jobs Section -->
+        <div class="card" id="section-search">
+            <h2><i class="fas fa-search"></i> Search Jobs</h2>
+            <div class="search-filters">
+                <input type="text" id="search-title" placeholder="Job Title">
+                <input type="text" id="search-location" placeholder="Location">
+                <select id="search-exp">
+                    <option value="">Experience</option>
+                    <option value="Fresher">Fresher</option>
+                    <option value="1-3 Years">1-3 Years</option>
+                    <option value="3-5 Years">3-5 Years</option>
+                    <option value="5+ Years">5+ Years</option>
+                </select>
+                <select id="search-category">
+                    <option value="">All Categories</option>
+                    <option value="IT & Software">IT & Software</option>
+                    <option value="Banking & Finance">Banking & Finance</option>
+                    <option value="Healthcare">Healthcare</option>
+                    <option value="Engineering">Engineering</option>
+                    <option value="Manufacturing">Manufacturing</option>
+                    <option value="Education">Education</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <button class="btn" onclick="searchJobs()"><i class="fas fa-search"></i> Search Jobs</button>
+            <div id="result-area"></div>
+        </div>
+
+        <!-- Saved Jobs Section -->
+        <div class="card" id="section-saved" style="display:none;">
+            <h2><i class="fas fa-bookmark"></i> Saved Jobs</h2>
+            <div id="saved-jobs-area"></div>
+        </div>
+
+        <!-- Applications Section -->
+        <div class="card" id="section-applications" style="display:none;">
+            <h2><i class="fas fa-file-alt"></i> My Applications</h2>
+            <div id="applications-area"></div>
+        </div>
+
+        <!-- Upload Resume Section -->
+        <div class="card" id="section-upload" style="display:none;">
+            <h2><i class="fas fa-file-upload"></i> Upload Resume</h2>
+            <p style="margin-bottom:20px; color:#666;">Upload your resume to find jobs matching your skills with AI-powered matching.</p>
+            
+            <div class="upload-area" onclick="document.getElementById('resumeInput').click()">
+                <input type="file" id="resumeInput" style="display:none" accept=".txt,.pdf,.doc,.docx">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p id="fileName">Click to upload your resume</p>
+                <p style="font-size:12px; color:#999; margin-top:5px;">Supported: TXT, PDF, DOC, DOCX</p>
+            </div>
+            
+            <div id="extracted-skills" style="margin-top:20px; display:none;">
+                <h4 style="color:#333; margin-bottom:10px;"><i class="fas fa-tools"></i> Extracted Skills:</h4>
+                <div id="skills-tags"></div>
+            </div>
+            
+            <button class="btn" style="margin-top:20px;" onclick="matchResume()"><i class="fas fa-magic"></i> Find Matching Jobs</button>
+            <div id="match-area" style="margin-top:25px;"></div>
+        </div>
+    </div>
+
+    <!-- Apply Job Modal -->
+    <div id="applyModal" class="modal-overlay">
+        <div class="modal-box">
+            <span class="modal-close" onclick="closeApplyModal()">&times;</span>
+            <div class="modal-header">
+                <h2><i class="fas fa-paper-plane"></i> Apply for Job</h2>
+            </div>
+            <form id="applicationForm" onsubmit="submitApplication(event)">
+                <div class="form-section-title"><i class="fas fa-user"></i> Personal Information</div>
+                <input type="text" id="mod-name" placeholder="Full Name *" required>
+                <input type="email" id="mod-email" placeholder="Email Address *" required>
+                <input type="tel" id="mod-mobile" placeholder="Mobile Number *" required>
+
+                <div class="form-section-title"><i class="fas fa-graduation-cap"></i> Education</div>
+                <select id="mod-qual" required>
+                    <option value="">Highest Qualification *</option>
+                    <option value="B.E / B.Tech">B.E / B.Tech</option>
+                    <option value="B.Sc">B.Sc</option>
+                    <option value="BCA">BCA</option>
+                    <option value="MCA">MCA</option>
+                    <option value="M.Tech">M.Tech</option>
+                    <option value="MBA">MBA</option>
+                    <option value="Other">Other</option>
+                </select>
+                <input type="text" id="mod-college" placeholder="College Name *" required>
+                <input type="number" id="mod-yop" placeholder="Year of Passing *" required>
+
+                <div class="form-section-title"><i class="fas fa-briefcase"></i> Experience</div>
+                <select id="mod-exp-level" onchange="toggleExpFields(this.value)">
+                    <option value="Fresher">Fresher</option>
+                    <option value="Experienced">Experienced</option>
+                </select>
+                <div id="exp-fields" style="display:none;" class="form-row">
+                    <input type="text" id="mod-yoe" placeholder="Years of Experience">
+                    <input type="text" id="mod-prev-company" placeholder="Previous Company">
+                </div>
+
+                <div class="form-section-title"><i class="fas fa-tools"></i> Skills & Resume</div>
+                <input type="text" id="mod-skills" placeholder="Skills (comma separated) *" required>
+                <input type="file" id="mod-resume" accept=".pdf,.doc,.docx" required>
+
+                <div class="form-section-title"><i class="fas fa-map-marker-alt"></i> Additional Details</div>
+                <div class="form-row">
+                    <input type="text" id="mod-curr-loc" placeholder="Current Location">
+                    <input type="text" id="mod-pref-loc" placeholder="Preferred Location">
+                </div>
+                <input type="text" id="mod-salary" placeholder="Expected Salary">
+                <textarea id="mod-cover" rows="3" placeholder="Cover Letter (Optional)"></textarea>
+
+                <div style="margin-top:25px;" class="form-row">
+                    <button type="button" class="cancel-btn" onclick="closeApplyModal()">Cancel</button>
+                    <button type="submit" class="gradient-btn"><i class="fas fa-paper-plane"></i> Submit Application</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Logout Modal -->
+    <div id="logoutModal" class="modal-overlay">
+        <div class="modal-box" style="width:400px; text-align:center;">
+            <div class="modal-header">
+                <h2><i class="fas fa-sign-out-alt"></i> Logout</h2>
+            </div>
+            <p style="margin-bottom:25px; color:#666;">Are you sure you want to logout?</p>
+            <div class="form-row">
+                <button class="cancel-btn" onclick="closeLogoutModal()">No</button>
+                <button class="gradient-btn" onclick="window.location.href='/logout'">Yes, Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentJobId = null;
+        let appliedJobIds = new Set();
+        let savedJobIds = new Set();
+
+        // --- Toast Notification System ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            let icon = 'check-circle';
+            if (type === 'error') icon = 'times-circle';
+            else if (type === 'warning') icon = 'exclamation-triangle';
+            else if (type === 'info') icon = 'info-circle';
+            
+            toast.innerHTML = `<i class="fas fa-${icon}"></i> ${message}`;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideInRight 0.4s reverse forwards';
+                setTimeout(() => toast.remove(), 400);
+            }, 4000);
+        }
+
+        // --- Navigation ---
+        function showSection(id) {
+            document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
+            document.getElementById('section-' + id).style.display = 'block';
+            
+            document.querySelectorAll('.sidebar a').forEach(el => el.classList.remove('active'));
+            const navEl = document.getElementById('nav-' + id);
+            if (navEl) navEl.classList.add('active');
+            
+            if (id === 'saved') loadSavedJobs();
+            if (id === 'applications') loadApplicationStatus();
+            if (id === 'upload') loadUserProfile();
+            
+            // Close notification dropdown if open
+            document.getElementById('notif-dropdown').classList.remove('show');
+        }
+
+        // --- Fetch Data on Load ---
+        async function fetchSavedJobIds() {
+            const res = await fetch('/api/get_saved_job_ids');
+            const data = await res.json();
+            if (data.saved_ids) savedJobIds = new Set(data.saved_ids);
+        }
+
+        async function fetchAppliedJobs() {
+            const res = await fetch('/api/user/applied_jobs');
+            const data = await res.json();
+            if (data.success) appliedJobIds = new Set(data.applied_ids);
+        }
+
+        async function loadUserProfile() {
+            const res = await fetch('/api/get_user_profile');
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('mod-name').value = data.user.name || '';
+                document.getElementById('mod-email').value = data.user.email || '';
+                document.getElementById('mod-mobile').value = data.user.mobile || '';
+            }
+        }
+
+        fetchSavedJobIds();
+        fetchAppliedJobs();
+
+        // --- Notification System ---
+        async function loadNotifCount() {
+            try {
+                const res = await fetch('/api/get_unread_count');
+                const data = await res.json();
+                const badge = document.getElementById('notif-count');
+                if (data.count > 0) {
+                    badge.style.display = 'inline';
+                    badge.innerText = data.count > 99 ? '99+' : data.count;
+                } else {
+                    badge.style.display = 'none';
+                }
+            } catch(e) { console.log(e); }
+        }
+
+        async function toggleNotifDropdown(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const dd = document.getElementById('notif-dropdown');
+            
+            if (dd.classList.contains('show')) {
+                dd.classList.remove('show');
+            } else {
+                dd.classList.add('show');
+                const res = await fetch('/api/get_user_notifications');
+                const data = await res.json();
+                const list = document.getElementById('notif-list');
+                list.innerHTML = '';
+                
+                if (data.notifications && data.notifications.length > 0) {
+                    data.notifications.forEach(n => {
+                        const isSelected = n.message.includes('selected') || n.message.includes('Congratulations');
+                        const icon = isSelected ? 'trophy' : 'bell';
+                        const bgClass = !n.is_read ? 'unread' : '';
+                        
+                        list.innerHTML += `
+                        <div class="notif-item ${bgClass}">
+                            <h4><i class="fas fa-${icon}"></i> ${isSelected ? 'Congratulations!' : 'Notification'}</h4>
+                            <p>${n.message}</p>
+                            <span class="notif-time"><i class="fas fa-clock"></i> ${n.created_at}</span>
+                        </div>`;
+                    });
+                } else {
+                    list.innerHTML = `
+                    <div class="notif-empty">
+                        <i class="fas fa-bell-slash"></i>
+                        <p>No notifications yet</p>
+                    </div>`;
+                }
+                loadNotifCount();
+            }
+        }
+
+        async function markAllAsRead(e) {
+            e.stopPropagation();
+            await fetch('/api/get_user_notifications');
+            loadNotifCount();
+            showToast('All notifications marked as read', 'success');
+            toggleNotifDropdown({preventDefault: ()=>{}, stopPropagation: ()=>{}});
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('notif-dropdown');
+            const bell = document.querySelector('.sidebar a[onclick*="toggleNotifDropdown"]');
+            if (dropdown.classList.contains('show') && !dropdown.contains(e.target) && !bell.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        setInterval(loadNotifCount, 5000);
+        loadNotifCount();
+
+        // --- Logout Modal ---
+        function openLogoutModal() { document.getElementById('logoutModal').classList.add('active'); }
+        function closeLogoutModal() { document.getElementById('logoutModal').classList.remove('active'); }
+
+        // --- API Helper ---
+        async function postReq(url, data) {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            return await res.json();
+        }
+
+        // --- Search Jobs ---
+        async function searchJobs() {
+            const res = await postReq('/api/jobs/search', {
+                title: document.getElementById('search-title').value,
+                location: document.getElementById('search-location').value,
+                experience: document.getElementById('search-exp').value,
+                category: document.getElementById('search-category').value
+            });
+            
+            const area = document.getElementById('result-area');
+            area.innerHTML = '';
+            
+            if (res.success && res.jobs.length > 0) {
+                res.jobs.forEach(j => {
+                    const isApplied = appliedJobIds.has(String(j.id));
+                    const isSaved = savedJobIds.has(String(j.id));
+                    
+                    const btnHtml = isApplied ?
+                        `<button class="apply-btn" disabled><i class="fas fa-check"></i> Applied</button>` :
+                        `<button class="apply-btn" onclick="openApplyModal(${j.id})"><i class="fas fa-paper-plane"></i> Apply Now</button>`;
+                    
+                    const saveBtn = isSaved ?
+                        `<button class="apply-btn save-btn" onclick="unsaveJob(${j.id})"><i class="fas fa-bookmark"></i> Saved</button>` :
+                        `<button class="apply-btn save-btn" onclick="saveJob(${j.id})"><i class="fas fa-bookmark"></i> Save</button>`;
+
+                    area.innerHTML += `<div class="job-card">
+                        <h3>${j.title}</h3>
+                        <p><i class="fas fa-building"></i> <b>${j.company_name}</b> | <i class="fas fa-map-marker-alt"></i> ${j.location || 'N/A'}</p>
+                        <p><i class="fas fa-money-bill"></i> <b>Salary:</b> ${j.salary || 'Not Disclosed'}</p>
+                        ${btnHtml}
+                        ${saveBtn}
+                    </div>`;
+                });
+                showToast(`Found ${res.jobs.length} jobs`, 'info');
+            } else {
+                area.innerHTML = '<p style="text-align:center; color:#666; padding:30px;"><i class="fas fa-search" style="font-size:40px; color:#ddd;"></i><br><br>No jobs found matching your criteria.</p>';
+            }
+        }
+
+        // --- Save/Unsave Jobs ---
+        async function saveJob(jobId) {
+            const res = await postReq('/api/save_job', { job_id: jobId });
+            if (res.success) {
+                savedJobIds.add(String(jobId));
+                showToast('Job Saved!', 'success');
+                searchJobs();
+            } else showToast(res.message || 'Error', 'error');
+        }
+
+        async function unsaveJob(jobId) {
+            const res = await postReq('/api/unsave_job', { job_id: jobId });
+            if (res.success) {
+                savedJobIds.delete(String(jobId));
+                showToast('Job Removed from Saved', 'success');
+                loadSavedJobs();
+            } else showToast(res.message || 'Error', 'error');
+        }
+
+        // --- Load Saved Jobs ---
+        async function loadSavedJobs() {
+            const res = await fetch('/api/get_saved_jobs');
+            const data = await res.json();
+            const area = document.getElementById('saved-jobs-area');
+            area.innerHTML = '';
+            
+            if (data.success && data.jobs.length > 0) {
+                data.jobs.forEach(j => {
+                    area.innerHTML += `<div class="job-card">
+                        <h3>${j.title}</h3>
+                        <p><i class="fas fa-building"></i> <b>${j.company_name}</b> | <i class="fas fa-map-marker-alt"></i> ${j.location || 'N/A'}</p>
+                        <p><i class="fas fa-money-bill"></i> <b>Salary:</b> ${j.salary || 'Not Disclosed'}</p>
+                        <button class="apply-btn" onclick="openApplyModal(${j.id})"><i class="fas fa-paper-plane"></i> Apply</button>
+                        <button class="apply-btn save-btn" onclick="unsaveJob(${j.id})"><i class="fas fa-trash"></i> Remove</button>
+                    </div>`;
+                });
+            } else {
+                area.innerHTML = '<p style="text-align:center; color:#666; padding:30px;"><i class="fas fa-bookmark" style="font-size:40px; color:#ddd;"></i><br><br>No saved jobs yet.</p>';
+            }
+        }
+
+        // --- Load Application Status ---
+        async function loadApplicationStatus() {
+            const res = await fetch('/api/user/application_status');
+            const data = await res.json();
+            const area = document.getElementById('applications-area');
+            area.innerHTML = '';
+            
+            if (data.success && data.applications.length > 0) {
+                data.applications.forEach(a => {
+                    let statusColor = '#0072ff', statusIcon = 'clock';
+                    if (a.status === 'Selected') { statusColor = '#28a745'; statusIcon = 'trophy'; }
+                    else if (a.status === 'Rejected') { statusColor = '#dc3545'; statusIcon = 'times-circle'; }
+                    
+                    area.innerHTML += `<div class="job-card">
+                        <h3>${a.title}</h3>
+                        <p><i class="fas fa-building"></i> <b>${a.company_name}</b> | <i class="fas fa-map-marker-alt"></i> ${a.location || 'N/A'}</p>
+                        <p><i class="fas fa-${statusIcon}"></i> <b>Status:</b> <span style="color:${statusColor}; font-weight:bold;">${a.status}</span> | <i class="fas fa-calendar"></i> Applied: ${a.created_at}</p>
+                    </div>`;
+                });
+            } else {
+                area.innerHTML = '<p style="text-align:center; color:#666; padding:30px;"><i class="fas fa-file-alt" style="font-size:40px; color:#ddd;"></i><br><br>No applications yet. Start applying to jobs!</p>';
+            }
+        }
+
+        // --- Apply Job Modal ---
+        function openApplyModal(jobId) {
+            currentJobId = jobId;
+            document.getElementById('applicationForm').reset();
+            document.getElementById('exp-fields').style.display = 'none';
+            loadUserProfile();
+            document.getElementById('applyModal').classList.add('active');
+        }
+
+        function closeApplyModal() {
+            document.getElementById('applyModal').classList.remove('active');
+        }
+
+        function toggleExpFields(val) {
+            document.getElementById('exp-fields').style.display = (val === 'Experienced') ? 'grid' : 'none';
+        }
+
+        // --- Submit Application ---
+        async function submitApplication(e) {
+            e.preventDefault();
+            let formData = new FormData();
+            formData.append('job_id', currentJobId);
+            formData.append('name', document.getElementById('mod-name').value);
+            formData.append('email', document.getElementById('mod-email').value);
+            formData.append('mobile', document.getElementById('mod-mobile').value);
+            formData.append('qualification', document.getElementById('mod-qual').value);
+            formData.append('college', document.getElementById('mod-college').value);
+            formData.append('yop', document.getElementById('mod-yop').value);
+            formData.append('exp_level', document.getElementById('mod-exp-level').value);
+            formData.append('yoe', document.getElementById('mod-yoe').value);
+            formData.append('prev_company', document.getElementById('mod-prev-company').value);
+            formData.append('skills', document.getElementById('mod-skills').value);
+            formData.append('curr_loc', document.getElementById('mod-curr-loc').value);
+            formData.append('pref_loc', document.getElementById('mod-pref-loc').value);
+            formData.append('salary', document.getElementById('mod-salary').value);
+            formData.append('cover', document.getElementById('mod-cover').value);
+            
+            let resumeFile = document.getElementById('mod-resume').files[0];
+            if (resumeFile) formData.append('resume', resumeFile);
+
+            const response = await fetch('/api/apply_job', { method: 'POST', body: formData });
+            const res = await response.json();
+            
+            if (res.success) {
+                showToast('Application Submitted Successfully!', 'success');
+                appliedJobIds.add(String(currentJobId));
+                closeApplyModal();
+                searchJobs();
+            } else {
+                showToast(res.message || 'Error submitting application', 'error');
+            }
+        }
+
+        // --- Resume Upload & Smart Matching ---
+        document.getElementById('resumeInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            document.getElementById('fileName').innerHTML = file ? `<i class="fas fa-file"></i> ${file.name}` : 'Click to upload your resume';
+        });
+
+        async function matchResume() {
+            let fileInput = document.getElementById('resumeInput');
+            if (fileInput.files.length === 0) {
+                showToast('Please select a resume file first', 'warning');
+                return;
+            }
+            
+            let formData = new FormData();
+            formData.append("resume", fileInput.files[0]);
+            
+            const area = document.getElementById('match-area');
+            area.innerHTML = '<p style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin" style="font-size:30px;"></i><br><br>Analyzing your resume and matching with jobs...</p>';
+            
+            try {
+                const response = await fetch('/api/upload_resume', { method: 'POST', body: formData });
+                const res = await response.json();
+                
+                if (res.success) {
+                    // Show extracted skills
+                    const skillsDiv = document.getElementById('extracted-skills');
+                    const skillsTags = document.getElementById('skills-tags');
+                    skillsDiv.style.display = 'block';
+                    skillsTags.innerHTML = res.skills.map(s => `<span class="match-score">${s}</span>`).join(' ');
+                    
+                    showToast(`Found ${res.jobs.length} matching jobs based on your skills!`, 'success');
+                    displayMatches(res.jobs);
+                } else {
+                    area.innerHTML = `<p style="text-align:center; color:#dc3545;">${res.message || 'Error analyzing resume'}</p>`;
+                }
+            } catch(e) {
+                area.innerHTML = '<p style="text-align:center; color:#dc3545;">Error connecting to server</p>';
+            }
+        }
+
+        function displayMatches(jobs) {
+            const area = document.getElementById('match-area');
+            if (jobs.length === 0) {
+                area.innerHTML = '<p style="text-align:center; color:#666;">No matching jobs found. Try updating your resume with more skills.</p>';
+                return;
+            }
+            
+            area.innerHTML = `<h3 style="margin-bottom:15px;"><i class="fas fa-lightbulb"></i> Recommended Jobs (${jobs.length})</h3>`;
+            jobs.forEach(j => {
+                let scoreClass = 'match-low';
+                if (j.score >= 70) scoreClass = 'match-high';
+                else if (j.score >= 40) scoreClass = 'match-medium';
+                
+                area.innerHTML += `<div class="job-card">
+                    <h3>${j.title} <span class="match-score ${scoreClass}"><i class="fas fa-percentage"></i> ${j.score}% Match</span></h3>
+                    <p><i class="fas fa-building"></i> <b>${j.company_name}</b> | <i class="fas fa-map-marker-alt"></i> ${j.location || 'N/A'}</p>
+                    <p><i class="fas fa-money-bill"></i> <b>Salary:</b> ${j.salary || 'Not Disclosed'}</p>
+                    <button class="apply-btn" onclick="openApplyModal(${j.id})"><i class="fas fa-paper-plane"></i> Apply Now</button>
+                </div>`;
+            });
+        }
+    </script>
+</body>
+
+</html>
