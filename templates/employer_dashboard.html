@@ -15,7 +15,8 @@
         
         body {
             font-family: "Saira Condensed", sans-serif;
-            background: #f0f2f5;
+            background: linear-gradient(150deg, #0b1b34, #0f9b8e);
+            min-height: 100vh;
         }
         
         video {
@@ -26,7 +27,17 @@
             height: 100%;
             object-fit: cover;
             z-index: -1;
-            opacity: 0.3;
+            opacity: 0.15;
+        }
+        
+        .page-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(150deg, rgba(11, 27, 52, 0.9), rgba(15, 155, 142, 0.9));
+            z-index: -1;
         }
         
         .sidebar {
@@ -35,7 +46,7 @@
             position: fixed;
             left: 0;
             top: 0;
-            background: linear-gradient(180deg, #1e1e2f, #2a2a40);
+            background: #0d1520;
             color: white;
             display: flex;
             flex-direction: column;
@@ -68,7 +79,7 @@
             display: flex;
             align-items: center;
             padding: 15px 30px;
-            color: #ccc;
+            color: #8a93a3;
             text-decoration: none;
             font-size: 16px;
             transition: 0.3s;
@@ -82,9 +93,9 @@
         
         .sidebar a:hover,
         .sidebar button:hover {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(15, 155, 142, 0.12);
             color: #fff;
-            border-left: 4px solid #ff4e8a;
+            border-left: 4px solid #0f9b8e;
         }
         
         .sidebar i {
@@ -106,14 +117,19 @@
         
         .header {
             margin-bottom: 30px;
-            color: #333;
+            color: #fff;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
         
         .card {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            background: #ffffff;
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
             margin-bottom: 30px;
         }
         
@@ -121,10 +137,17 @@
         select,
         textarea {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             margin-bottom: 15px;
-            border-radius: 6px;
-            border: 1px solid #ddd;
+            border-radius: 10px;
+            border: 2px solid #dee3e6;
+            transition: all 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #0f9b8e;
+            box-shadow: 0 0 0 4px rgba(15, 155, 142, 0.18);
         }
         
         .btn {
@@ -134,7 +157,11 @@
             cursor: pointer;
             font-weight: bold;
             color: white;
-            background: linear-gradient(135deg, #ff4e8a, #ff8c68);
+            background: #0f9b8e;
+        }
+        
+        .btn:hover {
+            background: #0c7d72;
         }
         
         .job-container {
@@ -164,7 +191,7 @@
         }
         
         .grad-3 {
-            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            background: linear-gradient(135deg, #0f9b8e, #0c7d72);
         }
         
         .job-card .actions {
@@ -235,7 +262,7 @@
         }
         
         .applicant-card:hover {
-            border-color: #0072ff;
+            border-color: #0f9b8e;
         }
         
         .applicant-header {
@@ -260,8 +287,8 @@
         }
         
         .status-applied {
-            background: #e3f2fd;
-            color: #0072ff;
+            background: rgba(15, 155, 142, 0.12);
+            color: #0f9b8e;
         }
         
         .status-selected {
@@ -287,7 +314,7 @@
         /* Email & Phone Links */
         
         .contact-link {
-            color: #0072ff;
+            color: #0f9b8e;
             text-decoration: none;
             font-weight: 500;
             cursor: pointer;
@@ -315,7 +342,7 @@
         .view-details-btn {
             background: none;
             border: none;
-            color: #0072ff;
+            color: #0f9b8e;
             font-weight: bold;
             cursor: pointer;
             font-size: 14px;
@@ -415,6 +442,7 @@
 
 <body>
     <video autoplay muted loop playsinline><source src="{{ url_for('static', filename='background1.mp4') }}" type="video/mp4"></video>
+    <div class="page-overlay"></div>
     <div id="notification-container"></div>
 
     <div class="sidebar">
@@ -451,6 +479,9 @@
                 <option value="5+ Years">5+ Years</option>
             </select>
             <input type="text" id="job-skills" placeholder="Skills (comma separated)">
+            <select id="job-cat">
+                <option value="">Select Category</option>
+            </select>
             <textarea id="job-desc" placeholder="Job Description" rows="4"></textarea>
             <button class="btn" onclick="postJob()">Post Job</button>
         </div>
@@ -467,6 +498,30 @@
             <span onclick="closeApplicantsModal()" style="cursor:pointer;float:right; font-size:25px;">&times;</span>
             <h2>Applicants</h2>
             <div id="applicants-list" style="margin-top:20px;"></div>
+        </div>
+    </div>
+
+    <!-- Edit Job Modal -->
+    <div id="editJobModal" class="modal-overlay">
+        <div class="modal-box">
+            <span onclick="closeEditModal()" style="cursor:pointer;float:right; font-size:25px;">&times;</span>
+            <h2>Edit Job</h2>
+            <input type="text" id="edit-title" placeholder="Job Title">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                <input type="text" id="edit-loc" placeholder="Location">
+                <input type="text" id="edit-sal" placeholder="Salary">
+            </div>
+            <select id="edit-exp">
+                <option value="">Select Experience Level</option>
+                <option value="Fresher">Fresher</option>
+                <option value="1-3 Years">1-3 Years</option>
+                <option value="3-5 Years">3-5 Years</option>
+                <option value="5+ Years">5+ Years</option>
+            </select>
+            <select id="edit-cat"><option value="">Select Category</option></select>
+            <input type="text" id="edit-skills" placeholder="Skills (comma separated)">
+            <textarea id="edit-desc" placeholder="Job Description" rows="4"></textarea>
+            <button class="btn" onclick="saveEditJob()">Save Changes</button>
         </div>
     </div>
 
@@ -513,6 +568,7 @@
                 salary: document.getElementById('job-sal').value,
                 experience: document.getElementById('job-exp').value,
                 skills: document.getElementById('job-skills').value,
+                category: document.getElementById('job-cat').value,
                 description: document.getElementById('job-desc').value
             });
             if (res.success) {
@@ -531,7 +587,7 @@
             if (data.success && data.jobs && data.jobs.length > 0) {
                 const grads = ['grad-1', 'grad-2', 'grad-3'];
                 data.jobs.forEach((j, i) => {
-                    list.innerHTML += `<div class="job-card ${grads[i % 3]}"><h4>${j.title}</h4><p><i class="fas fa-map-marker-alt"></i> ${j.location || 'N/A'}</p><p><i class="fas fa-money-bill"></i> ${j.salary || 'N/A'}</p><div class="actions"><button class="btn-sm" onclick="viewApplicants(${j.id})">Applicants</button><button class="btn-sm" style="background:#dc3545" onclick="deleteJob(${j.id})">Delete</button></div></div>`;
+                    list.innerHTML += `<div class="job-card ${grads[i % 3]}"><h4>${j.title}</h4><p><i class="fas fa-map-marker-alt"></i> ${j.location || 'N/A'}</p><p><i class="fas fa-money-bill"></i> ${j.salary || 'N/A'}</p><div class="actions"><button class="btn-sm" onclick="viewApplicants(${j.id})">Applicants</button><button class="btn-sm" style="background:#28a745" onclick="openEditModal(${j.id})">Edit</button><button class="btn-sm" style="background:#dc3545" onclick="deleteJob(${j.id})">Delete</button></div></div>`;
                 });
             } else {
                 list.innerHTML = '<p style="color:#666">No jobs posted yet.</p>';
@@ -589,14 +645,14 @@
                         </div>
 
                         <div class="action-bar">
-                            ${a.resume_path ? `<a href="/download_resume/${a.resume_path}" target="_blank" style="text-decoration:none; color:#0072ff; font-size:13px;"><i class="fas fa-file-pdf"></i> View Resume</a>` : '<span style="color:#999; font-size:12px;">No Resume</span>'}
+                            ${a.resume_path ? `<a href="/download_resume/${a.resume_path}" target="_blank" style="text-decoration:none; color:#0f9b8e; font-size:13px;"><i class="fas fa-file-pdf"></i> View Resume</a>` : '<span style="color:#999; font-size:12px;">No Resume</span>'}
                             <button class="view-details-btn" onclick="toggleFullDetails(this)">View Full Details <i class="fas fa-chevron-down"></i></button>
                         </div>
 
                         <!-- FULL DETAILS -->
                         <div class="full-details-section">
                             <div style="margin-bottom:15px;">
-                                <h4 style="color:#0072ff; margin-bottom:8px; font-size:14px;">EDUCATION</h4>
+                                <h4 style="color:#0f9b8e; margin-bottom:8px; font-size:14px;">EDUCATION</h4>
                                 <div class="detail-grid">
                                     <div class="detail-group"><label>Qualification</label><span>${a.qualification || 'N/A'}</span></div>
                                     <div class="detail-group"><label>College</label><span>${a.college_name || 'N/A'}</span></div>
@@ -605,7 +661,7 @@
                             </div>
 
                             <div style="margin-bottom:15px;">
-                                <h4 style="color:#0072ff; margin-bottom:8px; font-size:14px;">EXPERIENCE</h4>
+                                <h4 style="color:#0f9b8e; margin-bottom:8px; font-size:14px;">EXPERIENCE</h4>
                                 <div class="detail-grid">
                                     <div class="detail-group"><label>Level</label><span>${a.experience_level}</span></div>
                                     ${a.experience_level === 'Experienced' ? `
@@ -616,7 +672,7 @@
                             </div>
 
                             <div style="margin-bottom:15px;">
-                                <h4 style="color:#0072ff; margin-bottom:8px; font-size:14px;">ADDITIONAL</h4>
+                                <h4 style="color:#0f9b8e; margin-bottom:8px; font-size:14px;">ADDITIONAL</h4>
                                 <div class="detail-group"><label>Skills</label><span>${a.skills || 'N/A'}</span></div>
                                 <div class="detail-grid">
                                     <div class="detail-group"><label>Current Location</label><span>${a.current_location || 'N/A'}</span></div>
@@ -625,14 +681,15 @@
                             </div>
 
                             <div style="margin-bottom:15px;">
-                                <h4 style="color:#0072ff; margin-bottom:8px; font-size:14px;">COVER LETTER</h4>
+                                <h4 style="color:#0f9b8e; margin-bottom:8px; font-size:14px;">COVER LETTER</h4>
                                 <p style="background:white; padding:10px; border-radius:4px; font-size:13px; border:1px solid #eee;">${a.cover_letter || 'Not Provided'}</p>
                             </div>
                             
-                            <div style="text-align:right; margin-top:10px;">
-                                ${a.status === 'Applied' ? `
-                                <button onclick="selectCandidate(${a.id}, this)" style="padding:8px 20px; background:#28a745; color:white; border:none; border-radius:4px; cursor:pointer; margin-right:5px;">Select</button>
-                                <button onclick="rejectCandidate(${a.id}, this)" style="padding:8px 20px; background:#dc3545; color:white; border:none; border-radius:4px; cursor:pointer;">Reject</button>` : ''}
+                            <div style="text-align:right; margin-top:10px; display:flex; gap:6px; justify-content:flex-end; flex-wrap:wrap;">
+                                <button onclick="updateStatus(${a.id}, 'Shortlisted', this)" style="padding:6px 14px; background:#6c757d; color:white; border:none; border-radius:4px; cursor:pointer;">Shortlist</button>
+                                <button onclick="updateStatus(${a.id}, 'Interview', this)" style="padding:6px 14px; background:#0f9b8e; color:white; border:none; border-radius:4px; cursor:pointer;">Interview</button>
+                                <button onclick="updateStatus(${a.id}, 'Selected', this)" style="padding:6px 14px; background:#28a745; color:white; border:none; border-radius:4px; cursor:pointer;">Select</button>
+                                <button onclick="updateStatus(${a.id}, 'Rejected', this)" style="padding:6px 14px; background:#dc3545; color:white; border:none; border-radius:4px; cursor:pointer;">Reject</button>
                             </div>
                         </div>
                     </div>`;
@@ -652,28 +709,78 @@
             }
         }
         
-        async function selectCandidate(appId, btn) {
-            const res = await postReq('/api/select_candidate', { app_id: appId });
+        const STATUS_BADGE = {
+            'Applied': 'status-applied',
+            'Shortlisted': 'status-applied',
+            'Interview': 'status-applied',
+            'Selected': 'status-selected',
+            'Rejected': ''
+        };
+        async function updateStatus(appId, status, btn) {
+            if (status === 'Rejected' && !confirm('Reject this candidate?')) return;
+            const res = await postReq('/api/update_candidate_status', { app_id: appId, status: status });
             if (res.success) {
-                showNotification('Candidate Selected & User Notified!', 'success');
-                btn.disabled = true; btn.innerText = "Selected"; btn.style.background = "#6c757d"; btn.style.marginTop = "0";
-                const card = btn.closest('.applicant-card'); const badge = card.querySelector('.status-badge');
-                badge.className = 'status-badge status-selected'; badge.innerText = 'Selected';
+                showNotification('Candidate marked as ' + status + (status === 'Selected' ? ' & Notified!' : ''), 'success');
+                const card = btn.closest('.applicant-card');
+                const badge = card.querySelector('.status-badge');
+                badge.className = 'status-badge ' + (STATUS_BADGE[status] || '');
+                badge.innerText = status;
+            } else {
+                showNotification(res.message || 'Error', 'error');
             }
         }
 
-        async function rejectCandidate(appId, btn) {
-            if (!confirm('Reject this candidate?')) return;
-            const res = await postReq('/api/reject_candidate', { app_id: appId });
-            if (res.success) {
-                showNotification('Candidate Rejected', 'success');
-                btn.disabled = true; btn.innerText = "Rejected"; btn.style.background = "#dc3545"; btn.style.marginTop = "0";
-                const card = btn.closest('.applicant-card'); const badge = card.querySelector('.status-badge');
-                badge.className = 'status-badge'; badge.style.background = '#f8d7da'; badge.style.color = '#721c24'; badge.innerText = 'Rejected';
-            }
+        let currentEditId = null;
+        async function loadCategories() {
+            try {
+                const res = await fetch('/api/get_categories');
+                const data = await res.json();
+                if (!data.success) return;
+                const postSel = document.getElementById('job-cat');
+                const editSel = document.getElementById('edit-cat');
+                [postSel, editSel].forEach(sel => {
+                    data.categories.forEach(c => {
+                        const o = document.createElement('option');
+                        o.value = c.name; o.textContent = c.name;
+                        sel.appendChild(o);
+                    });
+                });
+            } catch(e) {}
+        }
+
+        async function openEditModal(id) {
+            currentEditId = id;
+            const res = await fetch('/api/get_employer_jobs');
+            const data = await res.json();
+            const j = (data.jobs || []).find(x => x.id === id);
+            if (!j) return;
+            document.getElementById('edit-title').value = j.title || '';
+            document.getElementById('edit-loc').value = j.location || '';
+            document.getElementById('edit-sal').value = j.salary || '';
+            document.getElementById('edit-exp').value = j.experience || '';
+            document.getElementById('edit-skills').value = j.skills || '';
+            document.getElementById('edit-desc').value = j.description || '';
+            document.getElementById('edit-cat').value = j.category || '';
+            document.getElementById('editJobModal').style.display = 'flex';
+        }
+        function closeEditModal() { document.getElementById('editJobModal').style.display = 'none'; }
+
+        async function saveEditJob() {
+            const res = await postReq('/api/edit_job/' + currentEditId, {
+                title: document.getElementById('edit-title').value,
+                location: document.getElementById('edit-loc').value,
+                salary: document.getElementById('edit-sal').value,
+                experience: document.getElementById('edit-exp').value,
+                skills: document.getElementById('edit-skills').value,
+                category: document.getElementById('edit-cat').value,
+                description: document.getElementById('edit-desc').value
+            });
+            if (res.success) { showNotification('Job Updated', 'success'); closeEditModal(); loadMyJobs(); }
+            else showNotification(res.message || 'Error', 'error');
         }
 
         function confirmLogout() { document.getElementById('logoutModal').style.display = 'flex'; }
+        loadCategories();
     </script>
 </body>
 

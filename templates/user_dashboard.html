@@ -15,7 +15,7 @@
         
         body {
             font-family: "Saira Condensed", sans-serif;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(150deg, #0b1b34, #0f9b8e);
             min-height: 100vh;
         }
         
@@ -36,7 +36,7 @@
             position: fixed;
             left: 0;
             top: 0;
-            background: linear-gradient(180deg, #1e1e2f, #2a2a40);
+            background: #0d1520;
             color: white;
             display: flex;
             flex-direction: column;
@@ -54,7 +54,7 @@
         
         .sidebar-logo h2 {
             font-size: 22px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #0f9b8e, #0c7d72);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -64,7 +64,7 @@
             display: flex;
             align-items: center;
             padding: 14px 25px;
-            color: #ccc;
+            color: #8a93a3;
             text-decoration: none;
             font-size: 15px;
             transition: all 0.3s;
@@ -76,14 +76,17 @@
         }
         
         .sidebar a:hover, .sidebar button:hover {
-            background: linear-gradient(90deg, rgba(102, 126, 234, 0.3), transparent);
+            background: rgba(15, 155, 142, 0.12);
             color: #fff;
             padding-left: 30px;
         }
         
         .sidebar a.active {
-            background: linear-gradient(90deg, #667eea, #764ba2);
+            background: #0f9b8e;
             color: white;
+            border-radius: 999px;
+            margin: 2px 14px;
+            padding: 14px 20px;
         }
         
         .sidebar i {
@@ -99,13 +102,92 @@
             padding: 2px 7px;
             font-size: 10px;
             margin-left: auto;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .bell-icon {
+            position: relative;
+            cursor: pointer;
+            font-size: 20px;
+            color: #0f9b8e;
+            transition: all 0.3s;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .bell-icon:hover {
+            background: linear-gradient(135deg, rgba(15, 155, 142, 0.1), rgba(12, 125, 114, 0.1));
+        }
+
+        .bell-badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: linear-gradient(135deg, #dc3545, #e74c3c);
+            color: white;
+            border-radius: 50%;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .topbar-left h2 {
+            color: #333;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+        }
+
+        /* Notification Dropdown */
+        #notif-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 380px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+            display: none;
+            z-index: 1000;
+            overflow: hidden;
+            margin-top: 10px;
         }
         
         .main-content {
             margin-left: 260px;
-            padding: 30px 40px;
+            padding: 20px 40px;
         }
-        
+
         .card {
             background: rgba(255, 255, 255, 0.95);
             padding: 30px;
@@ -131,7 +213,7 @@
         }
         
         .card h2 i {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #0f9b8e, #0c7d72);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -141,7 +223,7 @@
             padding: 14px;
             margin-bottom: 15px;
             border-radius: 10px;
-            border: 2px solid #e0e0e0;
+            border: 2px solid #dee3e6;
             font-family: inherit;
             transition: all 0.3s;
             font-size: 14px;
@@ -149,8 +231,8 @@
         
         input:focus, select:focus, textarea:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #0f9b8e;
+            box-shadow: 0 0 0 3px rgba(15, 155, 142, 0.12);
         }
         
         .btn {
@@ -160,14 +242,15 @@
             cursor: pointer;
             font-weight: bold;
             color: white;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: #0f9b8e;
             transition: all 0.3s;
             font-size: 14px;
         }
         
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            background: #0c7d72;
+            box-shadow: 0 8px 20px rgba(15, 155, 142, 0.4);
         }
         
         .job-card {
@@ -175,7 +258,7 @@
             padding: 20px;
             margin-top: 15px;
             border-radius: 12px;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #0f9b8e;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
             transition: all 0.3s;
         }
@@ -273,7 +356,7 @@
             transition: all 0.3s;
         }
         
-        .modal-close:hover { color: #667eea; transform: rotate(90deg); }
+        .modal-close:hover { color: #0f9b8e; transform: rotate(90deg); }
         
         .modal-header {
             border-bottom: 2px solid #f0f0f0;
@@ -285,7 +368,7 @@
         
         .form-section-title {
             font-size: 15px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #0f9b8e, #0c7d72);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin: 20px 0 12px 0;
@@ -301,7 +384,7 @@
         }
         
         .gradient-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: #0f9b8e;
             border: none;
             padding: 14px 25px;
             color: white;
@@ -313,7 +396,8 @@
         }
         
         .gradient-btn:hover {
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            background: #0c7d72;
+            box-shadow: 0 8px 20px rgba(15, 155, 142, 0.4);
         }
         
         .cancel-btn {
@@ -343,16 +427,16 @@
             z-index: 1000;
             overflow: hidden;
         }
-        
-        #notif-dropdown.show { display: block; animation: slideDown 0.3s; }
-        
+
+        #notif-dropdown.show { display: block; animation: slideDown 0.3s ease-out; }
+
         @keyframes slideDown {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
+
         .notif-header {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: #0f9b8e;
             color: white;
             padding: 15px 20px;
             font-weight: bold;
@@ -360,7 +444,7 @@
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .notif-header button {
             background: rgba(255,255,255,0.2);
             border: none;
@@ -369,55 +453,72 @@
             border-radius: 15px;
             cursor: pointer;
             font-size: 12px;
+            transition: all 0.3s;
         }
-        
+
         .notif-header button:hover { background: rgba(255,255,255,0.3); }
-        
+
         .notif-list {
             max-height: 400px;
             overflow-y: auto;
         }
-        
+
         .notif-item {
             padding: 18px 20px;
             border-bottom: 1px solid #f0f0f0;
             transition: all 0.3s;
             cursor: pointer;
+            animation: fadeIn 0.4s ease-out;
         }
-        
-        .notif-item:hover { background: #f8f9fa; }
-        
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .notif-item:hover {
+            background: linear-gradient(135deg, rgba(15, 155, 142, 0.08), rgba(12, 125, 114, 0.08));
+        }
+
         .notif-item.unread {
-            background: linear-gradient(90deg, rgba(102, 126, 234, 0.05), transparent);
-            border-left: 3px solid #667eea;
+            background: linear-gradient(90deg, rgba(15, 155, 142, 0.06), transparent);
+            border-left: 3px solid #0f9b8e;
         }
-        
+
+        .notif-item:hover.unread {
+            background: linear-gradient(135deg, rgba(15, 155, 142, 0.12), rgba(12, 125, 114, 0.08));
+        }
+
         .notif-item:last-child { border-bottom: none; }
-        
+
         .notif-item h4 {
             color: #333;
             font-size: 14px;
             margin-bottom: 5px;
         }
-        
+
         .notif-item p {
             color: #666;
             font-size: 13px;
             line-height: 1.5;
         }
-        
+
         .notif-time {
             font-size: 11px;
             color: #999;
             margin-top: 8px;
         }
-        
+
+        .notif-success { color: #28a745; }
+        .notif-info { color: #0f9b8e; }
+        .notif-error { color: #dc3545; }
+
         .notif-empty {
             padding: 40px;
             text-align: center;
             color: #999;
         }
-        
+
         .notif-empty i {
             font-size: 40px;
             margin-bottom: 10px;
@@ -426,23 +527,23 @@
         
         /* Resume Upload */
         .upload-area {
-            border: 3px dashed #667eea;
+            border: 3px dashed #0f9b8e;
             border-radius: 15px;
             padding: 40px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+            background: linear-gradient(135deg, rgba(15, 155, 142, 0.05), rgba(12, 125, 114, 0.05));
         }
         
         .upload-area:hover {
-            border-color: #764ba2;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-color: #0c7d72;
+            background: linear-gradient(135deg, rgba(15, 155, 142, 0.1), rgba(12, 125, 114, 0.1));
         }
         
         .upload-area i {
             font-size: 50px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #0f9b8e, #0c7d72);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 15px;
@@ -455,7 +556,7 @@
         
         .match-score {
             display: inline-block;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: #0f9b8e;
             color: white;
             padding: 5px 12px;
             border-radius: 20px;
@@ -499,11 +600,61 @@
         .toast-success { background: linear-gradient(135deg, #28a745, #20c997); }
         .toast-error { background: linear-gradient(135deg, #dc3545, #e74c3c); }
         .toast-warning { background: linear-gradient(135deg, #ffc107, #ff9800); }
-        .toast-info { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .toast-info { background: linear-gradient(135deg, #0f9b8e, #0c7d72); }
         
         .toast i { font-size: 20px; }
         
         /* Search Filters */
+        .search-field {
+            position: relative;
+        }
+
+        .search-field .field-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8a93a3;
+            font-size: 14px;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .search-box {
+            padding-left: 40px;
+            margin-bottom: 0;
+        }
+
+        .search-box::placeholder {
+            color: #8a93a3;
+        }
+
+        .search-empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            margin-top: 20px;
+            border: 2px dashed #dee3e6;
+            border-radius: 15px;
+            color: #8a93a3;
+        }
+
+        .search-empty-state i {
+            font-size: 42px;
+            color: #8a93a3;
+            margin-bottom: 12px;
+        }
+
+        .search-empty-state h3 {
+            color: rgba(255,255,255,0.9);
+            font-size: 20px;
+            margin-bottom: 6px;
+        }
+
+        .search-empty-state p {
+            color: #bcd8d4;
+            font-size: 14px;
+        }
+
         .search-filters {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -545,49 +696,73 @@
         <a href="#" onclick="showSection('upload')" id="nav-upload"><i class="fas fa-file-upload"></i> Upload Resume</a>
         <a href="/user_settings"><i class="fas fa-cog"></i> Settings</a>
         
-        <a href="#" onclick="toggleNotifDropdown(event)" style="position:relative;">
-            <i class="fas fa-bell"></i> Notifications
-            <span id="notif-count" class="notif-badge" style="display:none;">0</span>
-        </a>
-        <div id="notif-dropdown">
-            <div class="notif-header">
-                <span><i class="fas fa-bell"></i> Notifications</span>
-                <button onclick="markAllAsRead(event)">Mark all read</button>
-            </div>
-            <div class="notif-list" id="notif-list"></div>
-        </div>
-        
         <button onclick="openLogoutModal()" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
     </div>
 
     <div class="main-content">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h2><i class="fas fa-search"></i> Search Jobs</h2>
+            </div>
+            <div class="topbar-right">
+                <div class="bell-icon" onclick="toggleNotifDropdown(event)">
+                    <i class="fas fa-bell"></i>
+                    <span id="bell-badge" class="bell-badge" style="display:none;">0</span>
+                </div>
+                <div id="notif-dropdown">
+                    <div class="notif-header">
+                        <span><i class="fas fa-bell"></i> Notifications</span>
+                        <button onclick="markAllAsRead(event)">Mark all read</button>
+                    </div>
+                    <div class="notif-list" id="notif-list"></div>
+                </div>
+            </div>
+        </div>
+
         <!-- Search Jobs Section -->
         <div class="card" id="section-search">
-            <h2><i class="fas fa-search"></i> Search Jobs</h2>
             <div class="search-filters">
-                <input type="text" id="search-title" placeholder="Job Title">
-                <input type="text" id="search-location" placeholder="Location">
-                <select id="search-exp">
-                    <option value="">Experience</option>
-                    <option value="Fresher">Fresher</option>
-                    <option value="1-3 Years">1-3 Years</option>
-                    <option value="3-5 Years">3-5 Years</option>
-                    <option value="5+ Years">5+ Years</option>
-                </select>
-                <select id="search-category">
-                    <option value="">All Categories</option>
-                    <option value="IT & Software">IT & Software</option>
-                    <option value="Banking & Finance">Banking & Finance</option>
-                    <option value="Healthcare">Healthcare</option>
-                    <option value="Engineering">Engineering</option>
-                    <option value="Manufacturing">Manufacturing</option>
-                    <option value="Education">Education</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Other">Other</option>
-                </select>
+                <div class="search-field">
+                    <i class="fas fa-briefcase field-icon"></i>
+                    <input type="text" id="search-title" class="search-box" placeholder="Job Title">
+                </div>
+                <div class="search-field">
+                    <i class="fas fa-map-pin field-icon"></i>
+                    <input type="text" id="search-location" class="search-box" placeholder="Location">
+                </div>
+                <div class="search-field">
+                    <i class="fas fa-chart-bar field-icon"></i>
+                    <select id="search-exp" class="search-box">
+                        <option value="">Experience</option>
+                        <option value="Fresher">Fresher</option>
+                        <option value="1-3 Years">1-3 Years</option>
+                        <option value="3-5 Years">3-5 Years</option>
+                        <option value="5+ Years">5+ Years</option>
+                    </select>
+                </div>
+                <div class="search-field">
+                    <i class="fas fa-th field-icon"></i>
+                    <select id="search-category" class="search-box">
+                        <option value="">All Categories</option>
+                        <option value="IT & Software">IT & Software</option>
+                        <option value="Banking & Finance">Banking & Finance</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Engineering">Engineering</option>
+                        <option value="Manufacturing">Manufacturing</option>
+                        <option value="Education">Education</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
             </div>
             <button class="btn" onclick="searchJobs()"><i class="fas fa-search"></i> Search Jobs</button>
-            <div id="result-area"></div>
+            <div id="result-area">
+                <div class="search-empty-state">
+                    <i class="fas fa-search"></i>
+                    <h3>No jobs searched yet</h3>
+                    <p>Use the filters above to find roles matched to you</p>
+                </div>
+            </div>
         </div>
 
         <!-- Saved Jobs Section -->
@@ -763,14 +938,32 @@
         fetchSavedJobIds();
         fetchAppliedJobs();
 
+        // --- Notification Time Formatting ---
+        function formatTimeAgo(dateString) {
+            if (!dateString) return 'Unknown';
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return dateString;
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins} mins ago`;
+            if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+            if (diffDays === 1) return 'Yesterday';
+            if (diffDays < 7) return `${diffDays} days ago`;
+            return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
         // --- Notification System ---
         async function loadNotifCount() {
             try {
                 const res = await fetch('/api/get_unread_count');
                 const data = await res.json();
-                const badge = document.getElementById('notif-count');
+                const badge = document.getElementById('bell-badge');
                 if (data.count > 0) {
-                    badge.style.display = 'inline';
+                    badge.style.display = 'flex';
                     badge.innerText = data.count > 99 ? '99+' : data.count;
                 } else {
                     badge.style.display = 'none';
@@ -794,15 +987,18 @@
                 
                 if (data.notifications && data.notifications.length > 0) {
                     data.notifications.forEach(n => {
-                        const isSelected = n.message.includes('selected') || n.message.includes('Congratulations');
-                        const icon = isSelected ? 'trophy' : 'bell';
+                        const isSelected = n.message.toLowerCase().includes('selected') || n.message.toLowerCase().includes('congratulations') || n.message.toLowerCase().includes('selected for');
+                        const isRejected = n.message.toLowerCase().includes('not selected') || n.message.toLowerCase().includes('rejected');
+                        const icon = isSelected ? 'trophy' : (isRejected ? 'times-circle' : 'bell');
+                        const colorClass = isSelected ? 'notif-success' : (isRejected ? 'notif-error' : 'notif-info');
                         const bgClass = !n.is_read ? 'unread' : '';
+                        const timeAgo = formatTimeAgo(n.created_at);
                         
                         list.innerHTML += `
                         <div class="notif-item ${bgClass}">
-                            <h4><i class="fas fa-${icon}"></i> ${isSelected ? 'Congratulations!' : 'Notification'}</h4>
+                            <h4><i class="fas fa-${icon} ${colorClass}"></i> ${isSelected ? 'Congratulations!' : (isRejected ? 'Application Update' : 'Notification')}</h4>
                             <p>${n.message}</p>
-                            <span class="notif-time"><i class="fas fa-clock"></i> ${n.created_at}</span>
+                            <span class="notif-time"><i class="fas fa-clock"></i> ${timeAgo}</span>
                         </div>`;
                     });
                 } else {
@@ -827,7 +1023,7 @@
         // Close dropdown when clicking outside
         document.addEventListener('click', function(e) {
             const dropdown = document.getElementById('notif-dropdown');
-            const bell = document.querySelector('.sidebar a[onclick*="toggleNotifDropdown"]');
+            const bell = document.querySelector('.bell-icon');
             if (dropdown.classList.contains('show') && !dropdown.contains(e.target) && !bell.contains(e.target)) {
                 dropdown.classList.remove('show');
             }
@@ -852,11 +1048,21 @@
 
         // --- Search Jobs ---
         async function searchJobs() {
+            const title = document.getElementById('search-title').value.trim();
+            const location = document.getElementById('search-location').value.trim();
+            const experience = document.getElementById('search-exp').value;
+            const category = document.getElementById('search-category').value;
+
+            if (!title && !location && !experience && !category) {
+                showToast('Please fill in at least one field to search', 'error');
+                return;
+            }
+
             const res = await postReq('/api/jobs/search', {
-                title: document.getElementById('search-title').value,
-                location: document.getElementById('search-location').value,
-                experience: document.getElementById('search-exp').value,
-                category: document.getElementById('search-category').value
+                title: title,
+                location: location,
+                experience: experience,
+                category: category
             });
             
             const area = document.getElementById('result-area');
@@ -939,7 +1145,7 @@
             
             if (data.success && data.applications.length > 0) {
                 data.applications.forEach(a => {
-                    let statusColor = '#0072ff', statusIcon = 'clock';
+                    let statusColor = '#0f9b8e', statusIcon = 'clock';
                     if (a.status === 'Selected') { statusColor = '#28a745'; statusIcon = 'trophy'; }
                     else if (a.status === 'Rejected') { statusColor = '#dc3545'; statusIcon = 'times-circle'; }
                     
@@ -947,11 +1153,37 @@
                         <h3>${a.title}</h3>
                         <p><i class="fas fa-building"></i> <b>${a.company_name}</b> | <i class="fas fa-map-marker-alt"></i> ${a.location || 'N/A'}</p>
                         <p><i class="fas fa-${statusIcon}"></i> <b>Status:</b> <span style="color:${statusColor}; font-weight:bold;">${a.status}</span> | <i class="fas fa-calendar"></i> Applied: ${a.created_at}</p>
+                    <button class="apply-btn save-btn" style="background:#dc3545;" onclick="withdrawApplication(${a.id}, ${a.job_id})"><i class="fas fa-times"></i> Withdraw</button>
                     </div>`;
                 });
             } else {
                 area.innerHTML = '<p style="text-align:center; color:#666; padding:30px;"><i class="fas fa-file-alt" style="font-size:40px; color:#ddd;"></i><br><br>No applications yet. Start applying to jobs!</p>';
             }
+        }
+
+        async function loadUserCategories() {
+            try {
+                const res = await fetch('/api/get_categories');
+                const data = await res.json();
+                if (!data.success) return;
+                const sel = document.getElementById('search-category');
+                while (sel.options.length > 1) sel.remove(1);
+                data.categories.forEach(c => {
+                    const o = document.createElement('option');
+                    o.value = c.name; o.textContent = c.name;
+                    sel.appendChild(o);
+                });
+            } catch(e) {}
+        }
+
+        async function withdrawApplication(appId, jobId) {
+            if (!confirm('Withdraw this application?')) return;
+            const res = await postReq('/api/withdraw_application', { app_id: appId });
+            if (res.success) {
+                showToast('Application withdrawn', 'success');
+                if (jobId) appliedJobIds.delete(String(jobId));
+                loadApplicationStatus();
+            } else showToast(res.message || 'Error', 'error');
         }
 
         // --- Apply Job Modal ---

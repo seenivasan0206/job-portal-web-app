@@ -15,14 +15,14 @@
         
         body {
             font-family: "Saira Condensed", sans-serif;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(150deg, #0b1b34, #0f9b8e);
             min-height: 100vh;
         }
         
         .sidebar {
             width: 260px;
             height: 100vh;
-            background: linear-gradient(180deg, #1e1e2f, #2a2a40);
+            background: #0d1520;
             color: white;
             display: flex;
             flex-direction: column;
@@ -41,7 +41,7 @@
         
         .sidebar-logo h2 {
             font-size: 22px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #0f9b8e, #0c7d72);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -50,7 +50,7 @@
             display: flex;
             align-items: center;
             padding: 14px 25px;
-            color: #ccc;
+            color: #8a93a3;
             text-decoration: none;
             font-size: 15px;
             transition: all 0.3s;
@@ -62,14 +62,17 @@
         }
         
         .sidebar a:hover, .sidebar button:hover {
-            background: linear-gradient(90deg, rgba(102, 126, 234, 0.3), transparent);
+            background: rgba(15, 155, 142, 0.12);
             color: #fff;
             padding-left: 30px;
         }
         
         .sidebar a.active {
-            background: linear-gradient(90deg, #667eea, #764ba2);
+            background: #0f9b8e;
             color: white;
+            border-radius: 999px;
+            margin: 2px 14px;
+            padding: 14px 20px;
         }
         
         .sidebar i {
@@ -103,36 +106,6 @@
             gap: 30px;
         }
         
-        .settings-nav {
-            width: 250px;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 20px;
-            height: fit-content;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-        
-        .settings-nav a {
-            display: block;
-            padding: 14px 18px;
-            color: #555;
-            text-decoration: none;
-            border-radius: 10px;
-            margin-bottom: 8px;
-            transition: all 0.3s;
-            font-weight: 500;
-        }
-        
-        .settings-nav a:hover {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-            color: #667eea;
-        }
-        
-        .settings-nav a.active {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-        }
-        
         .settings-content {
             flex: 1;
             background: white;
@@ -160,7 +133,7 @@
         }
         
         h2 i {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #0f9b8e, #0c7d72);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -188,7 +161,7 @@
         input, select {
             width: 100%;
             padding: 14px;
-            border: 2px solid #e0e0e0;
+            border: 2px solid #dee3e6;
             border-radius: 10px;
             font-size: 14px;
             transition: all 0.3s;
@@ -196,8 +169,8 @@
         
         input:focus, select:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+            border-color: #0f9b8e;
+            box-shadow: 0 0 0 3px rgba(15, 155, 142, 0.15);
         }
         
         .btn {
@@ -207,14 +180,15 @@
             cursor: pointer;
             font-weight: bold;
             color: white;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: #0f9b8e;
             transition: all 0.3s;
             font-size: 14px;
         }
         
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            background: #0c7d72;
+            box-shadow: 0 8px 20px rgba(15, 155, 142, 0.4);
         }
         
         .btn-danger {
@@ -280,7 +254,7 @@
         input:checked + .slider:before { transform: translateX(26px); }
         
         .security-section {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+            background: linear-gradient(135deg, rgba(15, 155, 142, 0.05), rgba(12, 125, 114, 0.05));
             padding: 25px;
             border-radius: 12px;
             margin-bottom: 25px;
@@ -303,7 +277,7 @@
         }
         
         .stat-card {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: #0f9b8e;
             color: white;
             padding: 25px;
             border-radius: 15px;
@@ -340,13 +314,13 @@
         }
         
         .language-option:hover {
-            border-color: #667eea;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+            border-color: #0f9b8e;
+            background: linear-gradient(135deg, rgba(15, 155, 142, 0.05), rgba(12, 125, 114, 0.05));
         }
         
         .language-option.active {
-            border-color: #667eea;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: #0f9b8e;
+            background: #0f9b8e;
             color: white;
         }
         
@@ -388,7 +362,7 @@
         .toast-success { background: linear-gradient(135deg, #28a745, #20c997); }
         .toast-error { background: linear-gradient(135deg, #dc3545, #e74c3c); }
         .toast-warning { background: linear-gradient(135deg, #ffc107, #ff9800); }
-        .toast-info { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .toast-info { background: linear-gradient(135deg, #0f9b8e, #0c7d72); }
         
         .toast i { font-size: 20px; }
         
@@ -430,7 +404,7 @@
         }
         
         .info-icon {
-            color: #667eea;
+            color: #0f9b8e;
             font-size: 50px;
             margin-bottom: 15px;
         }
@@ -463,14 +437,6 @@
         </div>
 
         <div class="container">
-            <div class="settings-nav">
-                <a href="#" onclick="openSection(1)" id="nav-1" class="active">Account Settings</a>
-                <a href="#" onclick="openSection(2)" id="nav-2">Language</a>
-                <a href="#" onclick="openSection(3)" id="nav-3">Security</a>
-                <a href="#" onclick="openSection(4)" id="nav-4">Notifications</a>
-                <a href="#" onclick="openSection(5)" id="nav-5">Profile Stats</a>
-            </div>
-
             <div class="settings-content">
                 <!-- 1. Account Settings -->
                 <div id="sec-1" class="section active">
@@ -659,7 +625,7 @@
         // --- Navigation ---
         function openSection(id) {
             document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.settings-nav a').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.sidebar a').forEach(el => el.classList.remove('active'));
             document.getElementById('sec-' + id).classList.add('active');
             document.getElementById('nav-' + id).classList.add('active');
             

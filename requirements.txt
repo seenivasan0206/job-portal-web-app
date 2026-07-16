@@ -1,0 +1,7 @@
+Flask
+Werkzeug
+mysql-connector-python
+python-dotenv
+scikit-learn
+pypdf
+python-docx

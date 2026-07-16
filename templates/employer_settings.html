@@ -15,13 +15,24 @@
         
         body {
             font-family: "Saira Condensed", sans-serif;
-            background: #f4f7f6;
+            background: linear-gradient(150deg, #0b1b34, #0f9b8e);
+            min-height: 100vh;
+        }
+        
+        .page-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(150deg, rgba(11, 27, 52, 0.9), rgba(15, 155, 142, 0.9));
+            z-index: -1;
         }
         
         .sidebar {
             width: 260px;
             height: 100vh;
-            background: linear-gradient(180deg, #1e1e2f, #2a2a40);
+            background: #0d1520;
             color: white;
             display: flex;
             flex-direction: column;
@@ -34,7 +45,7 @@
             display: flex;
             align-items: center;
             padding: 15px 30px;
-            color: #ccc;
+            color: #8a93a3;
             text-decoration: none;
             font-size: 16px;
             transition: 0.3s;
@@ -47,8 +58,16 @@
         
         .sidebar a:hover,
         .sidebar button:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(15, 155, 142, 0.12);
             color: #fff;
+        }
+        
+        .sidebar a.active {
+            background: #0f9b8e;
+            color: white;
+            border-radius: 999px;
+            margin: 2px 14px;
+            padding: 15px 20px;
         }
         
         .sidebar i {
@@ -62,6 +81,12 @@
         
         .header {
             margin-bottom: 30px;
+            color: #fff;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
         
         .container {
@@ -69,40 +94,12 @@
             gap: 30px;
         }
         
-        .settings-nav {
-            width: 250px;
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            height: fit-content;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-        
-        .settings-nav a {
-            display: block;
-            padding: 12px 15px;
-            color: #444;
-            text-decoration: none;
-            border-radius: 6px;
-            margin-bottom: 5px;
-            transition: 0.2s;
-        }
-        
-        .settings-nav a:hover {
-            background: #f0f0f0;
-        }
-        
-        .settings-nav a.active {
-            background: #ff4e8a;
-            color: white;
-        }
-        
         .settings-content {
             flex: 1;
-            background: white;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            background: #fff;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
         }
         
         .section {
@@ -137,23 +134,31 @@
         input,
         select {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
+            padding: 14px;
+            border: 2px solid #dee3e6;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #0f9b8e;
+            box-shadow: 0 0 0 4px rgba(15, 155, 142, 0.18);
         }
         
         .btn {
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 6px;
-            background: linear-gradient(135deg, #ff4e8a, #ff8c68);
+            border-radius: 10px;
+            background: #0f9b8e;
             color: white;
             cursor: pointer;
             font-weight: bold;
+            transition: all 0.3s;
         }
         
         .btn:hover {
-            opacity: 0.9;
+            background: #0c7d72;
         }
         
         .toggle-switch {
@@ -232,10 +237,10 @@
         }
         
         .stat-card {
-            background: linear-gradient(135deg, #ff4e8a, #ff8c68);
+            background: #0f9b8e;
             color: white;
             padding: 20px;
-            border-radius: 10px;
+            border-radius: 15px;
             text-align: center;
         }
         
@@ -249,13 +254,14 @@
             opacity: 0.9;
         }
         
-        .dark-mode { background: #121212; color: #e0e0e0; }
-        .dark-mode .settings-nav, .dark-mode .settings-content { background: #1e1e2f; border: 1px solid #333; }
-        .dark-mode input, .dark-mode select { background: #2a2a40; color: #fff; border-color: #444; }
+        .dark-mode { background: #0b1b34; color: #e0e0e0; }
+        .dark-mode .settings-content { background: #0d1520; border: 1px solid #1e2a3a; }
+        .dark-mode input, .dark-mode select { background: #12202f; color: #fff; border-color: #1e2a3a; }
     </style>
 </head>
 
 <body>
+    <div class="page-overlay"></div>
     <div id="notification-container"></div>
 
     <div class="sidebar">
@@ -276,13 +282,6 @@
         </div>
 
         <div class="container">
-            <div class="settings-nav">
-                <a href="#" onclick="openSection(1)" id="nav-1">Company Profile</a>
-                <a href="#" onclick="openSection(2)" id="nav-2">Notification Settings</a>
-                <a href="#" onclick="openSection(3)" id="nav-3">Security</a>
-                <a href="#" onclick="openSection(4)" id="nav-4">Analytics</a>
-            </div>
-
             <div class="settings-content">
                 <!-- 1. Company Profile -->
                 <div id="sec-1" class="section active">
@@ -324,7 +323,7 @@
                             <h3 id="stat-jobs">0</h3>
                             <p>Total Jobs</p>
                         </div>
-                        <div class="stat-card" style="background: linear-gradient(135deg, #00c6ff, #0072ff);">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #0f9b8e, #0c7d72);">
                             <h3 id="stat-applicants">0</h3>
                             <p>Total Applicants</p>
                         </div>
@@ -352,7 +351,7 @@
 
         function openSection(id) {
             document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.settings-nav a').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.sidebar a').forEach(el => el.classList.remove('active'));
             document.getElementById('sec-' + id).classList.add('active');
             document.getElementById('nav-' + id).classList.add('active');
             if (id === 4) loadAnalytics();
@@ -401,21 +400,13 @@
         }
 
         async function loadAnalytics() {
-            const res = await fetch('/api/get_employer_jobs');
+            const res = await fetch('/api/employer/analytics');
             const data = await res.json();
             if (data.success) {
-                document.getElementById('stat-jobs').innerText = data.jobs.length;
-                let totalApps = 0, selected = 0;
-                for (const job of data.jobs) {
-                    const appRes = await fetch('/api/get_applicants/' + job.id);
-                    const appData = await appRes.json();
-                    if (appData.success) {
-                        totalApps += appData.applicants.length;
-                        selected += appData.applicants.filter(a => a.status === 'Selected').length;
-                    }
-                }
-                document.getElementById('stat-applicants').innerText = totalApps;
-                document.getElementById('stat-selected').innerText = selected;
+                document.getElementById('stat-jobs').innerText = data.job_count;
+                const t = data.totals || {};
+                document.getElementById('stat-applicants').innerText = t.total_applicants || 0;
+                document.getElementById('stat-selected').innerText = t.selected || 0;
             }
         }
     </script>
