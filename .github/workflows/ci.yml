@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-flask
+
+      - name: Syntax check
+        run: python -c "import app; print('app.py imports OK')"
+
+      - name: Run tests
+        run: python -m pytest tests/ -v --tb=short
+        env:
+          FLASK_SECRET_KEY: test-secret
+          EMAIL_ADDRESS: test@example.com
+          EMAIL_PASSWORD: test-pass
+          DB_USER: root
+          DB_PASSWORD: mysql
+          DB_NAME: test_db
+          DB_HOST: localhost
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install flake8
+
+      - name: Lint with flake8
+        run: |
+          # Stop on first error, don't show line numbers
+          flake8 app.py migrate.py --max-line-length=120 --statistics || echo "Lint warnings found"

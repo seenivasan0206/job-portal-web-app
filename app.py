@@ -55,7 +55,11 @@ _missing = [
 ]
 for _val, _name in _missing:
     if not _val:
+<<<<<<< ours
         raise RuntimeError(f"{_name} must be set in .env — no hardcoded fallback for security")
+=======
+        raise RuntimeError(f"{_name} must be set in .env — no static fallback for security")
+>>>>>>> theirs
 app.secret_key = FLASK_SECRET_KEY
 app.permanent_session_lifetime = timedelta(days=1)
 
@@ -74,7 +78,18 @@ csrf = CSRFProtect(app)
 def get_csrf_token():
     token = generate_csrf()
     return jsonify({'csrf_token': token})
+<<<<<<< ours
+=======
 
+>>>>>>> theirs
+
+# --- FLASK-LIMITER (global + per-route) ---
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per minute"],
+    storage_uri=os.getenv('RATELIMIT_STORAGE_URI', 'memory://'),
+)
 
 # --- FLASK-LIMITER (global + per-route) ---
 limiter = Limiter(
@@ -487,13 +502,57 @@ try:
     init_db()
 except Exception as e:
     logger.error(f"Database initialization error: {e}")
+<<<<<<< ours
+=======
+
+try:
+    from sentence_transformers import SentenceTransformer
+    _SENTENCE_MODEL = None
+    def _get_sentence_model():
+        global _SENTENCE_MODEL
+        if _SENTENCE_MODEL is None:
+            _SENTENCE_MODEL = SentenceTransformer('all-MiniLM-L6-v2')
+        return _SENTENCE_MODEL
+except ImportError:
+    _SENTENCE_MODEL = None
+    def _get_sentence_model(): return None
+>>>>>>> theirs
 
 # --- NLP SEARCH LOGIC ---
 def get_nlp_search_results(jobs, query):
-    if not jobs: return []
-    corpus = [f"{j['title']} {j['skills']} {j['description']}" for j in jobs]
+    if not jobs:
+        return []
+
+    # --- Semantic search with sentence-transformers (primary) ---
+    model = _get_sentence_model()
+    if model is not None:
+        try:
+            corpus = [f"{j['title']} {j.get('skills','')} {j.get('description','')} {j.get('category','')}" for j in jobs]
+            embeddings = model.encode(corpus, show_progress_bar=False)
+            query_emb = model.encode([query], show_progress_bar=False)[0]
+            cosine_similarities = cosine_similarity([query_emb], embeddings).flatten()
+            # Boost by keyword overlap as a secondary signal
+            for i, j in enumerate(jobs):
+                kw_boost = 0
+                j_text = f"{j.get('title','')} {j.get('skills','')} {j.get('description','')}".lower()
+                for kw in query.lower().split():
+                    if kw in j_text:
+                        kw_boost += 0.03
+                cosine_similarities[i] = min(1.0, cosine_similarities[i] + kw_boost)
+            related_docs_indices = cosine_similarities.argsort()[::-1]
+            scored_jobs = []
+            for i in related_docs_indices:
+                if cosine_similarities[i] > 0.0:
+                    jobs[i]['score'] = round(cosine_similarities[i] * 100, 2)
+                    scored_jobs.append(jobs[i])
+            return scored_jobs
+        except Exception as e:
+            logger.warning(f"Sentence-transformers search failed, falling back to TF-IDF: {e}")
+
+    # --- TF-IDF fallback ---
+    corpus = [f"{j['title']} {j.get('skills','')} {j.get('description','')}" for j in jobs]
     corpus.append(query)
-    vectorizer = TfidfVectorizer(stop_words='english')
+    vectorizer = TfidfVectorizer(stop_words='english', ngram_range=(1, 2))
     tfidf_matrix = vectorizer.fit_transform(corpus)
     cosine_similarities = cosine_similarity(tfidf_matrix[-1], tfidf_matrix[:-1]).flatten()
     related_docs_indices = cosine_similarities.argsort()[::-1]
@@ -736,6 +795,7 @@ def api_employer_register():
     name = data.get('name', '').strip() if data.get('name') else ''
     mobile = data.get('mobile', '').strip() if data.get('mobile') else ''
     password = data.get('password', '')
+<<<<<<< ours
 
     # Input validation
     if not name:
@@ -750,6 +810,22 @@ def api_employer_register():
     if not ok:
         return jsonify({'success': False, 'message': err}), 400
 
+=======
+
+    # Input validation
+    if not name:
+        return jsonify({'success': False, 'message': 'Company name is required'}), 400
+    if not validate_email(email):
+        return jsonify({'success': False, 'message': 'Valid email is required'}), 400
+    if not validate_password(password):
+        return jsonify({'success': False, 'message': 'Password must be at least 8 characters with at least one letter and one number'}), 400
+    if not validate_mobile(mobile):
+        return jsonify({'success': False, 'message': 'Invalid mobile number'}), 400
+    ok, err = validate_length(name, 100, 'Company name')
+    if not ok:
+        return jsonify({'success': False, 'message': err}), 400
+
+>>>>>>> theirs
     with db_cursor() as cursor:
         cursor.execute("SELECT id FROM employee WHERE email = %s", (email,))
         if cursor.fetchone():
@@ -985,6 +1061,22 @@ def api_apply_job():
     job_id = data.get('job_id')
     if not job_id:
         return jsonify({'success': False, 'message': 'Job ID is required'}), 400
+
+    # Check job deadline and active status
+    with db_cursor() as cursor:
+        cursor.execute("SELECT application_deadline, is_active FROM jobs WHERE id = %s", (job_id,))
+        job_row = cursor.fetchone()
+    if not job_row:
+        return jsonify({'success': False, 'message': 'Job not found'}), 404
+    if not job_row['is_active']:
+        return jsonify({'success': False, 'message': 'This job posting is no longer active'}), 400
+    if job_row['application_deadline']:
+        try:
+            deadline = datetime.strptime(str(job_row['application_deadline']), '%Y-%m-%d').date()
+            if datetime.now().date() > deadline:
+                return jsonify({'success': False, 'message': 'The application deadline has passed'}), 400
+        except (ValueError, TypeError):
+            pass
 
     # RESUME VALIDATION (extension + size + magic bytes)
     file = request.files.get('resume')
