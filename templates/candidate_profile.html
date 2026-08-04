@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>{{ user.name }}'s Profile - Dream Jobs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='csrf_protect.js') }}"></script>
+    <style>
+        .profile-container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+        .profile-header { display: flex; gap: 30px; align-items: flex-start; margin-bottom: 30px; }
+        .profile-pic { width: 150px; height: 150px; border-radius: 50%; background: #e0e0e0; display: flex; align-items: center; justify-content: center; font-size: 50px; color: #666; }
+        .profile-pic img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .profile-info h1 { margin: 0 0 5px; font-size: 28px; }
+        .profile-headline { color: #666; font-size: 18px; margin: 0 0 10px; }
+        .profile-links { display: flex; gap: 15px; margin-top: 10px; }
+        .profile-links a { color: #0066cc; text-decoration: none; }
+        .profile-links a:hover { text-decoration: underline; }
+        .completeness-bar { background: #e0e0e0; border-radius: 10px; height: 8px; margin-top: 10px; overflow: hidden; }
+        .completeness-fill { height: 100%; background: #4caf50; transition: width 0.3s; }
+        .profile-section { background: #fff; border-radius: 8px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .profile-section h2 { margin-top: 0; color: #444; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; }
+        .skills-list { display: flex; flex-wrap: wrap; gap: 8px; }
+        .skill-tag { background: #e3f2fd; color: #0066cc; padding: 4px 12px; border-radius: 15px; font-size: 13px; }
+        .exp-item { margin-bottom: 15px; }
+        .exp-title { font-weight: 600; }
+        .exp-company { color: #666; font-size: 14px; }
+        .exp-dates { color: #999; font-size: 12px; }
+        .social-icon { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; background: #f0f0f0; border-radius: 5px; margin-right: 5px; }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <div class="profile-header">
+            <div class="profile-pic">
+                {% if profile and profile.profile_photo %}
+                    <img src="{{ url_for('static', filename='uploads/' + profile.profile_photo) }}" alt="Profile Photo">
+                {% else %}
+                    <i class="fas fa-user"></i>
+                {% endif %}
+            </div>
+            <div class="profile-info">
+                <h1>{{ user.name }}</h1>
+                {% if profile and profile.headline %}
+                    <p class="profile-headline">{{ profile.headline }}</p>
+                {% endif %}
+                <div class="profile-links">
+                    {% if profile and profile.linkedin_url %}
+                        <a href="{{ profile.linkedin_url }}" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+                    {% endif %}
+                    {% if profile and profile.github_url %}
+                        <a href="{{ profile.github_url }}" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+                    {% endif %}
+                    {% if profile and profile.portfolio_url %}
+                        <a href="{{ profile.portfolio_url }}" target="_blank"><i class="fas fa-globe"></i> Portfolio</a>
+                    {% endif %}
+                </div>
+                {% if completeness %}
+                    <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+                        <span style="font-size:13px; color:#666;">Profile {{ completeness }}% complete</span>
+                        <div class="completeness-bar" style="flex:1; height:8px;">
+                            <div class="completeness-fill" style="width:{{ completeness }}%"></div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if profile and profile.summary %}
+            <div class="profile-section">
+                <h2><i class="fas fa-info-circle"></i> Summary</h2>
+                <p style="line-height:1.6;">{{ profile.summary }}</p>
+            </div>
+        {% endif %}
+
+        {% if profile and profile.skills %}
+            <div class="profile-section">
+                <h2><i class="fas fa-cog"></i> Skills</h2>
+                <div class="skills-list">
+                    {% for skill in profile.skills.split(',') %}
+                        <span class="skill-tag">{{ skill.strip() }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        {% if profile and profile.experience %}
+            <div class="profile-section">
+                <h2><i class="fas fa-briefcase"></i> Experience</h2>
+                {% for exp in profile.experience %}
+                    <div class="exp-item">
+                        <div class="exp-title">{{ exp.title }}</div>
+                        <div class="exp-company">{{ exp.company }}</div>
+                        <div class="exp-dates">{{ exp.dates or exp.duration }}</div>
+                        {% if exp.description %}
+                            <p style="font-size:13px; color:#444; margin-top:5px;">{{ exp.description }}</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if profile and profile.education %}
+            <div class="profile-section">
+                <h2><i class="fas fa-graduation-cap"></i> Education</h2>
+                {% for edu in profile.education %}
+                    <div class="exp-item">
+                        <div class="exp-title">{{ edu.degree }}</div>
+                        <div class="exp-company">{{ edu.institution }}</div>
+                        <div class="exp-dates">{{ edu.year }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

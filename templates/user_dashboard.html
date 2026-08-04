@@ -4,6 +4,8 @@
 <head>
     <meta charset="utf-8">
     <title>User Dashboard - Dream Jobs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -754,6 +756,32 @@
                         <option value="Other">Other</option>
                     </select>
                 </div>
+                <div class="search-field">
+                    <i class="fas fa-briefcase field-icon"></i>
+                    <select id="search-job-type" class="search-box">
+                        <option value="">Job Type</option>
+                        <option value="Full-time">Full-time</option>
+                        <option value="Part-time">Part-time</option>
+                        <option value="Contract">Contract</option>
+                        <option value="Internship">Internship</option>
+                    </select>
+                </div>
+                <div class="search-field">
+                    <i class="fas fa-globe field-icon"></i>
+                    <select id="search-work-mode" class="search-box">
+                        <option value="">Work Mode</option>
+                        <option value="Onsite">Onsite</option>
+                        <option value="Remote">Remote</option>
+                        <option value="Hybrid">Hybrid</option>
+                    </select>
+                </div>
+            </div>
+            <div style="display:flex; gap:15px; margin-bottom:15px;">
+                <select id="search-sort" class="search-box" style="max-width:200px;">
+                    <option value="newest">Newest First</option>
+                    <option value="salary_high_to_low">Salary: High to Low</option>
+                    <option value="salary_low_to_high">Salary: Low to High</option>
+                </select>
             </div>
             <button class="btn" onclick="searchJobs()"><i class="fas fa-search"></i> Search Jobs</button>
             <div id="result-area">
@@ -870,6 +898,7 @@
         </div>
     </div>
 
+    <script src="{{ url_for('static', filename='csrf_protect.js') }}"></script>
     <script>
         let currentJobId = null;
         let appliedJobIds = new Set();
@@ -1014,7 +1043,7 @@
 
         async function markAllAsRead(e) {
             e.stopPropagation();
-            await fetch('/api/get_user_notifications');
+            await fetch('/api/mark_notifications_read', { method: 'POST' });
             loadNotifCount();
             showToast('All notifications marked as read', 'success');
             toggleNotifDropdown({preventDefault: ()=>{}, stopPropagation: ()=>{}});
@@ -1052,8 +1081,11 @@
             const location = document.getElementById('search-location').value.trim();
             const experience = document.getElementById('search-exp').value;
             const category = document.getElementById('search-category').value;
+            const jobType = document.getElementById('search-job-type').value;
+            const workMode = document.getElementById('search-work-mode').value;
+            const sort = document.getElementById('search-sort').value;
 
-            if (!title && !location && !experience && !category) {
+            if (!title && !location && !experience && !category && !jobType && !workMode) {
                 showToast('Please fill in at least one field to search', 'error');
                 return;
             }
@@ -1062,7 +1094,12 @@
                 title: title,
                 location: location,
                 experience: experience,
-                category: category
+                category: category,
+                job_type: jobType,
+                work_mode: workMode,
+                sort: sort,
+                page: 1,
+                per_page: 10
             });
             
             const area = document.getElementById('result-area');
@@ -1081,13 +1118,13 @@
                         `<button class="apply-btn save-btn" onclick="unsaveJob(${j.id})"><i class="fas fa-bookmark"></i> Saved</button>` :
                         `<button class="apply-btn save-btn" onclick="saveJob(${j.id})"><i class="fas fa-bookmark"></i> Save</button>`;
 
-                    area.innerHTML += `<div class="job-card">
-                        <h3>${j.title}</h3>
-                        <p><i class="fas fa-building"></i> <b>${j.company_name}</b> | <i class="fas fa-map-marker-alt"></i> ${j.location || 'N/A'}</p>
-                        <p><i class="fas fa-money-bill"></i> <b>Salary:</b> ${j.salary || 'Not Disclosed'}</p>
-                        ${btnHtml}
-                        ${saveBtn}
-                    </div>`;
+                     area.innerHTML += `<div class="job-card">
+                         <h3>${j.title} <span class="match-score match-high"><i class="fas fa-briefcase"></i> ${j.job_type || ''} | <i class="fas fa-globe"></i> ${j.work_mode || ''}</span></h3>
+                         <p><i class="fas fa-building"></i> <b>${j.company_name}</b> | <i class="fas fa-map-marker-alt"></i> ${j.location || 'N/A'}</p>
+                         <p><i class="fas fa-money-bill"></i> <b>Salary:</b> ${j.salary || (j.salary_min && j.salary_max ? j.salary_min + ' - ' + j.salary_max : 'Not Disclosed')}</p>
+                         ${btnHtml}
+                         ${saveBtn}
+                     </div>`;
                 });
                 showToast(`Found ${res.jobs.length} jobs`, 'info');
             } else {
@@ -1124,9 +1161,9 @@
             if (data.success && data.jobs.length > 0) {
                 data.jobs.forEach(j => {
                     area.innerHTML += `<div class="job-card">
-                        <h3>${j.title}</h3>
+                        <h3>${j.title} <span class="match-score" style="background:#6c757d;"><i class="fas fa-briefcase"></i> ${j.job_type || ''} | <i class="fas fa-globe"></i> ${j.work_mode || ''}</span></h3>
                         <p><i class="fas fa-building"></i> <b>${j.company_name}</b> | <i class="fas fa-map-marker-alt"></i> ${j.location || 'N/A'}</p>
-                        <p><i class="fas fa-money-bill"></i> <b>Salary:</b> ${j.salary || 'Not Disclosed'}</p>
+                        <p><i class="fas fa-money-bill"></i> <b>Salary:</b> ${j.salary || (j.salary_min && j.salary_max ? j.salary_min + ' - ' + j.salary_max : 'Not Disclosed')}</p>
                         <button class="apply-btn" onclick="openApplyModal(${j.id})"><i class="fas fa-paper-plane"></i> Apply</button>
                         <button class="apply-btn save-btn" onclick="unsaveJob(${j.id})"><i class="fas fa-trash"></i> Remove</button>
                     </div>`;
@@ -1294,8 +1331,8 @@
                 
                 area.innerHTML += `<div class="job-card">
                     <h3>${j.title} <span class="match-score ${scoreClass}"><i class="fas fa-percentage"></i> ${j.score}% Match</span></h3>
-                    <p><i class="fas fa-building"></i> <b>${j.company_name}</b> | <i class="fas fa-map-marker-alt"></i> ${j.location || 'N/A'}</p>
-                    <p><i class="fas fa-money-bill"></i> <b>Salary:</b> ${j.salary || 'Not Disclosed'}</p>
+                    <p><i class="fas fa-building"></i> <b>${j.company_name}</b> | <i class="fas fa-map-marker-alt"></i> ${j.location || 'N/A'} | <i class="fas fa-briefcase"></i> ${j.job_type || ''} | <i class="fas fa-globe"></i> ${j.work_mode || ''}</p>
+                    <p><i class="fas fa-money-bill"></i> <b>Salary:</b> ${j.salary || (j.salary_min && j.salary_max ? j.salary_min + ' - ' + j.salary_max : 'Not Disclosed')}</p>
                     <button class="apply-btn" onclick="openApplyModal(${j.id})"><i class="fas fa-paper-plane"></i> Apply Now</button>
                 </div>`;
             });

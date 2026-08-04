@@ -4,6 +4,8 @@
 <head>
     <meta charset="utf-8">
     <title>User Settings - Dream Jobs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -425,6 +427,7 @@
             <a href="#" onclick="openSection(3)" id="nav-3"><i class="fas fa-shield-alt"></i> Security</a>
             <a href="#" onclick="openSection(4)" id="nav-4"><i class="fas fa-bell"></i> Notifications</a>
             <a href="#" onclick="openSection(5)" id="nav-5"><i class="fas fa-chart-line"></i> Profile Stats</a>
+            <a href="#" onclick="openSection(6)" id="nav-6"><i class="fas fa-briefcase"></i> Candidate Profile</a>
         </div>
     </div>
 
@@ -597,10 +600,96 @@
                         <i class="fas fa-sync"></i> Refresh Stats
                     </button>
                 </div>
+
+                <!-- 6. Candidate Profile -->
+                <div id="sec-6" class="section">
+                    <h2><i class="fas fa-briefcase"></i> Candidate Profile</h2>
+                    <p class="desc">Build a rich public profile to attract employers.</p>
+
+                    <div style="display:flex; gap:30px; align-items:flex-start;">
+                        <div id="profile-completeness" style="flex:1; min-width:250px;">
+                            <div style="text-align:center; margin-bottom:15px;">
+                                <div style="width:120px; height:120px; border-radius:50%; background:#e0e0e0; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; overflow:hidden;">
+                                    <img id="photo-preview" src="" alt="" style="width:100%; height:100%; object-fit:cover; display:none;">
+                                    <i class="fas fa-user" style="font-size:40px; color:#999;"></i>
+                                </div>
+                                <label style="display:inline-block; padding:8px 16px; background:#0f9b8e; color:white; border-radius:8px; cursor:pointer; font-size:13px;">
+                                    <i class="fas fa-upload"></i> Upload Photo
+                                    <input type="file" id="profile-photo" accept=".jpg,.jpeg,.png" style="display:none;">
+                                </label>
+                            </div>
+                            <div style="background:#f8f9fa; padding:15px; border-radius:10px;">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                                    <span style="color:#666; font-size:14px;">Profile Completeness</span>
+                                    <span id="completeness-percent" style="font-weight:600; color:#0f9b8e;">0%</span>
+                                </div>
+                                <div class="completeness-bar" style="height:8px; background:#e0e0e0; border-radius:4px; overflow:hidden;">
+                                    <div id="completeness-bar-fill" class="completeness-fill" style="width:0%; background:#0f9b8e;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-heading"></i> Headline</label>
+                        <input type="text" id="cand-headline" placeholder="e.g. Senior Software Engineer">
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-align-left"></i> Summary</label>
+                        <textarea id="cand-summary" placeholder="Write a brief summary about yourself..." rows="4" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; resize:vertical;"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-cog"></i> Skills (comma separated)</label>
+                        <input type="text" id="cand-skills" placeholder="e.g. python, javascript, flask, react">
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fab fa-linkedin"></i> LinkedIn URL</label>
+                        <input type="url" id="cand-linkedin" placeholder="https://linkedin.com/in/yourprofile">
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fab fa-github"></i> GitHub URL</label>
+                        <input type="url" id="cand-github" placeholder="https://github.com/yourusername">
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-globe"></i> Portfolio URL</label>
+                        <input type="url" id="cand-portfolio" placeholder="https://yourwebsite.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-briefcase"></i> Experience (JSON array)</label>
+                        <textarea id="cand-experience" placeholder='[{"title":"Software Engineer","company":"XYZ Corp","dates":"2020-2023","description":"Worked on..."}]' rows="3" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; font-family:monospace; resize:vertical;"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-graduation-cap"></i> Education (JSON array)</label>
+                        <textarea id="cand-education" placeholder='[{"degree":"B.Tech Computer Science","institution":"ABC University","year":"2016-2020"}]' rows="3" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; font-family:monospace; resize:vertical;"></textarea>
+                    </div>
+
+                    <div class="toggle-row">
+                        <span><i class="fas fa-globe"></i> Public Profile</span>
+                        <label class="toggle">
+                            <input type="checkbox" id="cand-is-public" onchange="toggleVisibility()">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <button class="btn" onclick="saveCandidateProfile()" style="margin-right:10px;">
+                        <i class="fas fa-save"></i> Save Profile
+                    </button>
+                    <a id="view-public-link" href="#" target="_blank" style="display:none;" class="btn" style="background:#28a745;">
+                        <i class="fas fa-eye"></i> View Public Profile
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 
+    <script src="{{ url_for('static', filename='csrf_protect.js') }}"></script>
     <script>
         // --- Toast Notification System ---
         function showToast(message, type = 'success') {
@@ -631,6 +720,7 @@
             
             if (id === 1) loadProfile();
             if (id === 5) loadStats();
+            if (id === 6) loadCandidateProfile();
         }
 
         // --- Load User Profile ---
@@ -673,9 +763,110 @@
             } catch(e) {
                 showToast('Error connecting to server', 'error');
             }
+         }
+
+        // --- Candidate Profile ---
+        async function loadCandidateProfile() {
+            try {
+                const res = await fetch('/api/candidate/profile');
+                const data = await res.json();
+                if (data.success && data.profile) {
+                    const p = data.profile;
+                    document.getElementById('cand-headline').value = p.headline || '';
+                    document.getElementById('cand-summary').value = p.summary || '';
+                    document.getElementById('cand-skills').value = p.skills || '';
+                    document.getElementById('cand-linkedin').value = p.linkedin_url || '';
+                    document.getElementById('cand-github').value = p.github_url || '';
+                    document.getElementById('cand-portfolio').value = p.portfolio_url || '';
+                    document.getElementById('cand-experience').value = p.experience ? JSON.stringify(p.experience, null, 2) : '';
+                    document.getElementById('cand-education').value = p.education ? JSON.stringify(p.education, null, 2) : '';
+                    document.getElementById('cand-is-public').checked = p.is_public;
+                    const link = document.getElementById('view-public-link');
+                    if (p.is_public) {
+                        link.style.display = 'inline-flex';
+                        link.href = '/candidate/' + (p.user_id || '{{ session.user_id }}');
+                    } else {
+                        link.style.display = 'none';
+                    }
+                }
+                document.getElementById('completeness-percent').textContent = (data.completeness || 0) + '%';
+                document.getElementById('completeness-bar-fill').style.width = (data.completeness || 0) + '%';
+                if (data.profile && data.profile.profile_photo) {
+                    document.getElementById('photo-preview').src = '/static/uploads/' + data.profile.profile_photo;
+                    document.getElementById('photo-preview').style.display = 'block';
+                }
+            } catch(e) {
+                showToast('Error loading candidate profile', 'error');
+            }
         }
 
-        // --- Change Password ---
+        async function saveCandidateProfile() {
+            let experience = [];
+            let education = [];
+            try {
+                experience = JSON.parse(document.getElementById('cand-experience').value || '[]');
+            } catch(e) {
+                showToast('Invalid JSON in Experience field', 'error');
+                return;
+            }
+            try {
+                education = JSON.parse(document.getElementById('cand-education').value || '[]');
+            } catch(e) {
+                showToast('Invalid JSON in Education field', 'error');
+                return;
+            }
+            const res = await postReq('/api/candidate/profile', {
+                headline: document.getElementById('cand-headline').value.trim(),
+                summary: document.getElementById('cand-summary').value.trim(),
+                skills: document.getElementById('cand-skills').value.trim(),
+                experience: experience,
+                education: education,
+                linkedin_url: document.getElementById('cand-linkedin').value.trim(),
+                github_url: document.getElementById('cand-github').value.trim(),
+                portfolio_url: document.getElementById('cand-portfolio').value.trim()
+            });
+            if (res.success) {
+                showToast('Candidate profile saved!', 'success');
+                loadCandidateProfile();
+            } else {
+                showToast(res.message || 'Error saving profile', 'error');
+            }
+        }
+
+        async function toggleVisibility() {
+            const isPub = document.getElementById('cand-is-public').checked;
+            const res = await postReq('/api/candidate/profile/visibility', { is_public: isPub });
+            if (res.success) {
+                showToast(res.is_public ? 'Profile is now public' : 'Profile is now private', 'success');
+                loadCandidateProfile();
+            }
+        }
+
+        document.getElementById('profile-photo').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const formData = new FormData();
+            formData.append('photo', file);
+            const res = await fetch('/api/candidate/profile/photo', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.success) {
+                showToast('Profile photo uploaded!', 'success');
+                loadCandidateProfile();
+            } else {
+                showToast(data.message || 'Error uploading photo', 'error');
+            }
+        });
+
+        // Wrapper for postReq used by candidate profile
+        async function postReq(url, data) {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            return await res.json();
+        }
+
         async function changePassword() {
             const oldPass = document.getElementById('old-pass').value;
             const newPass = document.getElementById('new-pass').value;

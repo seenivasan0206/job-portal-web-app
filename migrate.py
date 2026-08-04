@@ -1,7 +1,11 @@
 """One-time migration: hash any plaintext passwords still stored in the
 user and employee tables.
 
-Run with:  python migrate.py
+This script can only be run with the --confirm flag to prevent accidental
+re-execution:
+
+    python migrate.py --confirm
+
 Requires a .env (or the DB defaults) so it can connect.
 
 Werkzeug's check_password_hash cannot verify a plaintext value, so we
@@ -10,6 +14,7 @@ detect plaintext by attempting to parse the stored value as a hash
 does not match that format is treated as plaintext and re-hashed.
 """
 import os
+import sys
 from dotenv import load_dotenv
 import mysql.connector
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -52,6 +57,10 @@ def migrate(table, id_col):
 
 
 if __name__ == '__main__':
+    if '--confirm' not in sys.argv:
+        print("This migration modifies passwords in the database.")
+        print("To proceed, run: python migrate.py --confirm")
+        sys.exit(1)
     migrate('user', 'id')
     migrate('employee', 'id')
     print("Migration complete.")
