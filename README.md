@@ -47,15 +47,74 @@ The application allows users to create accounts, explore job opportunities, and 
 
 ---
 
-## Security Note
+## Production & Deployment Architecture
 
-Sensitive information such as email credentials and secret keys are not included in this repository for security reasons.
+### 1. HTTPS Termination & Reverse Proxy
+Flask's built-in WSGI server should **never** directly expose or serve production traffic. In production, always terminate HTTPS at a dedicated reverse proxy (such as Nginx, Caddy, AWS ALB, or Cloudflare) and forward requests to an application server (like Gunicorn or uWSGI):
+
+- **Reverse Proxy Requirements**:
+  - Terminate TLS 1.2 / TLS 1.3 certificates.
+  - Forward client protocol headers: `proxy_set_header X-Forwarded-Proto $scheme;` and `proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`.
+- **Environment Flags**:
+  - Set `FLASK_ENV=production` and `SESSION_COOKIE_SECURE=1` in `.env`.
+  - Secure cookies (`Secure; HttpOnly; SameSite=Lax`) and HSTS (`Strict-Transport-Security: max-age=31536000; includeSubDomains`) will automatically be enforced on all responses.
+
+### 2. Rate Limiting & Multi-Worker Redis Configuration
+In any multi-process or production deployment (e.g. running multiple Gunicorn or uWSGI workers), `RATELIMIT_STORAGE_URI` **must point to a shared Redis instance** rather than `memory://`:
+- **Single Process / Local Dev**: Defaults to `memory://` with in-memory fallback.
+- **Multi-Worker / Production**: Set `RATELIMIT_STORAGE_URI=redis://localhost:6379/0` (or `redis://redis:6379/0` in Docker).
+
+```bash
+# Example .env configuration for Redis rate limiting
+RATELIMIT_STORAGE_URI=redis://localhost:6379/0
+```
+
+### 3. Database Least-Privilege Setup (MySQL)
+The application user only requires Data Manipulation Language (DML) permissions on the `jobportal_db` database. Never grant administrative privileges (`SUPER`, `FILE`, `GRANT OPTION`, `DROP DATABASE`) to the application user:
+
+```sql
+-- Minimal MySQL Permissions
+CREATE USER IF NOT EXISTS 'jobportal'@'localhost' IDENTIFIED BY 'your_secure_password';
+GRANT SELECT, INSERT, UPDATE, DELETE ON jobportal_db.* TO 'jobportal'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+### 4. Dependency Vulnerability Audits
+To ensure dependencies remain free of known CVEs, periodically audit `requirements.txt`:
+```bash
+pip-audit -r requirements.txt
+```
+
+### 5. Health Monitoring & Uptime Checks
+The application provides a lightweight healthcheck endpoint at `/healthz` (also aliased at `/api/healthz` and `/api/health`) that verifies database connectivity and returns latency metrics without leaking error messages:
+- **Status 200**: Healthy (`{"status": "healthy", "services": {"database": {"status": "healthy", "latency_ms": 1.2}}}`)
+- **Status 503**: Unhealthy (`{"status": "unhealthy", "services": {"database": {"status": "unreachable"}}}`)
+
+Recommended: Integrate with Prometheus, Datadog, or external uptime monitors (UptimeRobot, BetterStack) and alert on consecutive 503s or abnormal failed-login rate spikes.
+
+### 6. Database Backups & Disaster Recovery
+For the comprehensive MySQL backup strategy (including daily `mysqldump` commands, 7-day daily / 4-week GFS retention, AWS S3/GCS offsite replication, and tested restoration procedures), see [BACKUPS.md](BACKUPS.md).
 
 ---
 
-## Future Enhancements
+## Security Testing
+Run the dedicated core security test suite covering authentication bypass, authorization boundaries, CSRF rejection, SQL injection resistance, and 3-attempt account lockout:
+```bash
+python -m pytest tests/security/ -v --tb=short
+```
 
-* Resume upload and job application system
-* Advanced job filtering and search
-* Admin panel for system management
-* Cloud deployment and scalability improvements
+---
+
+## Running with Docker Compose
+The included `docker-compose.yml` automatically provisions MySQL 8.0, Redis 7 (Alpine), the web application, and background workers with non-root execution and localhost-only database binding:
+```bash
+docker-compose up --build
+```
+
+---
+
+## Security Note
+
+Sensitive information such as email credentials, database passwords, and secret keys are not included in this repository. Ensure all required environment variables in `.env` (`FLASK_SECRET_KEY`, `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `EMAIL_ADDRESS`, `EMAIL_PASSWORD`) are properly populated prior to startup.
+
+

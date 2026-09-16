@@ -1,0 +1,398 @@
+{% extends "base.html" %}
+
+{% block title %}Assessment Results: {{ attempt.title }} — HireVolt{% endblock %}
+
+{% block body %}
+<div class="app-container" style="padding-top:var(--space-8); padding-bottom:var(--space-16); max-width:900px;">
+
+    <!-- Top Navigation -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-6);">
+        <a href="/candidate/assessments" class="btn btn-ghost btn-sm" style="color:#94a3b8; padding-left:0;">
+            <i class="fas fa-arrow-left"></i> All Assessments
+        </a>
+        <a href="/user_dashboard" class="btn btn-secondary btn-sm" style="background:#1e293b; border-color:#334155; color:#cbd5e1;">
+            <i class="fas fa-user-circle"></i> Candidate Dashboard
+        </a>
+    </div>
+
+    <!-- Loading State -->
+    <div id="result-loading" class="card" style="background:#0f172a; border:1px solid #1e293b; border-radius:18px; padding:60px 20px; text-align:center;">
+        <div class="spinner" style="width:36px; height:36px; border:3px solid rgba(99,102,241,0.2); border-top-color:#6366f1; border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 16px auto;"></div>
+        <p style="font-size:14px; color:#94a3b8; margin:0;">Loading verified test results...</p>
+    </div>
+
+    <!-- Result Main Dashboard (Injected via JS) -->
+    <div id="result-content" style="display:none; flex-direction:column; gap:var(--space-8);">
+        
+        <!-- Hero Banner: Pass vs Fail -->
+        <div id="hero-card" class="card" style="border-radius:20px; padding:var(--space-8); box-shadow:0 14px 40px rgba(0,0,0,0.4); position:relative; overflow:hidden;">
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:var(--space-6);">
+                
+                <div style="display:flex; gap:20px; align-items:center;">
+                    <div id="status-icon-box" style="width:72px; height:72px; border-radius:20px; display:flex; align-items:center; justify-content:center; font-size:32px; box-shadow:0 8px 24px rgba(0,0,0,0.3);">
+                        <!-- Icon -->
+                    </div>
+
+                    <div>
+                        <div id="status-badge" style="display:inline-block; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">
+                            <!-- Status Pill -->
+                        </div>
+                        <h2 id="result-title" style="font-size:24px; font-weight:800; color:#f8fafc; margin:0 0 4px 0;">
+                            {{ attempt.title }}
+                        </h2>
+                        <p id="result-subtitle" style="font-size:13px; color:#94a3b8; margin:0;">
+                            <!-- Subtitle / timestamp -->
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Circular Score Pill -->
+                <div style="text-align:center; background:rgba(15,23,42,0.8); border:1px solid #334155; border-radius:16px; padding:16px 28px;">
+                    <div id="score-percentage" style="font-size:36px; font-weight:900; line-height:1; margin-bottom:4px;">
+                        --%
+                    </div>
+                    <div style="font-size:12px; color:#94a3b8; font-weight:600;" id="score-fraction">
+                        -- / -- Correct
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Verified Skill Badge Earned Highlight (If Passed) -->
+            <div id="badge-earned-section" style="display:none; margin-top:var(--space-6); padding-top:var(--space-6); border-top:1px solid rgba(255,255,255,0.1);">
+                <div style="background:linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(16,185,129,0.08) 100%); border:1px solid rgba(34,197,94,0.35); border-radius:14px; padding:16px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+                    <div style="display:flex; align-items:center; gap:14px;">
+                        <div style="width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg, #16a34a, #22c55e); color:#fff; display:flex; align-items:center; justify-content:center; font-size:20px; box-shadow:0 4px 14px rgba(34,197,94,0.4);">
+                            <i class="fas fa-award"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:14px; font-weight:800; color:#4ade80; display:flex; align-items:center; gap:6px;">
+                                <i class="fas fa-check-circle"></i> Verified Skill Badge Earned: <span id="badge-skill-name">{{ attempt.category }}</span>
+                            </div>
+                            <div style="font-size:12px; color:#cbd5e1; margin-top:2px;">
+                                This verified credential is now visible to recruiters on your profile.
+                            </div>
+                        </div>
+                    </div>
+                    <span class="badge" style="background:#16a34a; color:#ffffff; font-weight:700; padding:6px 14px; border-radius:20px; font-size:12px;">
+                        Active Credential
+                    </span>
+                </div>
+            </div>
+
+            <!-- Retake Alert (If Failed) -->
+            <div id="failed-alert-section" style="display:none; margin-top:var(--space-6); padding-top:var(--space-6); border-top:1px solid rgba(255,255,255,0.1);">
+                <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:14px; padding:16px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <i class="fas fa-info-circle" style="color:#f87171; font-size:20px;"></i>
+                        <div>
+                            <div style="font-size:14px; font-weight:700; color:#fca5a5;">
+                                Assessment Not Passed
+                            </div>
+                            <div style="font-size:12px; color:#cbd5e1; margin-top:2px;" id="passing-threshold-text">
+                                A minimum passing score of {{ attempt.passing_score or 70 }}% is required to earn the verified badge.
+                            </div>
+                        </div>
+                    </div>
+                    <a href="/candidate/assessments/{{ attempt.assessment_id }}" class="btn btn-primary btn-sm" style="font-weight:700; border-radius:10px;">
+                        <i class="fas fa-redo"></i> Retake Assessment
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Quick Summary Stats -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px;">
+            <div class="card" style="background:#0f172a; border:1px solid #1e293b; border-radius:14px; padding:16px; text-align:center;">
+                <div style="font-size:22px; font-weight:800; color:#818cf8;" id="stat-correct">0</div>
+                <div style="font-size:12px; color:#94a3b8; font-weight:500;">Correct Answers</div>
+            </div>
+            <div class="card" style="background:#0f172a; border:1px solid #1e293b; border-radius:14px; padding:16px; text-align:center;">
+                <div style="font-size:22px; font-weight:800; color:#f87171;" id="stat-incorrect">0</div>
+                <div style="font-size:12px; color:#94a3b8; font-weight:500;">Incorrect / Skipped</div>
+            </div>
+            <div class="card" style="background:#0f172a; border:1px solid #1e293b; border-radius:14px; padding:16px; text-align:center;">
+                <div style="font-size:22px; font-weight:800; color:#10b981;" id="stat-passing-req">70%</div>
+                <div style="font-size:12px; color:#94a3b8; font-weight:500;">Required Score</div>
+            </div>
+            <div class="card" style="background:#0f172a; border:1px solid #1e293b; border-radius:14px; padding:16px; text-align:center;">
+                <div style="font-size:22px; font-weight:800; color:#f59e0b;" id="stat-accuracy">0%</div>
+                <div style="font-size:12px; color:#94a3b8; font-weight:500;">Accuracy Rate</div>
+            </div>
+        </div>
+
+        <!-- Question by Question Review -->
+        <div class="card" style="background:#0f172a; border:1px solid #1e293b; border-radius:18px; padding:var(--space-8); box-shadow:0 8px 28px rgba(0,0,0,0.3);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-6); flex-wrap:wrap; gap:10px;">
+                <div>
+                    <h3 style="font-size:18px; font-weight:800; color:#f8fafc; margin:0 0 2px 0;">
+                        <i class="fas fa-list-check" style="color:#6366f1; margin-right:8px;"></i> Question-by-Question Review
+                    </h3>
+                    <p style="font-size:12px; color:#94a3b8; margin:0;">Review your submitted answers alongside verified correct answers and detailed explanations.</p>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button type="button" class="filter-review-btn active" onclick="filterReview('all', this)">All</button>
+                    <button type="button" class="filter-review-btn" onclick="filterReview('correct', this)">Correct</button>
+                    <button type="button" class="filter-review-btn" onclick="filterReview('incorrect', this)">Incorrect</button>
+                </div>
+            </div>
+
+            <div id="review-list" style="display:flex; flex-direction:column; gap:16px;">
+                <!-- Review cards injected via JS -->
+            </div>
+        </div>
+
+        <!-- Action Footer -->
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+            <a href="/candidate/assessments" class="btn btn-secondary" style="background:#1e293b; border-color:#334155; color:#cbd5e1; border-radius:12px; padding:12px 24px;">
+                <i class="fas fa-th-large"></i> Explore Other Assessments
+            </a>
+
+            <div style="display:flex; gap:10px;">
+                <a href="/candidate/assessments/{{ attempt.assessment_id }}" class="btn btn-secondary" style="background:#1e293b; border-color:#334155; color:#cbd5e1; border-radius:12px; padding:12px 24px;">
+                    <i class="fas fa-redo"></i> Retake This Test
+                </a>
+                <a href="/jobs?search={{ attempt.category }}" class="btn btn-primary" style="border-radius:12px; padding:12px 28px; font-weight:700;">
+                    <i class="fas fa-briefcase"></i> View Matching {{ attempt.category }} Jobs
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-review-btn {
+        background: #1e293b;
+        color: #94a3b8;
+        border: 1px solid #334155;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .filter-review-btn:hover {
+        background: #334155;
+        color: #f8fafc;
+    }
+    .filter-review-btn.active {
+        background: #6366f1;
+        color: #ffffff;
+        border-color: #6366f1;
+    }
+
+    .review-item {
+        background: #131d33;
+        border: 1px solid #1e293b;
+        border-radius: 14px;
+        padding: 18px;
+        transition: border-color 0.2s ease;
+    }
+    .review-item.is-correct {
+        border-left: 4px solid #22c55e;
+    }
+    .review-item.is-incorrect {
+        border-left: 4px solid #ef4444;
+    }
+
+    .review-opt {
+        padding: 10px 14px;
+        border-radius: 10px;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 6px;
+    }
+    .review-opt.normal {
+        background: #1e293b;
+        color: #cbd5e1;
+        border: 1px solid #334155;
+    }
+    .review-opt.correct-answer {
+        background: rgba(34, 197, 94, 0.12);
+        color: #86efac;
+        border: 1px solid rgba(34, 197, 94, 0.4);
+        font-weight: 600;
+    }
+    .review-opt.user-wrong {
+        background: rgba(239, 68, 68, 0.12);
+        color: #fca5a5;
+        border: 1px solid rgba(239, 68, 68, 0.4);
+        text-decoration: line-through;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const ATTEMPT_ID = {{ attempt.id }};
+    let reviewData = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadResultData();
+    });
+
+    async function loadResultData() {
+        try {
+            const res = await fetch(`/api/candidate/assessments/result/${ATTEMPT_ID}`);
+            const data = await res.json();
+
+            if (!data.success) {
+                showToast(data.message || 'Unable to load results.', 'error');
+                return;
+            }
+
+            reviewData = data;
+            renderResults(data);
+
+        } catch (err) {
+            console.error('Error loading result data:', err);
+            showToast('Network error loading test results.', 'error');
+        }
+    }
+
+    function renderResults(data) {
+        document.getElementById('result-loading').style.display = 'none';
+        document.getElementById('result-content').style.display = 'flex';
+
+        const passed = data.passed;
+        const heroCard = document.getElementById('hero-card');
+        const statusIconBox = document.getElementById('status-icon-box');
+        const statusBadge = document.getElementById('status-badge');
+        const scoreDisplay = document.getElementById('score-percentage');
+
+        scoreDisplay.innerText = `${data.score}%`;
+        document.getElementById('score-fraction').innerText = `${data.correct_count} of ${data.total_questions} Correct`;
+
+        if (passed) {
+            heroCard.style.background = 'linear-gradient(135deg, rgba(20, 83, 45, 0.6) 0%, rgba(15, 23, 42, 0.95) 100%)';
+            heroCard.style.borderColor = 'rgba(34, 197, 94, 0.4)';
+            
+            statusIconBox.style.background = 'linear-gradient(135deg, #16a34a, #22c55e)';
+            statusIconBox.style.color = '#ffffff';
+            statusIconBox.innerHTML = '<i class="fas fa-award"></i>';
+
+            statusBadge.style.color = '#4ade80';
+            statusBadge.innerText = '✓ VERIFIED SKILL BADGE EARNED';
+
+            scoreDisplay.style.color = '#4ade80';
+
+            document.getElementById('badge-earned-section').style.display = 'block';
+            document.getElementById('failed-alert-section').style.display = 'none';
+        } else {
+            heroCard.style.background = 'linear-gradient(135deg, rgba(127, 29, 29, 0.5) 0%, rgba(15, 23, 42, 0.95) 100%)';
+            heroCard.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+
+            statusIconBox.style.background = 'linear-gradient(135deg, #dc2626, #ef4444)';
+            statusIconBox.style.color = '#ffffff';
+            statusIconBox.innerHTML = '<i class="fas fa-times"></i>';
+
+            statusBadge.style.color = '#f87171';
+            statusBadge.innerText = 'ASSESSMENT NOT PASSED';
+
+            scoreDisplay.style.color = '#f87171';
+
+            document.getElementById('badge-earned-section').style.display = 'none';
+            document.getElementById('failed-alert-section').style.display = 'block';
+        }
+
+        document.getElementById('result-subtitle').innerText = `Completed on ${data.completed_at || 'Recently'}`;
+
+        // Quick Stats
+        document.getElementById('stat-correct').innerText = data.correct_count;
+        document.getElementById('stat-incorrect').innerText = (data.total_questions - data.correct_count);
+        document.getElementById('stat-passing-req').innerText = `${data.passing_score}%`;
+        document.getElementById('stat-accuracy').innerText = `${data.score}%`;
+
+        renderQuestionsReview('all');
+    }
+
+    function renderQuestionsReview(filterType = 'all') {
+        if (!reviewData || !reviewData.review_questions) return;
+
+        const list = document.getElementById('review-list');
+        list.innerHTML = '';
+
+        const letters = ['A', 'B', 'C', 'D', 'E'];
+
+        reviewData.review_questions.forEach((q, idx) => {
+            if (filterType === 'correct' && !q.is_correct) return;
+            if (filterType === 'incorrect' && q.is_correct) return;
+
+            const card = document.createElement('div');
+            card.className = `review-item ${q.is_correct ? 'is-correct' : 'is-incorrect'}`;
+
+            let optionsHtml = '';
+            q.options.forEach((optText, optIdx) => {
+                let optClass = 'normal';
+                let tag = '';
+
+                if (optIdx === q.correct_option) {
+                    optClass = 'correct-answer';
+                    tag = '<span style="margin-left:auto; font-size:11px; font-weight:700; color:#4ade80;"><i class="fas fa-check"></i> Correct Answer</span>';
+                } else if (optIdx === q.user_choice && !q.is_correct) {
+                    optClass = 'user-wrong';
+                    tag = '<span style="margin-left:auto; font-size:11px; font-weight:700; color:#f87171;"><i class="fas fa-times"></i> Your Choice</span>';
+                } else if (optIdx === q.user_choice && q.is_correct) {
+                    tag = '<span style="margin-left:auto; font-size:11px; font-weight:700; color:#4ade80;"><i class="fas fa-check"></i> Your Choice (Correct)</span>';
+                }
+
+                optionsHtml += `
+                    <div class="review-opt ${optClass}">
+                        <span style="width:22px; height:22px; border-radius:6px; background:#0f172a; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;">${letters[optIdx] || optIdx + 1}</span>
+                        <span style="flex:1;">${escapeHtml(optText)}</span>
+                        ${tag}
+                    </div>
+                `;
+            });
+
+            card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span style="font-size:12px; font-weight:700; color:#94a3b8;">Question ${idx + 1} of ${reviewData.total_questions}</span>
+                    <span class="badge" style="background:${q.is_correct ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)'}; color:${q.is_correct ? '#4ade80' : '#f87171'}; border:1px solid ${q.is_correct ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}; font-size:11px; font-weight:700; padding:2px 10px; border-radius:20px;">
+                        ${q.is_correct ? '<i class="fas fa-check"></i> Correct (+1)' : '<i class="fas fa-times"></i> Incorrect (0)'}
+                    </span>
+                </div>
+                <h4 style="font-size:15px; font-weight:700; color:#f8fafc; margin:0 0 14px 0; line-height:1.4;">
+                    ${escapeHtml(q.text)}
+                </h4>
+                <div style="margin-bottom:14px;">
+                    ${optionsHtml}
+                </div>
+                ${q.explanation ? `
+                <div style="background:#0f172a; border:1px solid #1e293b; border-radius:10px; padding:12px 14px; font-size:12px; color:#cbd5e1; line-height:1.5;">
+                    <strong style="color:#818cf8;"><i class="fas fa-lightbulb" style="color:#f59e0b; margin-right:4px;"></i> Explanation:</strong> ${escapeHtml(q.explanation)}
+                </div>
+                ` : ''}
+            `;
+
+            list.appendChild(card);
+        });
+
+        if (list.children.length === 0) {
+            list.innerHTML = `<div style="text-align:center; padding:30px; color:#94a3b8; font-size:13px;">No questions in this filter category.</div>`;
+        }
+    }
+
+    function filterReview(type, btn) {
+        document.querySelectorAll('.filter-review-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        renderQuestionsReview(type);
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+</script>
+{% endblock %}

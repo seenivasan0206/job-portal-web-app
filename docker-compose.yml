@@ -1,44 +1,75 @@
 version: '3.8'
 
 services:
-  app:
+  web:
     build: .
     ports:
       - "5000:5000"
+    env_file:
+      - .env
     environment:
-      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
-      - EMAIL_ADDRESS=${EMAIL_ADDRESS}
-      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
-      - DB_USER=${DB_USER:-root}
-      - DB_PASSWORD=${DB_PASSWORD:-mysql}
-      - DB_NAME=${DB_NAME:-dream_jobs0}
       - DB_HOST=mysql
+      - DB_USER=jobportal
+      - DB_NAME=jobportal_db
+      - DB_PASSWORD=${DB_PASSWORD:-mysql}
       - FLASK_ENV=production
-      - SESSION_COOKIE_SECURE=1
+      - RATELIMIT_STORAGE_URI=redis://redis:6379/0
     depends_on:
-      - mysql
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     volumes:
-      - ./resumes:/app/resumes
+      - .:/app
+      - ./static/uploads:/app/static/uploads
     restart: unless-stopped
 
-  mysql:
+  db:
     image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-mysql}
-      MYSQL_DATABASE: ${DB_NAME:-dream_jobs0}
-      MYSQL_USER: ${DB_USER:-root}
+      MYSQL_DATABASE: ${DB_NAME:-jobportal_db}
+      MYSQL_USER: ${DB_USER:-jobportal}
       MYSQL_PASSWORD: ${DB_PASSWORD:-mysql}
-    ports:
-      - "3306:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - db_data:/var/lib/mysql
+    ports:
+      - "127.0.0.1:3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
-  admin:
-    image: adminer
+  redis:
+    image: redis:7-alpine
     ports:
-      - "8080:8080"
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  worker:
+    build: .
+    command: python -m app cron_send_job_alerts
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=mysql
+      - DB_USER=jobportal
+      - DB_NAME=jobportal_db
+      - DB_PASSWORD=${DB_PASSWORD:-mysql}
+      - CRON_SECRET=${CRON_SECRET:-secret}
+      - RATELIMIT_STORAGE_URI=redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     restart: unless-stopped
 
 volumes:
-  mysql_data:
+  db_data:
+  redis_data:

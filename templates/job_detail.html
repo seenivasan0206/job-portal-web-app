@@ -1,0 +1,431 @@
+{% extends "base.html" %}
+
+{% block title %}{{ job.title or 'Job Details' }} — {{ job.company_name or 'HireVolt' }}{% endblock %}
+
+{% block extra_head %}
+{% if json_ld %}{{ json_ld|safe }}{% endif %}
+<style>
+    .job-detail-layout {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: var(--space-8);
+        align-items: flex-start;
+        padding-top: var(--space-6);
+        padding-bottom: var(--space-12);
+    }
+
+    @media (max-width: 992px) {
+        .job-detail-layout {
+            grid-template-columns: 1fr;
+            gap: var(--space-6);
+        }
+    }
+
+    .job-detail-header-card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-card);
+        padding: var(--space-8);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: var(--space-6);
+    }
+
+    .job-detail-sidebar {
+        position: sticky;
+        top: calc(var(--navbar-height) + 20px);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-5);
+    }
+
+    .sidebar-info-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--space-3) 0;
+        border-bottom: 1px solid var(--color-border-subtle);
+        font-size: var(--font-size-sm);
+    }
+
+    .sidebar-info-row:last-child {
+        border-bottom: none;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="app-container">
+    <div style="margin-top:var(--space-4); margin-bottom:var(--space-4);">
+        <a href="/jobs" class="btn btn-ghost btn-sm" style="padding-left:0;">
+            <i class="fas fa-arrow-left"></i> Back to All Jobs
+        </a>
+    </div>
+
+    {% if is_owner %}
+    <div style="background:rgba(79, 70, 229, 0.07); border:1px solid rgba(79, 70, 229, 0.2); border-radius:var(--radius-md); padding:var(--space-3) var(--space-4); margin-bottom:var(--space-4); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+        <div style="display:flex; align-items:center; gap:8px; font-weight:600; font-size:var(--font-size-sm); color:var(--color-primary);">
+            <i class="fas fa-user-shield"></i>
+            <span>Employer View: You posted this job posting</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span class="badge {% if job.is_active %}badge-success{% else %}badge-secondary{% endif %}" id="owner-job-status-banner-badge">
+                {% if job.is_active %}Active Posting{% else %}Closed Posting{% endif %}
+            </span>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="job-detail-layout">
+        <!-- Main Column -->
+        <main class="job-detail-main">
+            <!-- Header Card -->
+            <div class="job-detail-header-card">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:var(--space-4); margin-bottom:var(--space-4); flex-wrap:wrap;">
+                    <div>
+                        <span class="badge badge-primary" style="margin-bottom:var(--space-2);">{{ job.category or 'Verified Role' }}</span>
+                        <h1 style="font-size:var(--font-size-3xl); font-weight:800; margin-bottom:var(--space-2);">{{ job.title }}</h1>
+                        <div style="display:flex; align-items:center; gap:var(--space-3); color:var(--color-text-muted); font-size:var(--font-size-sm); font-weight:500;">
+                            <span style="color:var(--color-text); font-weight:600;"><i class="fas fa-building" style="color:var(--color-primary);"></i> {{ job.company_name or 'Verified Employer' }}</span>
+                            <span>•</span>
+                            <span><i class="fas fa-map-marker-alt"></i> {{ job.location or 'Remote' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:var(--space-4); padding-top:var(--space-4); border-top:1px solid var(--color-border);">
+                    {% if job.job_type %}<span class="badge badge-slate"><i class="fas fa-clock"></i> {{ job.job_type }}</span>{% endif %}
+                    {% if job.work_mode %}<span class="badge badge-slate"><i class="fas fa-globe"></i> {{ job.work_mode }}</span>{% endif %}
+                    {% if job.experience %}<span class="badge badge-slate"><i class="fas fa-briefcase"></i> {{ job.experience }}</span>{% endif %}
+                    {% if job.openings %}<span class="badge badge-slate"><i class="fas fa-users"></i> {{ job.openings }} Openings</span>{% endif %}
+                </div>
+            </div>
+
+            <!-- Required Skills Card -->
+            {% if job.skills %}
+            <div class="card" style="margin-bottom:var(--space-6);">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-tools" style="color:var(--color-primary); margin-right:8px;"></i> Key Skills & Technologies</h3>
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                    {% set skills_list = job.skills.split(',') if job.skills else [] %}
+                    {% for skill in skills_list %}
+                        {% set trimmed = skill.strip() %}
+                        {% if trimmed %}
+                        <span class="badge badge-slate" style="font-size:var(--font-size-sm); padding:6px 12px;">{{ trimmed }}</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Description Card -->
+            <div class="card" style="margin-bottom:var(--space-6);">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-file-alt" style="color:var(--color-primary); margin-right:8px;"></i> Detailed Job Description</h3>
+                </div>
+                <div style="font-size:var(--font-size-sm); line-height:1.8; color:var(--color-text-secondary);">
+                    {% if job.description %}
+                        {% for p in job.description.split('\n') %}
+                            {% if p.strip() %}
+                            <p style="margin-bottom:var(--space-3);">{{ p }}</p>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <p>No detailed description provided by the employer.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Experience Requirements Card -->
+            {% if job.experience %}
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-user-check" style="color:var(--color-primary); margin-right:8px;"></i> Experience & Qualifications</h3>
+                </div>
+                <p style="font-size:var(--font-size-sm); color:var(--color-text-secondary); line-height:1.7;">
+                    {{ job.experience }}
+                </p>
+            </div>
+            {% endif %}
+        </main>
+
+        <!-- Sidebar Column -->
+        <aside class="job-detail-sidebar">
+            {% if not is_owner and session.get('user_id') %}
+            <!-- AI Fit & Recommendation Card -->
+            <div id="ai-match-card" class="card" style="background:linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,41,59,0.9)); border:1px solid rgba(255,94,20,0.3); margin-bottom:var(--space-4);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <div style="font-size:12px; font-weight:700; text-transform:uppercase; color:#FF7B1C; letter-spacing:0.05em;">
+                        <i class="fas fa-bolt"></i> AI Job Fit Analysis
+                    </div>
+                    <span id="ai-match-badge" class="badge" style="background:rgba(255,94,20,0.15); color:#FF5E14; border:1px solid rgba(255,94,20,0.3); font-weight:800;">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                </div>
+                <div id="ai-match-reason" style="font-size:12px; color:#CBD5E1; line-height:1.4; margin-bottom:10px;">
+                    Analyzing job description and required skills against your verified profile...
+                </div>
+                <div id="ai-matched-skills-container" style="display:flex; flex-wrap:wrap; gap:5px;"></div>
+            </div>
+            {% endif %}
+
+            <div class="card">
+                <div style="margin-bottom:var(--space-4);">
+                    <span style="font-size:var(--font-size-xs); color:var(--color-text-muted); text-transform:uppercase; font-weight:700;">Offered Salary</span>
+                    <div style="font-size:var(--font-size-2xl); font-weight:800; color:var(--color-primary); margin-top:2px;">
+                        {{ job.salary or (job.salary_min and job.salary_max and '₹' + job.salary_min|string + ' - ₹' + job.salary_max|string or 'Competitive') }}
+                    </div>
+                </div>
+
+                {% if is_owner %}
+                <!-- Employer Management Panel -->
+                <div style="background:var(--color-surface-alt, #f8fafc); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-4); margin-bottom:var(--space-5);">
+                    <div style="font-size:var(--font-size-xs); font-weight:700; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:var(--space-3); letter-spacing:0.04em;">
+                        <i class="fas fa-chart-pie" style="color:var(--color-primary); margin-right:4px;"></i> Posting Performance
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-3); margin-bottom:var(--space-4);">
+                        <div style="background:var(--color-surface); padding:10px; border-radius:var(--radius-sm); border:1px solid var(--color-border); text-align:center;">
+                            <div style="font-size:var(--font-size-xl); font-weight:800; color:var(--color-primary);">{{ applicant_count }}</div>
+                            <div style="font-size:var(--font-size-xs); color:var(--color-text-muted); font-weight:600;">Applicants</div>
+                        </div>
+                        <div style="background:var(--color-surface); padding:10px; border-radius:var(--radius-sm); border:1px solid var(--color-border); text-align:center;">
+                            <div style="margin-top:2px;">
+                                {% if job.is_active and not is_expired %}
+                                <span class="badge badge-success" id="sidebar-job-status-badge">Active</span>
+                                {% elif job.closed_reason == 'deadline_passed' or is_expired %}
+                                <span class="badge badge-warning" id="sidebar-job-status-badge">Closed (Deadline Passed)</span>
+                                {% else %}
+                                <span class="badge badge-secondary" id="sidebar-job-status-badge">Closed (Manually Closed)</span>
+                                {% endif %}
+                            </div>
+                            <div style="font-size:var(--font-size-xs); color:var(--color-text-muted); font-weight:600; margin-top:4px;">Status</div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <a href="/employer_dashboard?tab=applicants&job_id={{ job.id }}" class="btn btn-primary btn-block">
+                            <i class="fas fa-users"></i> View Applicants ({{ applicant_count }})
+                        </a>
+                        <a href="/employer_dashboard?tab=jobs&edit_job_id={{ job.id }}" class="btn btn-secondary btn-block">
+                            <i class="fas fa-edit"></i> Edit Job
+                        </a>
+                        {% if job.is_active and not is_expired %}
+                        <button type="button" class="btn btn-outline-danger btn-block" id="btn-toggle-job" onclick="toggleJobStatus({{ job.id }}, 'close')">
+                            <i class="fas fa-pause-circle"></i> Close Job Posting
+                        </button>
+                        {% else %}
+                        <button type="button" class="btn btn-outline-success btn-block" id="btn-toggle-job" onclick="toggleJobStatus({{ job.id }}, 'activate')">
+                            <i class="fas fa-play-circle"></i> Reactivate Job Posting
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <!-- Candidate / Public Actions -->
+                <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:var(--space-5);">
+                    {% if not job.is_active or is_expired %}
+                    <button type="button" class="btn btn-secondary btn-block btn-lg" disabled style="opacity:0.85; cursor:not-allowed;">
+                        <i class="fas fa-ban"></i> {% if job.closed_reason == 'deadline_passed' or is_expired %}Closed (Deadline Passed){% else %}Job Closed{% endif %}
+                    </button>
+                    {% elif user_has_applied %}
+                    <button type="button" class="btn btn-secondary btn-block btn-lg" disabled>
+                        <i class="fas fa-check-circle text-success"></i> Application Submitted
+                    </button>
+                    {% else %}
+                    <button type="button" class="btn btn-primary btn-block btn-lg" id="btn-apply-job" onclick="handleDetailApply({{ job.id }})">
+                        <i class="fas fa-paper-plane"></i> Apply for this Role
+                    </button>
+                    {% endif %}
+                    <button type="button" class="btn btn-secondary btn-block" id="btn-save-job" onclick="handleDetailSave({{ job.id }})">
+                        <i class="{% if user_has_saved %}fas text-primary{% else %}far{% endif %} fa-bookmark"></i> {% if user_has_saved %}Saved to Bookmarks{% else %}Save Job{% endif %}
+                    </button>
+                    {% if job.employer_id %}
+                    <a href="/candidate/messages?employer_id={{ job.employer_id }}&job_id={{ job.id }}" class="btn btn-ghost btn-block" style="border:1px dashed var(--color-border); font-size:var(--font-size-xs); color:var(--color-primary);">
+                        <i class="fas fa-comment-dots"></i> Message Hiring Team
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <div style="border-top:1px solid var(--color-border); padding-top:var(--space-4);">
+                    <div class="sidebar-info-row">
+                        <span class="text-muted"><i class="fas fa-building"></i> Company</span>
+                        <span class="font-semibold">{{ job.company_name or 'Verified Employer' }}</span>
+                    </div>
+                    <div class="sidebar-info-row">
+                        <span class="text-muted"><i class="fas fa-map-marker-alt"></i> Location</span>
+                        <span class="font-semibold">{{ job.location or 'Remote' }}</span>
+                    </div>
+                    <div class="sidebar-info-row">
+                        <span class="text-muted"><i class="fas fa-clock"></i> Employment Type</span>
+                        <span class="font-semibold">{{ job.job_type or 'Full-time' }}</span>
+                    </div>
+                    <div class="sidebar-info-row">
+                        <span class="text-muted"><i class="fas fa-globe"></i> Work Arrangement</span>
+                        <span class="font-semibold">{{ job.work_mode or 'Onsite' }}</span>
+                    </div>
+                    {% if job.application_deadline %}
+                    <div class="sidebar-info-row">
+                        <span class="text-muted"><i class="fas fa-calendar-alt"></i> Deadline</span>
+                        <span class="font-semibold text-warning">{{ job.application_deadline.strftime('%b %d, %Y') if job.application_deadline.strftime else job.application_deadline }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const isUserLoggedIn = {{ 'true' if session.get('user_id') else 'false' }};
+
+    async function handleDetailApply(jobId) {
+        if (!isUserLoggedIn) {
+            sessionStorage.setItem('pending_job_action', JSON.stringify({ action: 'apply', jobId: jobId }));
+            if (typeof window.openUserModal === 'function') {
+                window.openUserModal('login');
+            } else {
+                window.location.href = '/signup?tab=login';
+            }
+            return;
+        }
+
+        if (typeof window.openJobApplyModal === 'function') {
+            window.openJobApplyModal(jobId, {
+                title: '{{ job.title|e }}',
+                company: '{{ job.company_name|e }}',
+                location: '{{ job.location|e }}'
+            });
+            return;
+        }
+
+        const btn = document.getElementById('btn-apply-job');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Submitting Application...';
+        }
+
+        const res = await postReq('/api/apply_job', { job_id: jobId });
+        if (btn) btn.disabled = false;
+        if (res.success) {
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-check"></i> Applied Successfully';
+                btn.disabled = true;
+            }
+            if (typeof window.showApplicationSubmittedModal === 'function') {
+                window.showApplicationSubmittedModal({
+                    jobId: res.job_id || jobId,
+                    jobTitle: res.job_title || 'Role Application',
+                    companyName: res.company_name || 'Employer'
+                });
+            } else {
+                showToast(res.message || 'Application submitted successfully!', 'success');
+            }
+        } else {
+            if (btn) btn.innerHTML = '<i class="fas fa-paper-plane"></i> Apply for this Role';
+        }
+    }
+
+    async function handleDetailSave(jobId) {
+        if (!isUserLoggedIn) {
+            sessionStorage.setItem('pending_job_action', JSON.stringify({ action: 'bookmark', jobId: jobId }));
+            if (typeof window.openUserModal === 'function') {
+                window.openUserModal('login');
+            } else {
+                window.location.href = '/signup?tab=login';
+            }
+            return;
+        }
+
+        const res = await postReq('/api/save_job', { job_id: jobId });
+        if (res.success) {
+            showToast(res.message || 'Job saved to your bookmarks!', 'success');
+            const saveBtn = document.getElementById('btn-save-job');
+            if (saveBtn) {
+                saveBtn.innerHTML = '<i class="fas text-primary fa-bookmark"></i> Saved to Bookmarks';
+            }
+        }
+    }
+
+    async function toggleJobStatus(jobId, action) {
+        const btn = document.getElementById('btn-toggle-job');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Updating Status...';
+        }
+        const res = await postReq(`/api/employer/jobs/${jobId}/toggle_status`, { action: action });
+        if (res && res.success) {
+            showToast(res.message || 'Job status updated successfully', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        } else {
+            showToast(res ? res.message : 'Failed to update job status', 'error');
+            if (btn) {
+                btn.disabled = false;
+                if (action === 'close') {
+                    btn.innerHTML = '<i class="fas fa-pause-circle"></i> Close Job Posting';
+                } else {
+                    btn.innerHTML = '<i class="fas fa-play-circle"></i> Reactivate Job Posting';
+                }
+            }
+        }
+    }
+
+    async function loadJobRecommendationMatch(jobId) {
+        try {
+            const res = await getReq(`/api/jobs/${jobId}/recommendation_details`);
+            if (res && res.success) {
+                const badge = document.getElementById('ai-match-badge');
+                const reasonEl = document.getElementById('ai-match-reason');
+                const skillsEl = document.getElementById('ai-matched-skills-container');
+                const score = Math.round(res.match_score || 0);
+
+                if (badge) {
+                    badge.innerHTML = `<i class="fas fa-bolt"></i> ${score}% Match`;
+                    badge.style.background = score >= 75 ? 'rgba(16,185,129,0.15)' : score >= 50 ? 'rgba(56,189,248,0.15)' : 'rgba(245,158,11,0.15)';
+                    badge.style.color = score >= 75 ? '#34D399' : score >= 50 ? '#38BDF8' : '#FBBF24';
+                    badge.style.borderColor = score >= 75 ? 'rgba(16,185,129,0.3)' : score >= 50 ? 'rgba(56,189,248,0.3)' : 'rgba(245,158,11,0.3)';
+                }
+
+                if (reasonEl) {
+                    reasonEl.textContent = res.match_reason || 'Personalized recommendation based on your profile.';
+                }
+
+                if (skillsEl && res.matched_skills && res.matched_skills.length > 0) {
+                    let skillsHtml = res.matched_skills.slice(0, 5).map(s => `
+                        <span class="badge" style="background:rgba(16,185,129,0.12); color:#34D399; border:1px solid rgba(16,185,129,0.25); font-size:10px; padding:2px 6px;">
+                            <i class="fas fa-check" style="font-size:8px;"></i> ${escapeHtml(s)}
+                        </span>
+                    `).join('');
+
+                    if (res.missing_skills && res.missing_skills.length > 0) {
+                        skillsHtml += res.missing_skills.slice(0, 2).map(s => `
+                            <span class="badge" style="background:rgba(100,116,139,0.12); color:#94A3B8; border:1px dashed rgba(100,116,139,0.3); font-size:10px; padding:2px 6px;">
+                                + ${escapeHtml(s)}
+                            </span>
+                        `).join('');
+                    }
+
+                    skillsEl.innerHTML = skillsHtml;
+                }
+            }
+        } catch (e) {
+            console.debug('Could not load AI match details:', e);
+        }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (isUserLoggedIn && !{{ 'true' if is_owner else 'false' }}) {
+            loadJobRecommendationMatch({{ job.id }});
+        }
+    });
+</script>
+{% endblock %}

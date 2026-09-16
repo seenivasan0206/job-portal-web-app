@@ -1,0 +1,946 @@
+{% extends "base.html" %}
+
+{% block title %}Recruiter Interview Coordinator — HireVolt{% endblock %}
+
+{% block extra_head %}
+<style>
+    .rec-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--space-4);
+        margin-bottom: var(--space-8);
+    }
+    .rec-stat-card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-card);
+        padding: var(--space-5);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .rec-stat-val {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--color-text);
+        margin: 4px 0;
+    }
+    .interview-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: var(--font-size-sm);
+    }
+    .interview-table th {
+        background: rgba(15, 23, 42, 0.8);
+        color: var(--color-text-secondary);
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: var(--font-size-xs);
+        letter-spacing: 0.05em;
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid var(--color-border);
+    }
+    .interview-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--color-border);
+        color: var(--color-text);
+        vertical-align: middle;
+    }
+    .interview-table tbody tr:hover td {
+        background: rgba(255, 255, 255, 0.02);
+    }
+    .status-badge-pending {
+        background: rgba(245, 158, 11, 0.15);
+        color: #F59E0B;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .status-badge-accepted, .status-badge-scheduled {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10B981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .status-badge-completed {
+        background: rgba(99, 102, 241, 0.15);
+        color: #818CF8;
+        border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+    .status-badge-declined, .status-badge-cancelled {
+        background: rgba(100, 116, 139, 0.2);
+        color: #94A3B8;
+        border: 1px solid rgba(100, 116, 139, 0.3);
+    }
+    .nav-tabs-custom {
+        display: flex;
+        gap: var(--space-2);
+        border-bottom: 1px solid var(--color-border);
+        margin-bottom: var(--space-6);
+        overflow-x: auto;
+    }
+    .tab-btn {
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        padding: 10px 16px;
+        color: var(--color-text-secondary);
+        font-weight: 600;
+        font-size: var(--font-size-sm);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        white-space: nowrap;
+    }
+    .tab-btn:hover {
+        color: var(--color-text);
+    }
+    .tab-btn.active {
+        color: var(--color-primary);
+        border-bottom-color: var(--color-primary);
+    }
+
+    /* Modal Backdrop & Overlay */
+    .interview-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.75);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        z-index: 2000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: var(--space-4);
+        box-sizing: border-box;
+    }
+
+    /* Modal Card */
+    .interview-modal-card {
+        max-width: 560px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        background: var(--color-surface, #101014);
+        border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
+        border-radius: var(--radius-lg, 12px);
+        padding: var(--space-6, 24px);
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
+        position: relative;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .interview-modal-card-sm {
+        max-width: 480px;
+    }
+
+    .interview-modal-card-xs {
+        max-width: 440px;
+    }
+
+    /* Modal Close Button */
+    .interview-modal-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: transparent;
+        border: none;
+        color: var(--color-text-muted, #64748B);
+        font-size: 1.25rem;
+        line-height: 1;
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-sm, 6px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .interview-modal-close:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--color-text, #F8FAFC);
+    }
+
+    .interview-modal-close:focus-visible {
+        outline: 2px solid var(--color-primary);
+    }
+
+    .interview-modal-header {
+        margin-bottom: var(--space-4);
+    }
+
+    .interview-modal-title {
+        font-size: var(--font-size-xl, 20px);
+        font-weight: 800;
+        color: var(--color-text, #F8FAFC);
+        margin: 0 0 4px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .interview-modal-desc {
+        font-size: var(--font-size-xs, 12px);
+        color: var(--color-text-secondary, #94A3B8);
+        margin: 0 0 var(--space-4, 16px) 0;
+        line-height: 1.5;
+    }
+
+    /* Responsive Two-Column Grid */
+    .interview-form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-4, 16px);
+        margin-bottom: var(--space-4, 16px);
+    }
+
+    @media (max-width: 600px) {
+        .interview-form-grid {
+            grid-template-columns: 1fr;
+            gap: var(--space-3, 12px);
+        }
+    }
+
+    .interview-form-group {
+        margin-bottom: var(--space-4, 16px);
+    }
+
+    .interview-form-label {
+        display: block;
+        font-size: var(--font-size-xs, 12px);
+        font-weight: 700;
+        color: var(--color-text, #F8FAFC);
+        margin-bottom: 6px;
+    }
+
+    /* Actions Footer */
+    .interview-modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 10px;
+        margin-top: var(--space-5, 20px);
+    }
+
+    @media (max-width: 480px) {
+        .interview-modal-actions {
+            flex-direction: column-reverse;
+            width: 100%;
+        }
+        .interview-modal-actions .btn {
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+        }
+    }
+
+    /* Conflict Box */
+    .interview-conflict-box {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: var(--radius-md, 8px);
+        padding: 10px 14px;
+        margin-bottom: var(--space-4, 16px);
+        font-size: var(--font-size-xs, 12px);
+        color: #FCA5A5;
+        display: none;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Form Controls & Date/Time inputs in Dark Mode */
+    .form-input,
+    .form-select {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px 14px;
+        border: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+        border-radius: var(--radius-sm, 6px);
+        font-size: var(--font-size-sm, 14px);
+        font-family: inherit;
+        background: var(--color-surface, #101014);
+        color: var(--color-text, #F8FAFC);
+        color-scheme: dark;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: var(--color-primary, #FF5E14);
+        box-shadow: 0 0 0 3px rgba(255, 94, 20, 0.2);
+    }
+
+    input[type="date"].form-input,
+    input[type="time"].form-input {
+        color-scheme: dark;
+        min-height: 42px;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-calendar-picker-indicator {
+        cursor: pointer;
+        filter: invert(0.85);
+        opacity: 0.85;
+        transition: opacity 0.15s ease;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator:hover,
+    input[type="time"]::-webkit-calendar-picker-indicator:hover {
+        opacity: 1;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="app-container" style="padding-top:var(--space-8); padding-bottom:var(--space-16);">
+
+    <!-- Header Section -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-8); flex-wrap:wrap; gap:var(--space-4);">
+        <div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:var(--space-2);">
+                <span class="badge" style="background:rgba(99, 102, 241, 0.15); color:#818CF8; border:1px solid rgba(99, 102, 241, 0.3);">
+                    <i class="fas fa-video" style="margin-right:4px;"></i> Recruitment Operations
+                </span>
+            </div>
+            <h1 style="font-size:var(--font-size-3xl); font-weight:800; color:var(--color-text); margin:0 0 6px 0;">
+                Recruiter Interview Coordinator
+            </h1>
+            <p style="font-size:var(--font-size-sm); color:var(--color-text-secondary); margin:0;">
+                Schedule video rounds, check participant availability, avoid schedule conflicts, and manage interview evaluations.
+            </p>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+            <a href="/employer_dashboard" class="btn btn-secondary btn-sm" style="display:inline-flex; align-items:center; gap:6px;">
+                <i class="fas fa-arrow-left"></i> Employer Dashboard
+            </a>
+            <button type="button" class="btn btn-primary btn-sm" onclick="openScheduleModal()" style="display:inline-flex; align-items:center; gap:6px;">
+                <i class="fas fa-plus-circle"></i> Schedule Interview
+            </button>
+        </div>
+    </div>
+
+    <!-- Stat KPI Cards -->
+    <div class="rec-stat-grid">
+        <div class="rec-stat-card">
+            <div style="font-size:var(--font-size-xs); font-weight:700; color:var(--color-text-secondary); text-transform:uppercase;">
+                Total Interviews
+            </div>
+            <div class="rec-stat-val" id="stat-total">0</div>
+            <div style="font-size:11px; color:var(--color-text-muted);">All historical & active sessions</div>
+        </div>
+
+        <div class="rec-stat-card">
+            <div style="font-size:var(--font-size-xs); font-weight:700; color:#10B981; text-transform:uppercase;">
+                Upcoming Sessions
+            </div>
+            <div class="rec-stat-val" id="stat-upcoming" style="color:#10B981;">0</div>
+            <div style="font-size:11px; color:var(--color-text-muted);">Confirmed & awaiting execution</div>
+        </div>
+
+        <div class="rec-stat-card">
+            <div style="font-size:var(--font-size-xs); font-weight:700; color:#F59E0B; text-transform:uppercase;">
+                Awaiting Candidate
+            </div>
+            <div class="rec-stat-val" id="stat-pending" style="color:#F59E0B;">0</div>
+            <div style="font-size:11px; color:var(--color-text-muted);">Pending acceptance from candidate</div>
+        </div>
+
+        <div class="rec-stat-card">
+            <div style="font-size:var(--font-size-xs); font-weight:700; color:#818CF8; text-transform:uppercase;">
+                Completed Rounds
+            </div>
+            <div class="rec-stat-val" id="stat-completed" style="color:#818CF8;">0</div>
+            <div style="font-size:11px; color:var(--color-text-muted);">Evaluations finished</div>
+        </div>
+    </div>
+
+    <!-- Table Card Container -->
+    <div class="card" style="padding:var(--space-6); border:1px solid var(--color-border);">
+        <div class="nav-tabs-custom">
+            <button class="tab-btn active" onclick="switchRecruiterTab('all', this)">
+                All Interviews (<span id="count-all">0</span>)
+            </button>
+            <button class="tab-btn" onclick="switchRecruiterTab('upcoming', this)">
+                <i class="fas fa-calendar-check" style="color:#10B981;"></i> Upcoming (<span id="count-upcoming">0</span>)
+            </button>
+            <button class="tab-btn" onclick="switchRecruiterTab('pending', this)">
+                <i class="fas fa-clock" style="color:#F59E0B;"></i> Pending Action (<span id="count-pending">0</span>)
+            </button>
+            <button class="tab-btn" onclick="switchRecruiterTab('completed', this)">
+                <i class="fas fa-check-circle" style="color:#818CF8;"></i> Completed (<span id="count-completed">0</span>)
+            </button>
+            <button class="tab-btn" onclick="switchRecruiterTab('cancelled', this)">
+                <i class="fas fa-ban" style="color:#94A3B8;"></i> Cancelled (<span id="count-cancelled">0</span>)
+            </button>
+        </div>
+
+        <div style="overflow-x:auto;">
+            <table class="interview-table">
+                <thead>
+                    <tr>
+                        <th>Candidate</th>
+                        <th>Job Opening</th>
+                        <th>Date & Time</th>
+                        <th>Duration</th>
+                        <th>Meeting URL</th>
+                        <th>Status</th>
+                        <th style="text-align:right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="recruiter-table-body">
+                    <tr>
+                        <td colspan="7" style="text-align:center; padding:40px; color:var(--color-text-secondary);">
+                            <i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i> Loading scheduled interviews...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- Modal: Schedule New Interview -->
+<div id="schedule-modal" class="interview-modal-backdrop" onclick="if(event.target === this) closeScheduleModal();">
+    <div class="interview-modal-card">
+        <button type="button" class="interview-modal-close" onclick="closeScheduleModal()" aria-label="Close Schedule Modal">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="interview-modal-header">
+            <h3 class="interview-modal-title">
+                <i class="fas fa-calendar-plus" style="color:var(--color-primary);"></i> Schedule Candidate Interview
+            </h3>
+            <p class="interview-modal-desc">
+                Select candidate and target job. System will automatically check for overlapping schedule conflicts before confirming.
+            </p>
+        </div>
+
+        <div id="conflict-error-box" class="interview-conflict-box">
+            <i class="fas fa-exclamation-circle"></i> <span id="conflict-error-text"></span>
+        </div>
+
+        <form id="schedule-form" onsubmit="submitNewInterview(event)">
+            <div class="interview-form-group">
+                <label class="interview-form-label" for="modal-candidate-select">Candidate *</label>
+                <select id="modal-candidate-select" class="form-select" required>
+                    <option value="">Select Candidate...</option>
+                </select>
+            </div>
+
+            <div class="interview-form-group">
+                <label class="interview-form-label" for="modal-job-select">Job Opening *</label>
+                <select id="modal-job-select" class="form-select" required>
+                    <option value="">Select Associated Job...</option>
+                </select>
+            </div>
+
+            <div class="interview-form-group">
+                <label class="interview-form-label" for="modal-title-input">Interview Title *</label>
+                <input type="text" id="modal-title-input" class="form-input" value="Round 1 Technical Evaluation" required>
+            </div>
+
+            <div class="interview-form-grid">
+                <div>
+                    <label class="interview-form-label" for="modal-date-input">Date *</label>
+                    <input type="date" id="modal-date-input" class="form-input" required>
+                </div>
+                <div>
+                    <label class="interview-form-label" for="modal-time-input">Start Time *</label>
+                    <input type="time" id="modal-time-input" class="form-input" required>
+                </div>
+            </div>
+
+            <div class="interview-form-grid">
+                <div>
+                    <label class="interview-form-label" for="modal-duration-select">Duration</label>
+                    <select id="modal-duration-select" class="form-select">
+                        <option value="15">15 Minutes</option>
+                        <option value="30" selected>30 Minutes</option>
+                        <option value="45">45 Minutes</option>
+                        <option value="60">60 Minutes</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="interview-form-label" for="modal-type-select">Format</label>
+                    <select id="modal-type-select" class="form-select">
+                        <option value="Video Interview">Video Interview</option>
+                        <option value="Technical Screen">Technical Screen</option>
+                        <option value="Culture Fit / HR">Culture Fit / HR</option>
+                        <option value="Final Management Round">Final Management Round</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="interview-form-group">
+                <label class="interview-form-label" for="modal-meeting-input">Meeting Link (Google Meet / Zoom / Teams)</label>
+                <input type="url" id="modal-meeting-input" class="form-input" placeholder="https://meet.google.com/abc-defg-hij">
+            </div>
+
+            <div class="interview-form-group">
+                <label class="interview-form-label" for="modal-notes-input">Instructions / Notes for Candidate</label>
+                <textarea id="modal-notes-input" class="form-input" rows="3" placeholder="e.g. Please be prepared to share screen for live coding in Python..."></textarea>
+            </div>
+
+            <div class="interview-modal-actions">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="closeScheduleModal()">Cancel</button>
+                <button type="submit" id="btn-submit-schedule" class="btn btn-primary btn-sm">
+                    Propose & Send Invite
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Reschedule Interview -->
+<div id="reschedule-modal" class="interview-modal-backdrop" onclick="if(event.target === this) closeRescheduleModal();">
+    <div class="interview-modal-card interview-modal-card-sm">
+        <button type="button" class="interview-modal-close" onclick="closeRescheduleModal()" aria-label="Close Reschedule Modal">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="interview-modal-header">
+            <h3 class="interview-modal-title">
+                <i class="fas fa-calendar-alt" style="color:var(--color-primary);"></i> Reschedule Interview
+            </h3>
+            <p id="reschedule-modal-desc" class="interview-modal-desc">
+                Select a new date and time for this interview. Conflict validation will be performed automatically.
+            </p>
+        </div>
+
+        <div id="reschedule-conflict-box" class="interview-conflict-box">
+            <i class="fas fa-exclamation-circle"></i> <span id="reschedule-conflict-text"></span>
+        </div>
+
+        <form id="reschedule-form" onsubmit="submitReschedule(event)">
+            <div class="interview-form-grid">
+                <div>
+                    <label class="interview-form-label" for="resched-date-input">New Date *</label>
+                    <input type="date" id="resched-date-input" class="form-input" required>
+                </div>
+                <div>
+                    <label class="interview-form-label" for="resched-time-input">New Start Time *</label>
+                    <input type="time" id="resched-time-input" class="form-input" required>
+                </div>
+            </div>
+
+            <div class="interview-form-group">
+                <label class="interview-form-label" for="resched-duration-select">Duration</label>
+                <select id="resched-duration-select" class="form-select">
+                    <option value="15">15 Minutes</option>
+                    <option value="30" selected>30 Minutes</option>
+                    <option value="45">45 Minutes</option>
+                    <option value="60">60 Minutes</option>
+                </select>
+            </div>
+
+            <div class="interview-form-group">
+                <label class="interview-form-label" for="resched-meeting-input">Meeting URL</label>
+                <input type="url" id="resched-meeting-input" class="form-input" placeholder="https://meet.google.com/xyz">
+            </div>
+
+            <div class="interview-form-group">
+                <label class="interview-form-label" for="resched-notes-input">Reason / Notes</label>
+                <input type="text" id="resched-notes-input" class="form-input" placeholder="e.g. Recruiter schedule adjustment">
+            </div>
+
+            <div class="interview-modal-actions">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="closeRescheduleModal()">Cancel</button>
+                <button type="submit" id="btn-submit-resched" class="btn btn-primary btn-sm">Confirm Reschedule</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Complete Interview Feedback -->
+<div id="complete-modal" class="interview-modal-backdrop" onclick="if(event.target === this) closeCompleteModal();">
+    <div class="interview-modal-card interview-modal-card-xs">
+        <button type="button" class="interview-modal-close" onclick="closeCompleteModal()" aria-label="Close Complete Modal">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="interview-modal-header">
+            <h3 class="interview-modal-title">
+                <i class="fas fa-clipboard-check" style="color:var(--color-primary);"></i> Mark Interview Completed
+            </h3>
+            <p class="interview-modal-desc">
+                Add any post-interview notes or internal candidate evaluations.
+            </p>
+        </div>
+
+        <div class="interview-form-group">
+            <label class="interview-form-label" for="complete-notes-input">Interviewer Feedback & Notes</label>
+            <textarea id="complete-notes-input" class="form-input" rows="4" placeholder="e.g. Strong problem solving, advanced to round 2..."></textarea>
+        </div>
+
+        <div class="interview-modal-actions">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeCompleteModal()">Cancel</button>
+            <button type="button" class="btn btn-primary btn-sm" onclick="submitCompleteInterview()">
+                Save & Mark Completed
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let recruiterInterviews = [];
+    let currentRecruiterTab = 'all';
+    let activeInterviewId = null;
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    async function loadRecruiterInterviews() {
+        try {
+            const res = await fetch('/api/recruiter/interviews');
+            if (!res.ok) throw new Error('Failed to load recruiter interviews');
+            const data = await res.json();
+            if (data.success) {
+                recruiterInterviews = data.interviews || [];
+                const stats = data.stats || { total: 0, upcoming: 0, pending: 0, completed: 0 };
+                
+                document.getElementById('stat-total').textContent = stats.total;
+                document.getElementById('stat-upcoming').textContent = stats.upcoming;
+                document.getElementById('stat-pending').textContent = stats.pending;
+                document.getElementById('stat-completed').textContent = stats.completed;
+
+                document.getElementById('count-all').textContent = stats.total;
+                document.getElementById('count-upcoming').textContent = stats.upcoming;
+                document.getElementById('count-pending').textContent = stats.pending;
+                document.getElementById('count-completed').textContent = stats.completed;
+                document.getElementById('count-cancelled').textContent = stats.cancelled || 0;
+
+                renderRecruiterTable();
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    function switchRecruiterTab(tabName, btn) {
+        currentRecruiterTab = tabName;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        renderRecruiterTable();
+    }
+
+    function renderRecruiterTable() {
+        const tbody = document.getElementById('recruiter-table-body');
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        let filtered = recruiterInterviews;
+        if (currentRecruiterTab === 'upcoming') {
+            filtered = recruiterInterviews.filter(iv => ['accepted', 'scheduled'].includes((iv.status || '').toLowerCase()) && iv.scheduled_date >= todayStr);
+        } else if (currentRecruiterTab === 'pending') {
+            filtered = recruiterInterviews.filter(iv => (iv.status || '').toLowerCase() === 'pending');
+        } else if (currentRecruiterTab === 'completed') {
+            filtered = recruiterInterviews.filter(iv => (iv.status || '').toLowerCase() === 'completed' || (['accepted', 'scheduled'].includes((iv.status || '').toLowerCase()) && iv.scheduled_date < todayStr));
+        } else if (currentRecruiterTab === 'cancelled') {
+            filtered = recruiterInterviews.filter(iv => ['cancelled', 'declined'].includes((iv.status || '').toLowerCase()));
+        }
+
+        if (!filtered.length) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align:center; padding:45px; color:var(--color-text-secondary);">
+                        <i class="fas fa-calendar-alt" style="font-size:24px; opacity:0.4; margin-bottom:8px; display:block;"></i>
+                        No scheduled interviews found in this view. Click "Schedule Interview" above to propose a session.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(iv => {
+            const st = (iv.status || 'Scheduled').toLowerCase();
+            let badgeClass = 'status-badge-pending';
+            if (st === 'accepted' || st === 'scheduled') badgeClass = 'status-badge-accepted';
+            else if (st === 'completed') badgeClass = 'status-badge-completed';
+            else if (st === 'cancelled' || st === 'declined') badgeClass = 'status-badge-cancelled';
+
+            return `
+                <tr>
+                    <td>
+                        <div style="font-weight:700; color:var(--color-text);">${escapeHtml(iv.candidate_name)}</div>
+                        <div style="font-size:11px; color:var(--color-text-muted);">${escapeHtml(iv.candidate_email)}</div>
+                    </td>
+                    <td>
+                        <div style="font-weight:600; color:var(--color-text);">${escapeHtml(iv.job_title)}</div>
+                        <div style="font-size:11px; color:var(--color-primary);">${escapeHtml(iv.interview_title)}</div>
+                    </td>
+                    <td>
+                        <div style="font-weight:600; color:var(--color-text);">
+                            <i class="fas fa-calendar-alt" style="color:#06B6D4; margin-right:4px;"></i> ${escapeHtml(iv.scheduled_date_display)}
+                        </div>
+                        <div style="font-size:11px; color:var(--color-text-muted);">${escapeHtml(iv.scheduled_time_display)} IST</div>
+                    </td>
+                    <td>${iv.duration_minutes}m</td>
+                    <td>
+                        ${iv.meeting_link ? `
+                            <a href="${escapeHtml(iv.meeting_link)}" target="_blank" rel="noopener noreferrer" class="badge badge-primary" style="font-size:11px; display:inline-flex; align-items:center; gap:4px;">
+                                <i class="fas fa-video"></i> Open Meeting
+                            </a>
+                        ` : `<span style="color:var(--color-text-muted); font-size:11px;">Not Added</span>`}
+                    </td>
+                    <td>
+                        <span class="badge ${badgeClass}" style="text-transform:capitalize; padding:2px 8px; font-size:11px;">
+                            ${escapeHtml(iv.status)}
+                        </span>
+                    </td>
+                    <td style="text-align:right;">
+                        <div style="display:inline-flex; gap:6px;">
+                            <a href="/interview/${iv.id}/calendar.ics" class="btn btn-ghost btn-sm" title="Download Calendar Invite (.ics)" style="padding:4px 8px;">
+                                <i class="fas fa-calendar-plus" style="color:#06B6D4;"></i>
+                            </a>
+                            ${(st !== 'completed' && st !== 'cancelled' && st !== 'declined') ? `
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="openRescheduleModal(${iv.id}, '${escapeHtml(iv.candidate_name)}', '${escapeHtml(iv.scheduled_date)}', '${escapeHtml(iv.scheduled_time)}', ${iv.duration_minutes}, '${escapeHtml(iv.meeting_link)}')" title="Reschedule" style="padding:4px 8px;">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" class="btn btn-primary btn-sm" onclick="openCompleteModal(${iv.id})" title="Mark Completed" style="padding:4px 8px; background:#10B981; border-color:#10B981;">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="cancelRecruiterInterview(${iv.id})" title="Cancel Interview" style="padding:4px 8px; color:#EF4444;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    async function openScheduleModal() {
+        document.getElementById('conflict-error-box').style.display = 'none';
+        const candidateSel = document.getElementById('modal-candidate-select');
+        const jobSel = document.getElementById('modal-job-select');
+
+        // Set default date to tomorrow
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('modal-date-input').value = tomorrow.toISOString().split('T')[0];
+        document.getElementById('modal-date-input').min = new Date().toISOString().split('T')[0];
+        document.getElementById('modal-time-input').value = "10:30";
+
+        try {
+            const res = await fetch('/api/recruiter/candidates_for_interview');
+            const data = await res.json();
+            if (data.success) {
+                candidateSel.innerHTML = '<option value="">Select Candidate...</option>' + 
+                    (data.candidates || []).map(c => `<option value="${c.id}">${escapeHtml(c.name)} (${escapeHtml(c.email)})</option>`).join('');
+
+                jobSel.innerHTML = '<option value="">Select Associated Job...</option>' + 
+                    (data.jobs || []).map(j => `<option value="${j.id}">${escapeHtml(j.title)} — ${escapeHtml(j.location || 'Remote')}</option>`).join('');
+            }
+        } catch (err) {
+            console.error(err);
+        }
+
+        document.getElementById('schedule-modal').style.display = 'flex';
+    }
+
+    function closeScheduleModal() {
+        document.getElementById('schedule-modal').style.display = 'none';
+    }
+
+    async function submitNewInterview(e) {
+        e.preventDefault();
+        const conflictBox = document.getElementById('conflict-error-box');
+        const conflictText = document.getElementById('conflict-error-text');
+        conflictBox.style.display = 'none';
+
+        const payload = {
+            candidate_id: document.getElementById('modal-candidate-select').value,
+            job_id: document.getElementById('modal-job-select').value,
+            title: document.getElementById('modal-title-input').value,
+            scheduled_date: document.getElementById('modal-date-input').value,
+            scheduled_time: document.getElementById('modal-time-input').value,
+            duration_minutes: document.getElementById('modal-duration-select').value,
+            interview_type: document.getElementById('modal-type-select').value,
+            meeting_link: document.getElementById('modal-meeting-input').value,
+            notes: document.getElementById('modal-notes-input').value
+        };
+
+        const btn = document.getElementById('btn-submit-schedule');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking conflicts...';
+
+        try {
+            const res = await fetch('/api/recruiter/interviews/schedule', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+
+            if (res.status === 409 || data.conflict) {
+                conflictText.textContent = data.message;
+                conflictBox.style.display = 'block';
+            } else if (data.success) {
+                closeScheduleModal();
+                if (typeof showToast === 'function') {
+                    showToast(data.message, 'success');
+                }
+                loadRecruiterInterviews();
+            } else {
+                alert(data.message || 'Failed to schedule interview.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('An unexpected error occurred while scheduling.');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'Propose & Send Invite';
+        }
+    }
+
+    function openRescheduleModal(id, candidateName, date, time, duration, meetingLink) {
+        activeInterviewId = id;
+        document.getElementById('reschedule-conflict-box').style.display = 'none';
+        document.getElementById('reschedule-modal-desc').textContent = `Rescheduling session with ${candidateName}`;
+        document.getElementById('resched-date-input').value = date;
+        document.getElementById('resched-date-input').min = new Date().toISOString().split('T')[0];
+        document.getElementById('resched-time-input').value = time;
+        document.getElementById('resched-duration-select').value = duration || 30;
+        document.getElementById('resched-meeting-input').value = meetingLink || '';
+        document.getElementById('resched-notes-input').value = '';
+        document.getElementById('reschedule-modal').style.display = 'flex';
+    }
+
+    function closeRescheduleModal() {
+        document.getElementById('reschedule-modal').style.display = 'none';
+        activeInterviewId = null;
+    }
+
+    async function submitReschedule(e) {
+        e.preventDefault();
+        if (!activeInterviewId) return;
+
+        const conflictBox = document.getElementById('reschedule-conflict-box');
+        const conflictText = document.getElementById('reschedule-conflict-text');
+        conflictBox.style.display = 'none';
+
+        const payload = {
+            scheduled_date: document.getElementById('resched-date-input').value,
+            scheduled_time: document.getElementById('resched-time-input').value,
+            duration_minutes: document.getElementById('resched-duration-select').value,
+            meeting_link: document.getElementById('resched-meeting-input').value,
+            notes: document.getElementById('resched-notes-input').value
+        };
+
+        const btn = document.getElementById('btn-submit-resched');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking availability...';
+
+        try {
+            const res = await fetch(`/api/recruiter/interviews/${activeInterviewId}/reschedule`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+
+            if (res.status === 409 || data.conflict) {
+                conflictText.textContent = data.message;
+                conflictBox.style.display = 'block';
+            } else if (data.success) {
+                closeRescheduleModal();
+                if (typeof showToast === 'function') {
+                    showToast(data.message, 'success');
+                }
+                loadRecruiterInterviews();
+            } else {
+                alert(data.message || 'Failed to reschedule.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Failed to reschedule interview.');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'Confirm Reschedule';
+        }
+    }
+
+    function openCompleteModal(id) {
+        activeInterviewId = id;
+        document.getElementById('complete-notes-input').value = '';
+        document.getElementById('complete-modal').style.display = 'flex';
+    }
+
+    function closeCompleteModal() {
+        document.getElementById('complete-modal').style.display = 'none';
+        activeInterviewId = null;
+    }
+
+    async function submitCompleteInterview() {
+        if (!activeInterviewId) return;
+        const notes = document.getElementById('complete-notes-input').value.trim();
+
+        try {
+            const res = await fetch(`/api/recruiter/interviews/${activeInterviewId}/complete`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notes: notes })
+            });
+            const data = await res.json();
+            if (data.success) {
+                closeCompleteModal();
+                if (typeof showToast === 'function') {
+                    showToast(data.message, 'success');
+                }
+                loadRecruiterInterviews();
+            } else {
+                alert(data.message || 'Action failed.');
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async function cancelRecruiterInterview(id) {
+        if (!confirm('Are you sure you want to cancel this interview?')) return;
+
+        try {
+            const res = await fetch(`/api/recruiter/interviews/${id}/cancel`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reason: 'Cancelled by recruiter' })
+            });
+            const data = await res.json();
+            if (data.success) {
+                if (typeof showToast === 'function') {
+                    showToast(data.message, 'info');
+                }
+                loadRecruiterInterviews();
+            } else {
+                alert(data.message || 'Could not cancel interview.');
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' || e.key === 'Esc') {
+            closeScheduleModal();
+            closeRescheduleModal();
+            closeCompleteModal();
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadRecruiterInterviews();
+    });
+</script>
+{% endblock %}

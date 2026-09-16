@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Resume Management & Intelligence — HireVolt{% endblock %}
+
+{% block body %}
+<div class="app-container" style="padding-top:var(--space-6); padding-bottom:var(--space-12);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-5);">
+        <a href="/user_dashboard" class="btn btn-ghost btn-sm" style="padding-left:0;">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+        <button type="button" class="btn btn-primary btn-sm" onclick="openResumeUploadModal()">
+            <i class="fas fa-upload"></i> Upload New Resume
+        </button>
+    </div>
+
+    <!-- Resume Actions Hub -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:var(--space-5); margin-bottom:var(--space-8);">
+        <div class="card card-interactive" onclick="openResumeUploadModal()" style="cursor:pointer; text-align:center; padding:var(--space-6);">
+            <div style="width:52px; height:52px; border-radius:var(--radius-lg); background:var(--color-primary-light); color:var(--color-primary); display:flex; align-items:center; justify-content:center; font-size:22px; margin:0 auto var(--space-3);">
+                <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <h3 style="font-size:var(--font-size-base); font-weight:700; margin-bottom:2px;">Upload Resume</h3>
+            <p style="font-size:var(--font-size-xs); color:var(--color-text-muted); margin:0;">PDF or DOCX up to 5MB</p>
+        </div>
+
+        <div class="card card-interactive" onclick="downloadResume()" style="cursor:pointer; text-align:center; padding:var(--space-6);">
+            <div style="width:52px; height:52px; border-radius:var(--radius-lg); background:rgba(22,163,74,0.1); color:#16A34A; display:flex; align-items:center; justify-content:center; font-size:22px; margin:0 auto var(--space-3);">
+                <i class="fas fa-download"></i>
+            </div>
+            <h3 style="font-size:var(--font-size-base); font-weight:700; margin-bottom:2px;">Download Resume</h3>
+            <p style="font-size:var(--font-size-xs); color:var(--color-text-muted); margin:0;">Export active copy</p>
+        </div>
+
+        <div class="card card-interactive" onclick="parseResume()" style="cursor:pointer; text-align:center; padding:var(--space-6);">
+            <div style="width:52px; height:52px; border-radius:var(--radius-lg); background:rgba(6,182,212,0.1); color:#0891B2; display:flex; align-items:center; justify-content:center; font-size:22px; margin:0 auto var(--space-3);">
+                <i class="fas fa-brain"></i>
+            </div>
+            <h3 style="font-size:var(--font-size-base); font-weight:700; margin-bottom:2px;">Semantic Parser</h3>
+            <p style="font-size:var(--font-size-xs); color:var(--color-text-muted); margin:0;">Auto-extract skills & experience</p>
+        </div>
+    </div>
+
+    <!-- Active Resume Status & Extracted Skills -->
+    <div class="card" style="margin-bottom:var(--space-8);">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-file-pdf" style="color:var(--color-primary); margin-right:8px;"></i> Active Resume Intelligence</h2>
+            <span class="badge badge-success"><i class="fas fa-check-circle"></i> ATS Ready</span>
+        </div>
+
+        <div id="resume-status-card" style="padding:var(--space-4); background:var(--color-surface-alt); border-radius:var(--radius-lg); margin-bottom:var(--space-6); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:var(--space-3);">
+            <div style="display:flex; align-items:center; gap:var(--space-3);">
+                <i class="fas fa-file-alt" style="font-size:2rem; color:var(--color-primary);"></i>
+                <div>
+                    <div style="font-weight:700; font-size:var(--font-size-sm);" id="resume-filename">Resume_Active.pdf</div>
+                    <div style="font-size:var(--font-size-xs); color:var(--color-text-muted);" id="resume-last-updated">Last parsed recently</div>
+                </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="parseResume()"><i class="fas fa-sync-alt"></i> Re-parse</button>
+        </div>
+
+        <div>
+            <h3 style="font-size:var(--font-size-base); font-weight:700; margin-bottom:var(--space-3);"><i class="fas fa-tools" style="color:var(--color-primary); margin-right:6px;"></i> Recognized Skills</h3>
+            <div id="skills-tags" style="display:flex; gap:8px; flex-wrap:wrap;">
+                <span class="badge badge-slate" style="font-size:var(--font-size-sm); padding:6px 12px;">Python</span>
+                <span class="badge badge-slate" style="font-size:var(--font-size-sm); padding:6px 12px;">FastAPI</span>
+                <span class="badge badge-slate" style="font-size:var(--font-size-sm); padding:6px 12px;">React</span>
+                <span class="badge badge-slate" style="font-size:var(--font-size-sm); padding:6px 12px;">SQL</span>
+                <span class="badge badge-slate" style="font-size:var(--font-size-sm); padding:6px 12px;">Docker</span>
+                <span class="badge badge-slate" style="font-size:var(--font-size-sm); padding:6px 12px;">Git</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal-backdrop" id="resume-modal" onclick="if(event.target===this) closeResumeUploadModal();">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeResumeUploadModal()">&times;</button>
+        <h2 style="font-size:var(--font-size-xl); font-weight:700; margin-bottom:var(--space-2); text-align:center;">Upload New Resume</h2>
+        <p style="text-align:center; font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:var(--space-6);">Upload your PDF or DOCX resume to update your profile.</p>
+
+        <div style="border:2px dashed var(--color-border); border-radius:var(--radius-xl); padding:var(--space-8); text-align:center; background:var(--color-surface-alt); margin-bottom:var(--space-5); cursor:pointer;" onclick="document.getElementById('resume-file-input').click()">
+            <i class="fas fa-cloud-upload-alt" style="font-size:3rem; color:var(--color-primary); margin-bottom:var(--space-3);"></i>
+            <div style="font-weight:600; font-size:var(--font-size-sm); margin-bottom:4px;">Click to browse or drop file here</div>
+            <div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">PDF, DOCX up to 5MB</div>
+            <input type="file" id="resume-file-input" accept=".pdf,.doc,.docx" style="display:none;" onchange="handleFileSelect(event)">
+        </div>
+
+        <div id="selected-file-label" style="font-size:var(--font-size-xs); color:var(--color-primary); font-weight:600; margin-bottom:var(--space-4); text-align:center;"></div>
+
+        <button type="button" id="btn-upload-submit" class="btn btn-primary btn-block btn-lg" onclick="submitResumeUpload()">
+            Upload & Analyze
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let selectedResumeFile = null;
+
+    function openResumeUploadModal() {
+        document.getElementById('resume-modal').classList.add('active');
+    }
+
+    function closeResumeUploadModal() {
+        document.getElementById('resume-modal').classList.remove('active');
+    }
+
+    function handleFileSelect(e) {
+        if (e.target.files && e.target.files[0]) {
+            selectedResumeFile = e.target.files[0];
+            document.getElementById('selected-file-label').textContent = 'Selected: ' + selectedResumeFile.name + ' (' + Math.round(selectedResumeFile.size/1024) + ' KB)';
+        }
+    }
+
+    async function submitResumeUpload() {
+        if (!selectedResumeFile) {
+            showToast('Please select a resume file first.', 'warning');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('resume', selectedResumeFile);
+
+        const btn = document.getElementById('btn-upload-submit');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+        try {
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            const headers = {};
+            if (csrfMeta && csrfMeta.getAttribute('content')) {
+                headers['X-CSRFToken'] = csrfMeta.getAttribute('content');
+            }
+
+            const res = await fetch('/api/user/resume/upload', {
+                method: 'POST',
+                headers: headers,
+                body: formData
+            });
+
+            const data = await res.json();
+            btn.disabled = false;
+            btn.innerHTML = 'Upload & Analyze';
+
+            if (data.success) {
+                showToast(data.message || 'Resume uploaded successfully!', 'success');
+                closeResumeUploadModal();
+                document.getElementById('resume-filename').textContent = selectedResumeFile.name;
+                parseResume();
+            } else {
+                showToast(data.message || 'Upload failed.', 'error');
+            }
+        } catch (err) {
+            btn.disabled = false;
+            btn.innerHTML = 'Upload & Analyze';
+            showToast('Upload error occurred.', 'error');
+        }
+    }
+
+    async function downloadResume() {
+        window.location.href = '/api/user/resume/download';
+    }
+
+    async function parseResume() {
+        showToast('Analyzing resume skills with NLP...', 'info');
+        const res = await postReq('/api/user/resume/parse');
+        if (res && res.success && res.skills) {
+            const container = document.getElementById('skills-tags');
+            container.innerHTML = res.skills.map(s => `<span class="badge badge-slate" style="font-size:var(--font-size-sm); padding:6px 12px;">${escapeHtml(s)}</span>`).join('');
+            showToast('Skills extracted successfully!', 'success');
+        }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
+    }
+</script>
+{% endblock %}

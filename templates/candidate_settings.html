@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Candidate Settings — HireVolt{% endblock %}
+
+{% block body %}
+<div class="app-container" style="padding-top:var(--space-6); padding-bottom:var(--space-12); max-width:880px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-6);">
+        <div>
+            <h1 style="font-size:var(--font-size-2xl); font-weight:800; margin-bottom:2px;">Candidate Settings</h1>
+            <p style="font-size:var(--font-size-sm); color:var(--color-text-secondary); margin:0;">Configure notification alerts, password security, and account preferences.</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+            <a href="/candidate/notifications" class="btn btn-secondary btn-sm">
+                <i class="fas fa-bell"></i> Notifications
+            </a>
+            <a href="/user_dashboard" class="btn btn-ghost btn-sm">
+                <i class="fas fa-arrow-left"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Notification Preferences Card -->
+    <div class="card" style="margin-bottom:var(--space-6);">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 class="card-title" style="margin:0;"><i class="fas fa-sliders-h" style="color:var(--color-primary); margin-right:8px;"></i> Notification Preferences</h2>
+            <span class="badge" style="background:rgba(2, 132, 199, 0.1); color:#0284C7; font-size:0.75rem; font-weight:700;">Granular Alerts</span>
+        </div>
+        <p style="font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:var(--space-5);">
+            Choose which notifications and alerts you wish to receive in real-time across HireVolt.
+        </p>
+        
+        <form id="cand-notif-prefs-form" onsubmit="event.preventDefault(); saveCandNotificationPreferences();">
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:16px; margin-bottom:var(--space-6);">
+                
+                <label style="display:flex; align-items:flex-start; gap:12px; padding:12px 14px; background:var(--color-surface, #F8FAFC); border:1px solid var(--color-border, #E2E8F0); border-radius:10px; cursor:pointer;">
+                    <input type="checkbox" id="pref-application_updates" name="application_updates" checked style="width:18px; height:18px; margin-top:2px;">
+                    <div>
+                        <div style="font-weight:700; font-size:var(--font-size-sm);">Application Status Updates</div>
+                        <div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">Real-time alerts when recruiters review, update, or advance your application.</div>
+                    </div>
+                </label>
+
+                <label style="display:flex; align-items:flex-start; gap:12px; padding:12px 14px; background:var(--color-surface, #F8FAFC); border:1px solid var(--color-border, #E2E8F0); border-radius:10px; cursor:pointer;">
+                    <input type="checkbox" id="pref-shortlist_updates" name="shortlist_updates" checked style="width:18px; height:18px; margin-top:2px;">
+                    <div>
+                        <div style="font-weight:700; font-size:var(--font-size-sm);">Shortlisting Alerts 🎉</div>
+                        <div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">Immediate celebration notifications when your application is shortlisted.</div>
+                    </div>
+                </label>
+
+                <label style="display:flex; align-items:flex-start; gap:12px; padding:12px 14px; background:var(--color-surface, #F8FAFC); border:1px solid var(--color-border, #E2E8F0); border-radius:10px; cursor:pointer;">
+                    <input type="checkbox" id="pref-interview_reminders" name="interview_reminders" checked style="width:18px; height:18px; margin-top:2px;">
+                    <div>
+                        <div style="font-weight:700; font-size:var(--font-size-sm);">Interview Invitations & Reminders ⏰</div>
+                        <div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">Invitations, round details, video links, and 24h/1h schedule reminders.</div>
+                    </div>
+                </label>
+
+                <label style="display:flex; align-items:flex-start; gap:12px; padding:12px 14px; background:var(--color-surface, #F8FAFC); border:1px solid var(--color-border, #E2E8F0); border-radius:10px; cursor:pointer;">
+                    <input type="checkbox" id="pref-messages" name="messages" checked style="width:18px; height:18px; margin-top:2px;">
+                    <div>
+                        <div style="font-weight:700; font-size:var(--font-size-sm);">Direct Recruiter Messages 💬</div>
+                        <div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">Notifications when hiring managers and talent partners message you.</div>
+                    </div>
+                </label>
+
+                <label style="display:flex; align-items:flex-start; gap:12px; padding:12px 14px; background:var(--color-surface, #F8FAFC); border:1px solid var(--color-border, #E2E8F0); border-radius:10px; cursor:pointer;">
+                    <input type="checkbox" id="pref-job_alerts" name="job_alerts" checked style="width:18px; height:18px; margin-top:2px;">
+                    <div>
+                        <div style="font-weight:700; font-size:var(--font-size-sm);">Custom Job Alerts 🔔</div>
+                        <div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">Instant notifications when newly posted jobs match your saved alerts.</div>
+                    </div>
+                </label>
+
+                <label style="display:flex; align-items:flex-start; gap:12px; padding:12px 14px; background:var(--color-surface, #F8FAFC); border:1px solid var(--color-border, #E2E8F0); border-radius:10px; cursor:pointer;">
+                    <input type="checkbox" id="pref-recommended_jobs" name="recommended_jobs" checked style="width:18px; height:18px; margin-top:2px;">
+                    <div>
+                        <div style="font-weight:700; font-size:var(--font-size-sm);">AI Recommended Jobs 🎯</div>
+                        <div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">Personalized job matches based on your profile skills and experience.</div>
+                    </div>
+                </label>
+
+                <label style="display:flex; align-items:flex-start; gap:12px; padding:12px 14px; background:var(--color-surface, #F8FAFC); border:1px solid var(--color-border, #E2E8F0); border-radius:10px; cursor:pointer;">
+                    <input type="checkbox" id="pref-assessment_results" name="assessment_results" checked style="width:18px; height:18px; margin-top:2px;">
+                    <div>
+                        <div style="font-weight:700; font-size:var(--font-size-sm);">Assessment & Badge Results 🏆</div>
+                        <div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">Score reports, verified skill badges, and assessment feedback.</div>
+                    </div>
+                </label>
+
+                <label style="display:flex; align-items:flex-start; gap:12px; padding:12px 14px; background:var(--color-surface, #F8FAFC); border:1px solid var(--color-border, #E2E8F0); border-radius:10px; cursor:pointer;">
+                    <input type="checkbox" id="pref-email_notifications" name="email_notifications" checked style="width:18px; height:18px; margin-top:2px;">
+                    <div>
+                        <div style="font-weight:700; font-size:var(--font-size-sm);">Email Notifications & Summaries 📧</div>
+                        <div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">Email copies of key application and interview communications.</div>
+                    </div>
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-save me-1"></i> Save Notification Preferences</button>
+        </form>
+    </div>
+
+    <!-- Password Change Card -->
+    <div class="card" style="margin-bottom:var(--space-6);">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-lock" style="color:var(--color-primary); margin-right:8px;"></i> Change Password</h2>
+        </div>
+        <form id="cand-pass-form" onsubmit="event.preventDefault(); submitCandPassword();" style="max-width:480px;">
+            <div class="form-group">
+                <label class="form-label">Current Password</label>
+                <div class="password-input-group">
+                    <input type="password" id="cp-old" class="form-control" placeholder="Current password" required autocomplete="current-password">
+                    <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('cp-old', this)" aria-label="Toggle password visibility" tabindex="-1">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">New Password</label>
+                <div class="password-input-group">
+                    <input type="password" id="cp-new" class="form-control" placeholder="Min 8 chars, 1 letter, 1 digit" required autocomplete="new-password">
+                    <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('cp-new', this)" aria-label="Toggle password visibility" tabindex="-1">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Confirm New Password</label>
+                <div class="password-input-group">
+                    <input type="password" id="cp-conf" class="form-control" placeholder="Confirm new password" required autocomplete="new-password">
+                    <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('cp-conf', this)" aria-label="Toggle password visibility" tabindex="-1">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Update Password</button>
+        </form>
+    </div>
+
+    <!-- Danger Zone Card -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title" style="color:var(--color-error);"><i class="fas fa-trash-alt" style="margin-right:8px;"></i> Danger Zone</h2>
+        </div>
+        <p style="font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:var(--space-4);">
+            Deleting your account will remove your profile, applications, and saved jobs permanently.
+        </p>
+        <button type="button" class="btn btn-danger btn-sm" onclick="if(confirm('Are you sure you want to delete your candidate account?')) showToast('Account deletion requested.', 'warning');">
+            Delete My Account
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function loadCandNotificationPreferences() {
+        try {
+            const res = await fetch('/api/notifications/preferences');
+            const data = await res.json();
+            if (data && data.success && data.preferences) {
+                const p = data.preferences;
+                const fields = ['application_updates', 'shortlist_updates', 'interview_reminders', 'messages', 'job_alerts', 'recommended_jobs', 'assessment_results', 'email_notifications'];
+                fields.forEach(f => {
+                    const el = document.getElementById(`pref-${f}`);
+                    if (el && p[f] !== undefined) {
+                        el.checked = Boolean(p[f]);
+                    }
+                });
+            }
+        } catch (e) {
+            console.error('Error loading preferences:', e);
+        }
+    }
+
+    async function saveCandNotificationPreferences() {
+        const payload = {};
+        const fields = ['application_updates', 'shortlist_updates', 'interview_reminders', 'messages', 'job_alerts', 'recommended_jobs', 'assessment_results', 'email_notifications'];
+        fields.forEach(f => {
+            const el = document.getElementById(`pref-${f}`);
+            if (el) payload[f] = el.checked;
+        });
+
+        try {
+            const csrfToken = document.querySelector('input[name="csrf_token"]')?.value || '';
+            const res = await fetch('/api/notifications/preferences', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.success) {
+                if (typeof showToast === 'function') showToast('Notification preferences saved successfully!', 'success');
+            } else {
+                if (typeof showToast === 'function') showToast(data.message || 'Failed to save preferences', 'error');
+            }
+        } catch (e) {
+            console.error('Error saving preferences:', e);
+        }
+    }
+
+    async function submitCandPassword() {
+        const old_pass = document.getElementById('cp-old').value;
+        const new_pass = document.getElementById('cp-new').value;
+        const conf_pass = document.getElementById('cp-conf').value;
+
+        if (!new_pass || new_pass.length < 8) {
+            showToast('New password must be at least 8 characters.', 'error');
+            return;
+        }
+        if (new_pass !== conf_pass) {
+            showToast('Passwords do not match.', 'error');
+            return;
+        }
+
+        const csrfToken = document.querySelector('input[name="csrf_token"]')?.value || '';
+        const res = await fetch('/api/user/change_password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+            body: JSON.stringify({ old_password: old_pass, new_password: new_pass })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast('Password updated successfully!', 'success');
+            document.getElementById('cand-pass-form').reset();
+        } else {
+            showToast(data.message || 'Password update failed', 'error');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadCandNotificationPreferences();
+    });
+</script>
+{% endblock %}

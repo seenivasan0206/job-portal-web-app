@@ -1,0 +1,878 @@
+{% extends "base.html" %}
+
+{% block title %}Talent Search & Candidate Matching — HireVolt{% endblock %}
+
+{% block extra_head %}
+<style>
+    .talent-header-card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-card);
+        padding: var(--space-6);
+        margin-bottom: var(--space-6);
+        box-shadow: var(--shadow-sm);
+    }
+    .job-selector-box {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: var(--space-4);
+        align-items: center;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        padding: var(--space-4);
+        margin-bottom: var(--space-4);
+    }
+    .job-active-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        align-items: center;
+        margin-top: var(--space-3);
+        padding-top: var(--space-3);
+        border-top: 1px dashed var(--color-border);
+        font-size: var(--font-size-xs);
+        color: var(--color-text-secondary);
+    }
+    .filter-bar-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr auto auto;
+        gap: var(--space-3);
+        align-items: center;
+    }
+    @media (max-width: 1024px) {
+        .filter-bar-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+        .job-selector-box {
+            grid-template-columns: 1fr;
+        }
+    }
+    @media (max-width: 640px) {
+        .filter-bar-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    .candidate-card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-card);
+        padding: var(--space-5);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+        box-shadow: var(--shadow-sm);
+    }
+    .candidate-card:hover {
+        transform: translateY(-2px);
+        border-color: var(--color-border-hover);
+        box-shadow: var(--shadow-md);
+    }
+    .score-metric-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 4px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--color-border-subtle);
+        border-radius: var(--radius-sm);
+        padding: 8px 4px;
+        margin: var(--space-3) 0;
+        text-align: center;
+    }
+    .score-metric-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .score-metric-val {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--color-text);
+    }
+    .score-metric-lbl {
+        font-size: 9px;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        margin-top: 2px;
+    }
+    .badge-skill-matched {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10B981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        font-size: 11px;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: var(--radius-xs);
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .badge-skill-missing {
+        background: rgba(245, 158, 11, 0.12);
+        color: #F59E0B;
+        border: 1px solid rgba(245, 158, 11, 0.25);
+        font-size: 11px;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: var(--radius-xs);
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.75);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1050;
+        padding: var(--space-4);
+    }
+    .modal-backdrop.active {
+        display: flex;
+    }
+    .modal-container {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-card);
+        width: 100%;
+        max-width: 680px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: var(--shadow-xl);
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="app-container" style="padding-top:var(--space-6); padding-bottom:var(--space-12);">
+    <!-- Header -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-6); flex-wrap:wrap; gap:var(--space-3);">
+        <div>
+            <h1 style="font-size:var(--font-size-2xl); font-weight:800; margin-bottom:4px; display:flex; align-items:center; gap:8px;">
+                <i class="fas fa-bullseye" style="color:var(--color-primary);"></i>
+                Talent Search & Candidate Matching
+            </h1>
+            <p style="font-size:var(--font-size-sm); color:var(--color-text-secondary); margin:0;">
+                Select an active job opening to dynamically rank candidates with transparent multi-signal match scoring.
+            </p>
+        </div>
+        <div style="display:flex; gap:var(--space-2);">
+            <a href="/recruiter_interviews" class="btn btn-secondary btn-sm">
+                <i class="fas fa-calendar-alt"></i> Interview Coordinator
+            </a>
+            <a href="/employer_dashboard" class="btn btn-ghost btn-sm">
+                <i class="fas fa-arrow-left"></i> Employer Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Job Selection Bar (Entry Point) -->
+    <div class="talent-header-card">
+        <div class="job-selector-box">
+            <div style="flex:1;">
+                <label for="select-job" style="font-size:var(--font-size-xs); font-weight:700; text-transform:uppercase; color:var(--color-text-secondary); margin-bottom:6px; display:block;">
+                    <i class="fas fa-briefcase" style="color:var(--color-primary); margin-right:4px;"></i> Select Active Job Opening to Match Against
+                </label>
+                <select id="select-job" class="form-select" onchange="onJobSelected()" style="font-weight:600; font-size:var(--font-size-sm); background:var(--color-surface-alt);">
+                    <option value="">-- Loading active job postings... --</option>
+                </select>
+            </div>
+            <div style="display:flex; gap:var(--space-2); align-items:flex-end; padding-top:18px;">
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-refresh-matches" onclick="refreshMatchScores()" title="Recalculate AI match scoring for this job" style="display:none; white-space:nowrap;">
+                    <i class="fas fa-sync-alt"></i> Recalculate
+                </button>
+            </div>
+        </div>
+
+        <!-- Selected Job Metadata (Populated when job chosen) -->
+        <div id="selected-job-summary" style="display:none;" class="job-active-meta">
+            <span style="font-weight:700; color:var(--color-text); margin-right:4px;" id="meta-job-title">Job Title</span>
+            <span class="badge badge-slate" id="meta-job-loc"><i class="fas fa-map-marker-alt"></i> Location</span>
+            <span class="badge badge-slate" id="meta-job-exp"><i class="fas fa-user-clock"></i> Exp Req</span>
+            <span class="badge badge-slate" id="meta-job-cat"><i class="fas fa-tag"></i> Category</span>
+            <div style="margin-left:auto; display:flex; gap:4px; align-items:center;" id="meta-job-skills-container"></div>
+        </div>
+
+        <!-- Candidate Filter Controls (Secondary search on top of job ranking) -->
+        <div style="margin-top:var(--space-5); padding-top:var(--space-4); border-top:1px solid var(--color-border-subtle);">
+            <div class="filter-bar-grid">
+                <div class="input-icon-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="candidate-search" class="form-control" placeholder="Filter by name, keyword, skills..." onkeydown="if(event.key==='Enter') searchCandidates()">
+                </div>
+
+                <select id="filter-skills" class="form-select" onchange="searchCandidates()">
+                    <option value="">All Tech Stacks</option>
+                    <option value="python">Python / Django</option>
+                    <option value="javascript">JavaScript / React</option>
+                    <option value="java">Java / Spring</option>
+                    <option value="devops">DevOps / AWS</option>
+                    <option value="data">Data Science / ML</option>
+                </select>
+
+                <select id="filter-exp" class="form-select" onchange="searchCandidates()">
+                    <option value="">Any Experience</option>
+                    <option value="0-2">Entry Level (0-2 Yrs)</option>
+                    <option value="2-5">Mid-Level (2-5 Yrs)</option>
+                    <option value="5+">Senior (5+ Yrs)</option>
+                </select>
+
+                <select id="filter-location" class="form-select" onchange="searchCandidates()">
+                    <option value="">All Locations</option>
+                </select>
+
+                <button type="button" class="btn btn-primary" onclick="searchCandidates()">
+                    <i class="fas fa-search"></i> Search Talent
+                </button>
+
+                <button type="button" class="btn btn-ghost" onclick="resetFilters()" title="Reset secondary search filters">
+                    <i class="fas fa-undo"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Status Bar -->
+    <div id="results-status-bar" style="display:none; justify-content:space-between; align-items:center; margin-bottom:var(--space-4); font-size:var(--font-size-xs); color:var(--color-text-secondary);">
+        <div>
+            <span id="results-count-text" style="font-weight:700; color:var(--color-text);">Showing 0 ranked candidates</span>
+            <span style="margin-left:8px; opacity:0.8;">• Weighted ranking (Skills 40%, JD Relevance 30%, Experience 15%, Education 10%, Location 5%)</span>
+        </div>
+        <div id="results-last-computed" style="opacity:0.7;"></div>
+    </div>
+
+    <!-- Candidates Grid Container -->
+    <div id="candidates-list" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(360px, 1fr)); gap:var(--space-5);">
+        <div class="empty-state card" style="grid-column: 1 / -1; padding:var(--space-10); text-align:center;">
+            <div class="empty-state-icon" style="font-size:2.5rem; color:var(--color-primary); margin-bottom:var(--space-3);"><i class="fas fa-briefcase"></i></div>
+            <div class="empty-state-title" style="font-size:var(--font-size-lg); font-weight:700; margin-bottom:var(--space-2);">Select an active job opening to rank candidates</div>
+            <p class="empty-state-desc" style="max-width:560px; margin:0 auto; color:var(--color-text-secondary); font-size:var(--font-size-sm); line-height:1.6;">
+                Talent match scoring evaluates verified candidate profiles specifically against your job's required skills, experience duration, JD semantics, and work location.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Candidate Detail Profile Modal -->
+<div id="candidateProfileModal" class="modal-backdrop">
+    <div class="modal-container">
+        <div style="padding:var(--space-5); border-bottom:1px solid var(--color-border); display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0; font-size:var(--font-size-lg); font-weight:700;" id="modalCandidateName">Candidate Profile</h3>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="closeModal('candidateProfileModal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="modalCandidateBody" style="padding:var(--space-5); max-height:calc(85vh - 130px); overflow-y:auto;">
+            <div class="card skeleton" style="height:140px; margin-bottom:12px;"></div>
+            <div class="card skeleton" style="height:100px;"></div>
+        </div>
+        <div style="padding:var(--space-4) var(--space-5); border-top:1px solid var(--color-border); display:flex; justify-content:flex-end; gap:var(--space-2);">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('candidateProfileModal')">Close</button>
+            <button type="button" class="btn btn-primary btn-sm" id="modalScheduleBtn">
+                <i class="fas fa-calendar-check"></i> Schedule Interview
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Fast Interview Scheduling Modal -->
+<div id="scheduleInterviewModal" class="modal-backdrop">
+    <div class="modal-container">
+        <form onsubmit="submitInterviewSchedule(event)">
+            <div style="padding:var(--space-5); border-bottom:1px solid var(--color-border); display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0; font-size:var(--font-size-lg); font-weight:700;">
+                    <i class="fas fa-calendar-plus" style="color:var(--color-primary); margin-right:6px;"></i> Schedule Direct Interview
+                </h3>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="closeModal('scheduleInterviewModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div style="padding:var(--space-5); display:flex; flex-direction:column; gap:var(--space-4);">
+                <input type="hidden" id="sch-candidate-id" required>
+                <input type="hidden" id="sch-job-id" required>
+
+                <div style="background:rgba(255,255,255,0.02); border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:var(--space-3);">
+                    <div style="font-size:var(--font-size-xs); color:var(--color-text-secondary); margin-bottom:2px;">Candidate</div>
+                    <div style="font-weight:700; font-size:var(--font-size-sm);" id="sch-candidate-name-display">-</div>
+                    <div style="font-size:var(--font-size-xs); color:var(--color-text-secondary); margin-top:6px; margin-bottom:2px;">Target Job</div>
+                    <div style="font-weight:700; font-size:var(--font-size-sm);" id="sch-job-title-display">-</div>
+                </div>
+
+                <div>
+                    <label class="form-label" for="sch-title" style="font-size:var(--font-size-xs); font-weight:700;">Interview Title *</label>
+                    <input type="text" id="sch-title" class="form-control" required placeholder="e.g. Technical Round 1 — System Architecture">
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-3);">
+                    <div>
+                        <label class="form-label" for="sch-date" style="font-size:var(--font-size-xs); font-weight:700;">Date *</label>
+                        <input type="date" id="sch-date" class="form-control" required>
+                    </div>
+                    <div>
+                        <label class="form-label" for="sch-time" style="font-size:var(--font-size-xs); font-weight:700;">Start Time *</label>
+                        <input type="time" id="sch-time" class="form-control" required>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-3);">
+                    <div>
+                        <label class="form-label" for="sch-duration" style="font-size:var(--font-size-xs); font-weight:700;">Duration (Minutes)</label>
+                        <select id="sch-duration" class="form-select">
+                            <option value="30">30 Minutes</option>
+                            <option value="45" selected>45 Minutes</option>
+                            <option value="60">60 Minutes</option>
+                            <option value="90">90 Minutes</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label" for="sch-type" style="font-size:var(--font-size-xs); font-weight:700;">Interview Type</label>
+                        <select id="sch-type" class="form-select">
+                            <option value="Video Interview" selected>Video Interview</option>
+                            <option value="Phone Interview">Phone Interview</option>
+                            <option value="On-Site / In-Person">On-Site / In-Person</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label" for="sch-link" style="font-size:var(--font-size-xs); font-weight:700;">Meeting Link / Location</label>
+                    <input type="text" id="sch-link" class="form-control" placeholder="https://meet.google.com/xyz or Office Address">
+                </div>
+
+                <div>
+                    <label class="form-label" for="sch-notes" style="font-size:var(--font-size-xs); font-weight:700;">Instructions / Notes for Candidate</label>
+                    <textarea id="sch-notes" class="form-control" rows="2" placeholder="Please prepare to discuss your past projects and system design experience..."></textarea>
+                </div>
+            </div>
+            <div style="padding:var(--space-4) var(--space-5); border-top:1px solid var(--color-border); display:flex; justify-content:flex-end; gap:var(--space-2);">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('scheduleInterviewModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm" id="btnSubmitSchedule">
+                    <i class="fas fa-paper-plane"></i> Confirm & Send Invitation
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let activeEmployerJobs = [];
+    let currentSelectedJob = null;
+    let cachedCandidates = [];
+
+    // Helper to escape HTML characters securely
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
+    }
+
+    // Helper to escape JS string literals safely
+    function escapeJs(str) {
+        if (!str) return '';
+        return String(str).replace(/['"\\\n\r]/g, m => ({ "'": "\\'", '"': '\\"', '\\': '\\\\', '\n': ' ', '\r': '' })[m]);
+    }
+
+    function closeModal(modalId) {
+        const m = document.getElementById(modalId);
+        if (m) m.classList.remove('active');
+    }
+
+    function openModal(modalId) {
+        const m = document.getElementById(modalId);
+        if (m) m.classList.add('active');
+    }
+
+    // Initial load: Fetch recruiter jobs and populate dropdown
+    async function initTalentSearch() {
+        if (typeof window.populateLocationSelect === 'function') {
+            window.populateLocationSelect('filter-location', '', 'All Locations');
+        }
+        const jobSelect = document.getElementById('select-job');
+        jobSelect.innerHTML = '<option value="">-- Loading active job postings... --</option>';
+
+        try {
+            const res = await getReq('/api/recruiter/jobs');
+            if (res && res.success && res.jobs && res.jobs.length > 0) {
+                activeEmployerJobs = res.jobs;
+                jobSelect.innerHTML = '<option value="">-- Choose an active job posting to rank candidates --</option>' + 
+                    res.jobs.map(j => `
+                        <option value="${j.id}">
+                            ${escapeHtml(j.title)} (${escapeHtml(j.location || 'Remote')}${j.skills ? ' • ' + escapeHtml(j.skills.split(',').slice(0, 2).join(', ')) : ''})
+                        </option>
+                    `).join('');
+
+                // Check URL parameter ?job_id=
+                const urlParams = new URLSearchParams(window.location.search);
+                const urlJobId = urlParams.get('job_id');
+                if (urlJobId && activeEmployerJobs.some(j => String(j.id) === String(urlJobId))) {
+                    jobSelect.value = urlJobId;
+                    onJobSelected();
+                } else {
+                    // Preselect first job if available to provide immediate value
+                    jobSelect.value = activeEmployerJobs[0].id;
+                    onJobSelected();
+                }
+            } else {
+                jobSelect.innerHTML = '<option value="">No active jobs posted yet</option>';
+                const list = document.getElementById('candidates-list');
+                list.innerHTML = `
+                    <div class="empty-state card" style="grid-column: 1 / -1; padding:var(--space-10); text-align:center;">
+                        <div class="empty-state-icon" style="font-size:2.5rem; color:var(--color-primary); margin-bottom:var(--space-3);"><i class="fas fa-plus-circle"></i></div>
+                        <div class="empty-state-title" style="font-size:var(--font-size-lg); font-weight:700; margin-bottom:var(--space-2);">Post a Job to Unlock Match Scoring</div>
+                        <p class="empty-state-desc" style="max-width:520px; margin:0 auto var(--space-5); color:var(--color-text-secondary); font-size:var(--font-size-sm);">
+                            Match scoring calculates semantic relevance, tech stack overlap, and experience fit against your specific job openings. Post your first job to start discovering qualified talent.
+                        </p>
+                        <a href="/employer_post_job" class="btn btn-primary"><i class="fas fa-plus"></i> Post a New Job</a>
+                    </div>
+                `;
+            }
+        } catch (e) {
+            console.error('Error fetching employer jobs:', e);
+            jobSelect.innerHTML = '<option value="">Failed to load jobs. Please refresh.</option>';
+        }
+    }
+
+    function onJobSelected() {
+        const jobId = document.getElementById('select-job').value;
+        const refreshBtn = document.getElementById('btn-refresh-matches');
+        const summaryBox = document.getElementById('selected-job-summary');
+
+        if (!jobId) {
+            if (refreshBtn) refreshBtn.style.display = 'none';
+            if (summaryBox) summaryBox.style.display = 'none';
+            currentSelectedJob = null;
+            renderEmptyJobPrompt();
+            return;
+        }
+
+        currentSelectedJob = activeEmployerJobs.find(j => String(j.id) === String(jobId));
+        if (currentSelectedJob) {
+            if (refreshBtn) refreshBtn.style.display = 'inline-flex';
+            if (summaryBox) {
+                summaryBox.style.display = 'flex';
+                document.getElementById('meta-job-title').textContent = currentSelectedJob.title;
+                document.getElementById('meta-job-loc').innerHTML = `<i class="fas fa-map-marker-alt"></i> ${escapeHtml(currentSelectedJob.location || 'Remote')}`;
+                document.getElementById('meta-job-exp').innerHTML = `<i class="fas fa-user-clock"></i> ${escapeHtml(currentSelectedJob.experience ? currentSelectedJob.experience + ' Yrs Exp' : 'Fresher / Any')}`;
+                document.getElementById('meta-job-cat').innerHTML = `<i class="fas fa-tag"></i> ${escapeHtml(currentSelectedJob.category || 'Engineering')}`;
+                
+                const skillsCont = document.getElementById('meta-job-skills-container');
+                if (currentSelectedJob.skills) {
+                    skillsCont.innerHTML = '<span style="font-size:11px; opacity:0.7; margin-right:2px;">Required:</span>' + 
+                        currentSelectedJob.skills.split(',').slice(0, 4).map(s => `<span class="badge badge-primary" style="font-size:10px;">${escapeHtml(s.trim())}</span>`).join('');
+                } else {
+                    skillsCont.innerHTML = '';
+                }
+            }
+
+            // Sync URL query param without full page reload
+            const url = new URL(window.location);
+            url.searchParams.set('job_id', jobId);
+            window.history.replaceState({}, '', url);
+
+            searchCandidates();
+        }
+    }
+
+    function renderEmptyJobPrompt() {
+        const statusBar = document.getElementById('results-status-bar');
+        if (statusBar) statusBar.style.display = 'none';
+        const list = document.getElementById('candidates-list');
+        list.innerHTML = `
+            <div class="empty-state card" style="grid-column: 1 / -1; padding:var(--space-10); text-align:center;">
+                <div class="empty-state-icon" style="font-size:2.5rem; color:var(--color-primary); margin-bottom:var(--space-3);"><i class="fas fa-briefcase"></i></div>
+                <div class="empty-state-title" style="font-size:var(--font-size-lg); font-weight:700; margin-bottom:var(--space-2);">Select an active job opening to rank candidates</div>
+                <p class="empty-state-desc" style="max-width:560px; margin:0 auto; color:var(--color-text-secondary); font-size:var(--font-size-sm); line-height:1.6;">
+                    Match scoring evaluates verified candidate profiles specifically against your job's required skills, experience duration, JD semantics, and work location.
+                </p>
+            </div>
+        `;
+    }
+
+    async function refreshMatchScores() {
+        const jobId = document.getElementById('select-job').value;
+        if (!jobId) return;
+        const btn = document.getElementById('btn-refresh-matches');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Calculating...';
+        btn.disabled = true;
+
+        try {
+            await searchCandidates(true);
+            if (typeof showToast === 'function') {
+                showToast('Match scores recalculated successfully!', 'success');
+            }
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    async function searchCandidates(forceRefresh = false) {
+        const jobId = document.getElementById('select-job').value;
+        if (!jobId) {
+            renderEmptyJobPrompt();
+            return;
+        }
+
+        const query = document.getElementById('candidate-search').value.trim();
+        const skills = document.getElementById('filter-skills').value;
+        const exp = document.getElementById('filter-exp').value;
+        const location = document.getElementById('filter-location').value;
+
+        const list = document.getElementById('candidates-list');
+        list.innerHTML = `
+            <div class="card skeleton" style="height:280px;"></div>
+            <div class="card skeleton" style="height:280px;"></div>
+            <div class="card skeleton" style="height:280px;"></div>
+        `;
+
+        try {
+            const endpoint = `/api/recruiter/talent_search?job_id=${encodeURIComponent(jobId)}` + 
+                (query ? `&query=${encodeURIComponent(query)}` : '') + 
+                (skills ? `&skills=${encodeURIComponent(skills)}` : '') + 
+                (exp ? `&experience=${encodeURIComponent(exp)}` : '') + 
+                (location ? `&location=${encodeURIComponent(location)}` : '') + 
+                (forceRefresh ? '&refresh=1' : '');
+
+            const res = await getReq(endpoint);
+            if (res && res.success && res.candidates) {
+                cachedCandidates = res.candidates;
+                renderCandidates(res.candidates, res.job);
+            } else {
+                renderCandidates([], res ? res.job : null);
+            }
+        } catch (e) {
+            console.error('Error fetching talent matches:', e);
+            list.innerHTML = `
+                <div class="empty-state card" style="grid-column: 1 / -1; padding:var(--space-8); text-align:center;">
+                    <div class="empty-state-icon" style="color:var(--color-error);"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="empty-state-title">Error Loading Candidates</div>
+                    <p class="empty-state-desc">Could not connect to talent search API. Please retry.</p>
+                    <button class="btn btn-secondary btn-sm" onclick="searchCandidates()"><i class="fas fa-redo"></i> Retry</button>
+                </div>
+            `;
+        }
+    }
+
+    function resetFilters() {
+        document.getElementById('candidate-search').value = '';
+        document.getElementById('filter-skills').value = '';
+        document.getElementById('filter-exp').value = '';
+        document.getElementById('filter-location').value = '';
+        searchCandidates();
+    }
+
+    function renderCandidates(candidates, job) {
+        const list = document.getElementById('candidates-list');
+        const statusBar = document.getElementById('results-status-bar');
+        const countText = document.getElementById('results-count-text');
+
+        if (!candidates || candidates.length === 0) {
+            if (statusBar) statusBar.style.display = 'none';
+            list.innerHTML = `
+                <div class="empty-state card" style="grid-column: 1 / -1; padding:var(--space-10); text-align:center;">
+                    <div class="empty-state-icon" style="font-size:2.5rem; color:var(--color-text-muted); margin-bottom:var(--space-3);"><i class="fas fa-user-slash"></i></div>
+                    <div class="empty-state-title" style="font-size:var(--font-size-lg); font-weight:700; margin-bottom:var(--space-2);">No matching candidates found</div>
+                    <p class="empty-state-desc" style="max-width:480px; margin:0 auto var(--space-4); color:var(--color-text-secondary); font-size:var(--font-size-sm);">
+                        Try broadening your secondary filter criteria or search keyword to see more candidates.
+                    </p>
+                    <button type="button" class="btn btn-ghost btn-sm" onclick="resetFilters()"><i class="fas fa-undo"></i> Reset Filters</button>
+                </div>
+            `;
+            return;
+        }
+
+        if (statusBar) {
+            statusBar.style.display = 'flex';
+            countText.textContent = `Showing ${candidates.length} ranked candidate${candidates.length === 1 ? '' : 's'}${job && job.title ? ` for "${job.title}"` : ''}`;
+        }
+
+        list.innerHTML = candidates.map((c, idx) => {
+            const finalScore = Math.round(Number(c.final_score || 0));
+            let scoreBadgeClass = 'badge-slate';
+            if (finalScore >= 80) scoreBadgeClass = 'badge-success';
+            else if (finalScore >= 60) scoreBadgeClass = 'badge-primary';
+            else if (finalScore >= 40) scoreBadgeClass = 'badge-warning';
+
+            const bk = c.score_breakdown || { skills: 0, relevance: 0, experience: 0, education: 0, location: 0 };
+            const matchedSkills = c.matched_skills || [];
+            const missingSkills = c.missing_skills || [];
+            const initials = (c.name || 'C').substring(0, 2).toUpperCase();
+
+            return `
+                <div class="candidate-card">
+                    <div>
+                        <!-- Header with Rank, Avatar, Name & Match Score -->
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:var(--space-3);">
+                            <div style="display:flex; align-items:center; gap:var(--space-3);">
+                                <div class="company-logo-avatar" style="width:48px; height:48px; font-size:1.1rem; border-radius:var(--radius-full); font-weight:800; background:rgba(255,94,20,0.15); color:var(--color-primary); border:1px solid rgba(255,94,20,0.3);">
+                                    ${escapeHtml(initials)}
+                                </div>
+                                <div>
+                                    <div style="display:flex; align-items:center; gap:6px;">
+                                        <h3 style="font-size:var(--font-size-base); font-weight:700; margin:0;">${escapeHtml(c.name)}</h3>
+                                        <span class="badge badge-slate" style="font-size:9px; font-weight:700; padding:2px 6px;">#${idx + 1}</span>
+                                    </div>
+                                    <span class="badge badge-success" style="font-size:10px; margin-top:2px;"><i class="fas fa-check-circle"></i> Available to Hire</span>
+                                </div>
+                            </div>
+                            <span class="badge ${scoreBadgeClass}" style="font-size:13px; font-weight:800; padding:4px 10px; letter-spacing:0.02em;">
+                                ${escapeHtml(c.match_score || finalScore + '%')} Match
+                            </span>
+                        </div>
+
+                        <!-- Headline -->
+                        <p style="font-size:var(--font-size-xs); color:var(--color-text-secondary); font-weight:500; margin-bottom:var(--space-2); line-height:1.4;">
+                            ${escapeHtml(c.headline || 'Software Professional')}
+                        </p>
+
+                        <!-- Score Breakdown Bar (Pills) -->
+                        <div class="score-metric-grid">
+                            <div class="score-metric-item">
+                                <span class="score-metric-val">${bk.skills}%</span>
+                                <span class="score-metric-lbl">Skills</span>
+                            </div>
+                            <div class="score-metric-item">
+                                <span class="score-metric-val">${bk.relevance}%</span>
+                                <span class="score-metric-lbl">JD Match</span>
+                            </div>
+                            <div class="score-metric-item">
+                                <span class="score-metric-val">${bk.experience}%</span>
+                                <span class="score-metric-lbl">Exp</span>
+                            </div>
+                            <div class="score-metric-item">
+                                <span class="score-metric-val">${bk.education}%</span>
+                                <span class="score-metric-lbl">Edu</span>
+                            </div>
+                            <div class="score-metric-item">
+                                <span class="score-metric-val">${bk.location}%</span>
+                                <span class="score-metric-lbl">Loc</span>
+                            </div>
+                        </div>
+
+                        <!-- Matched & Missing Skills -->
+                        <div style="margin-bottom:var(--space-3);">
+                            ${matchedSkills.length > 0 ? `
+                                <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--color-success); margin-bottom:4px; display:flex; align-items:center; gap:4px;">
+                                    <i class="fas fa-check-circle"></i> Matched Skills (${matchedSkills.length})
+                                </div>
+                                <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:var(--space-2);">
+                                    ${matchedSkills.slice(0, 5).map(s => `<span class="badge-skill-matched"><i class="fas fa-check"></i> ${escapeHtml(s)}</span>`).join('')}
+                                    ${matchedSkills.length > 5 ? `<span class="badge badge-slate" style="font-size:10px;">+${matchedSkills.length - 5} more</span>` : ''}
+                                </div>
+                            ` : ''}
+
+                            ${missingSkills.length > 0 ? `
+                                <div style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--color-warning); margin-bottom:4px; display:flex; align-items:center; gap:4px;">
+                                    <i class="fas fa-exclamation-circle"></i> Missing Required Skills (${missingSkills.length})
+                                </div>
+                                <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:var(--space-3);">
+                                    ${missingSkills.slice(0, 3).map(s => `<span class="badge-skill-missing"><i class="fas fa-minus"></i> ${escapeHtml(s)}</span>`).join('')}
+                                    ${missingSkills.length > 3 ? `<span class="badge badge-slate" style="font-size:10px;">+${missingSkills.length - 3} missing</span>` : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <!-- Candidate Experience & Meta Info -->
+                        <div style="font-size:var(--font-size-xs); color:var(--color-text-muted); display:flex; flex-direction:column; gap:4px; margin-bottom:var(--space-4);">
+                            <div>
+                                <i class="fas fa-briefcase" style="color:var(--color-primary); width:16px;"></i> ${escapeHtml(c.experience_text || 'Fresher / Entry')}
+                            </div>
+                            <div>
+                                <i class="fas fa-graduation-cap" style="color:var(--color-primary); width:16px;"></i> ${escapeHtml(c.education_text || 'Degree / Professional')}
+                            </div>
+                            <div>
+                                <i class="fas fa-map-marker-alt" style="color:var(--color-primary); width:16px;"></i> ${escapeHtml(c.location || 'Remote / Pan India')}
+                            </div>
+                            <div>
+                                <i class="fas fa-clock" style="color:var(--color-primary); width:16px;"></i> Notice: ${escapeHtml(c.notice_period || 'Immediate')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Actions -->
+                    <div style="display:flex; gap:8px; padding-top:var(--space-3); border-top:1px solid var(--color-border-subtle);">
+                        <button type="button" class="btn btn-secondary btn-sm" style="flex:1;" onclick="viewCandidateProfile(${c.id})">
+                            <i class="fas fa-user"></i> View Profile
+                        </button>
+                        <button type="button" class="btn btn-primary btn-sm" style="flex:1;" onclick="openScheduleModal(${c.id}, '${escapeJs(c.name)}')">
+                            <i class="fas fa-calendar-check"></i> Schedule
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // View full candidate profile in modal
+    async function viewCandidateProfile(candidateId) {
+        openModal('candidateProfileModal');
+        const nameEl = document.getElementById('modalCandidateName');
+        const bodyEl = document.getElementById('modalCandidateBody');
+        const schBtn = document.getElementById('modalScheduleBtn');
+
+        nameEl.textContent = 'Loading Candidate Profile...';
+        bodyEl.innerHTML = `
+            <div class="card skeleton" style="height:120px; margin-bottom:12px;"></div>
+            <div class="card skeleton" style="height:160px;"></div>
+        `;
+
+        try {
+            const res = await getReq(`/api/recruiter/candidate/${candidateId}`);
+            if (!res || !res.success || !res.candidate) {
+                bodyEl.innerHTML = `<div class="empty-state"><p>Candidate profile details not found.</p></div>`;
+                return;
+            }
+
+            const cand = res.candidate;
+            nameEl.textContent = cand.name;
+            schBtn.onclick = () => {
+                closeModal('candidateProfileModal');
+                openScheduleModal(cand.id, cand.name);
+            };
+
+            const employmentHtml = cand.employment && cand.employment.length > 0 ? cand.employment.map(e => `
+                <div style="padding:var(--space-3); border-left:2px solid var(--color-primary); margin-bottom:var(--space-2); background:rgba(255,255,255,0.01);">
+                    <div style="font-weight:700; font-size:var(--font-size-sm);">${escapeHtml(e.job_title || 'Role')} at ${escapeHtml(e.company_name || 'Company')}</div>
+                    <div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">${escapeHtml(e.start_date || '')} to ${e.is_current ? '<span class="badge badge-success" style="font-size:9px;">Present</span>' : escapeHtml(e.end_date || '')}</div>
+                    ${e.description ? `<p style="font-size:var(--font-size-xs); color:var(--color-text-secondary); margin-top:4px;">${escapeHtml(e.description)}</p>` : ''}
+                </div>
+            `).join('') : '<p style="font-size:var(--font-size-xs); color:var(--color-text-muted);">No employment history recorded.</p>';
+
+            const educationHtml = cand.education && cand.education.length > 0 ? cand.education.map(ed => `
+                <div style="padding:var(--space-2) 0; border-bottom:1px dashed var(--color-border-subtle); font-size:var(--font-size-xs);">
+                    <div style="font-weight:700;">${escapeHtml(ed.course_degree || ed.education_level || 'Degree')} ${ed.specialization ? '— ' + escapeHtml(ed.specialization) : ''}</div>
+                    <div style="color:var(--color-text-muted);">${escapeHtml(ed.institute || '')} ${ed.year_of_passing ? '(' + escapeHtml(ed.year_of_passing) + ')' : ''}</div>
+                </div>
+            `).join('') : '<p style="font-size:var(--font-size-xs); color:var(--color-text-muted);">No education records available.</p>';
+
+            bodyEl.innerHTML = `
+                <div style="display:flex; gap:var(--space-4); align-items:center; margin-bottom:var(--space-4); padding-bottom:var(--space-4); border-bottom:1px solid var(--color-border);">
+                    <div class="company-logo-avatar" style="width:56px; height:56px; font-size:1.3rem; border-radius:var(--radius-full); font-weight:800; background:rgba(255,94,20,0.15); color:var(--color-primary); border:1px solid rgba(255,94,20,0.3);">
+                        ${escapeHtml(cand.name.substring(0, 2).toUpperCase())}
+                    </div>
+                    <div>
+                        <h4 style="margin:0 0 4px; font-size:var(--font-size-lg); font-weight:700;">${escapeHtml(cand.name)}</h4>
+                        <div style="font-size:var(--font-size-sm); color:var(--color-text-secondary);">${escapeHtml(cand.headline)}</div>
+                        <div style="font-size:var(--font-size-xs); color:var(--color-text-muted); margin-top:4px;">
+                            <i class="fas fa-map-marker-alt"></i> ${escapeHtml(cand.location)} • <i class="fas fa-clock"></i> ${escapeHtml(cand.notice_period)}
+                        </div>
+                    </div>
+                </div>
+
+                ${cand.summary || cand.bio ? `
+                    <div style="margin-bottom:var(--space-4);">
+                        <h5 style="font-size:var(--font-size-xs); font-weight:700; text-transform:uppercase; color:var(--color-text-secondary); margin-bottom:6px;">Summary & Bio</h5>
+                        <p style="font-size:var(--font-size-sm); color:var(--color-text); line-height:1.6; background:rgba(255,255,255,0.02); padding:var(--space-3); border-radius:var(--radius-sm);">
+                            ${escapeHtml(cand.summary || cand.bio)}
+                        </p>
+                    </div>
+                ` : ''}
+
+                <div style="margin-bottom:var(--space-4);">
+                    <h5 style="font-size:var(--font-size-xs); font-weight:700; text-transform:uppercase; color:var(--color-text-secondary); margin-bottom:6px;">Skills & Competencies</h5>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        ${cand.skills ? cand.skills.split(',').map(s => `<span class="badge badge-slate">${escapeHtml(s.trim())}</span>`).join('') : '<span style="font-size:var(--font-size-xs); color:var(--color-text-muted);">No skills listed</span>'}
+                    </div>
+                </div>
+
+                <div style="margin-bottom:var(--space-4);">
+                    <h5 style="font-size:var(--font-size-xs); font-weight:700; text-transform:uppercase; color:var(--color-text-secondary); margin-bottom:6px;">Work Experience</h5>
+                    ${employmentHtml}
+                </div>
+
+                <div>
+                    <h5 style="font-size:var(--font-size-xs); font-weight:700; text-transform:uppercase; color:var(--color-text-secondary); margin-bottom:6px;">Education</h5>
+                    ${educationHtml}
+                </div>
+            `;
+        } catch (e) {
+            console.error('Error loading candidate profile:', e);
+            bodyEl.innerHTML = `<div class="empty-state"><p>Failed to load profile. Please try again.</p></div>`;
+        }
+    }
+
+    // Open Interview Scheduler Modal
+    function openScheduleModal(candidateId, candidateName) {
+        if (!currentSelectedJob) {
+            if (typeof showToast === 'function') {
+                showToast('Please select a job first to schedule an interview.', 'warning');
+            } else {
+                alert('Please select a job first.');
+            }
+            return;
+        }
+
+        document.getElementById('sch-candidate-id').value = candidateId;
+        document.getElementById('sch-job-id').value = currentSelectedJob.id;
+        document.getElementById('sch-candidate-name-display').textContent = candidateName;
+        document.getElementById('sch-job-title-display').textContent = currentSelectedJob.title;
+        document.getElementById('sch-title').value = `Interview with ${candidateName} — ${currentSelectedJob.title}`;
+
+        // Set default date to tomorrow
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('sch-date').value = tomorrow.toISOString().split('T')[0];
+        document.getElementById('sch-time').value = '10:00';
+
+        openModal('scheduleInterviewModal');
+    }
+
+    // Submit Direct Interview Schedule
+    async function submitInterviewSchedule(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnSubmitSchedule');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Scheduling...';
+        btn.disabled = true;
+
+        const payload = {
+            candidate_id: document.getElementById('sch-candidate-id').value,
+            job_id: document.getElementById('sch-job-id').value,
+            title: document.getElementById('sch-title').value.trim(),
+            scheduled_date: document.getElementById('sch-date').value,
+            scheduled_time: document.getElementById('sch-time').value,
+            duration_minutes: document.getElementById('sch-duration').value,
+            interview_type: document.getElementById('sch-type').value,
+            meeting_link: document.getElementById('sch-link').value.trim(),
+            notes: document.getElementById('sch-notes').value.trim()
+        };
+
+        try {
+            const res = await postReq('/api/recruiter/interviews/schedule', payload);
+            if (res && res.success) {
+                closeModal('scheduleInterviewModal');
+                if (typeof showToast === 'function') {
+                    showToast('Interview scheduled and candidate notified successfully!', 'success');
+                } else {
+                    alert('Interview scheduled successfully!');
+                }
+            } else {
+                const msg = res && res.message ? res.message : 'Could not schedule interview. Please check for conflicting schedules.';
+                if (typeof showToast === 'function') {
+                    showToast(msg, 'error');
+                } else {
+                    alert(msg);
+                }
+            }
+        } catch (err) {
+            console.error('Interview schedule error:', err);
+            if (typeof showToast === 'function') {
+                showToast('Network error while scheduling interview.', 'error');
+            }
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', initTalentSearch);
+</script>
+{% endblock %}

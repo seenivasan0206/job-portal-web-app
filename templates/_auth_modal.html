@@ -1,0 +1,955 @@
+        <!-- Universal Logout Confirmation Modal -->
+    <div class="modal-backdrop" id="logout-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="logout-modal-title" aria-describedby="logout-modal-desc" onclick="handleBackdropClick(event, 'logout')">
+        <div class="modal-content" data-lenis-prevent onclick="event.stopPropagation()" style="max-width: 440px; padding: 32px 28px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);">
+            <button type="button" class="modal-close" onclick="closeLogoutModal()" aria-label="Close" title="Close (Esc)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div class="modal-body" style="padding: 0; display: flex; flex-direction: column; align-items: center;">
+                <div style="width: 58px; height: 58px; border-radius: 50%; background: rgba(239, 68, 68, 0.12); color: #EF4444; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 16px; border: 1px solid rgba(239, 68, 68, 0.25);">
+                    <i class="fas fa-sign-out-alt"></i>
+                </div>
+                <h3 id="logout-modal-title" style="margin-bottom: 8px; color: #FFFFFF; font-size: 1.25rem; font-weight: 700;">Confirm Logout</h3>
+                <p id="logout-modal-desc" style="font-size: 0.95rem; margin-bottom: 24px; color: #94A3B8; line-height: 1.5; max-width: 320px;">
+                    Are you sure you want to logout?
+                </p>
+                <div style="display: flex; gap: 12px; width: 100%; justify-content: center;">
+                    <button type="button" id="btn-cancel-logout" class="btn btn-secondary" style="flex: 1; padding: 11px 16px; font-weight: 600; border-radius: 10px;" onclick="closeLogoutModal()">
+                        Cancel
+                    </button>
+                    <button type="button" id="btn-confirm-logout" class="btn btn-danger" style="flex: 1; padding: 11px 16px; font-weight: 600; background: #EF4444; border-color: #EF4444; color: #FFFFFF; border-radius: 10px; display: flex; align-items: center; justify-content: center;" onclick="executeLogout()">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global User Authentication Modal -->
+    <div class="modal-backdrop" id="user-auth-modal" role="dialog" aria-modal="true" aria-labelledby="user-auth-modal-title" onclick="handleBackdropClick(event, 'user')">
+        <div class="modal-content" data-lenis-prevent onclick="event.stopPropagation()">
+            <button type="button" class="modal-close" onclick="closeUserModal()" aria-label="Close" title="Close (Esc)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div class="modal-body auth-modal-body" id="base-user-modal-body" style="overflow-y:hidden;">
+                <!-- User Modal Tabs -->
+                <div class="auth-tabs-compact">
+                    <button type="button" id="tab-btn-signin" class="btn btn-sm" style="background:#FF5E14; color:#FFFFFF;" onclick="showForm('login')">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
+                    </button>
+                    <button type="button" id="tab-btn-signup" class="btn btn-sm btn-ghost" style="color:#94A3B8;" onclick="showForm('signup')">
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </button>
+                </div>
+
+                <!-- Candidate Signup -->
+                <div id="form-signup" style="display:none;">
+                    <div class="auth-compact-header">
+                        <h3 id="user-auth-modal-title" class="auth-compact-title">Create Candidate Account</h3>
+                        <p class="auth-compact-sub">Join thousands of job seekers advancing their careers.</p>
+                    </div>
+
+                    <div id="base-cand-signup-alert" class="auth-form-alert alert-error" style="display:none;" role="alert"></div>
+                    
+                    <form id="cand-signup-form" onsubmit="event.preventDefault(); registerUser(event);">
+                        <div class="form-group auth-form-group-compact">
+                            <label class="form-label form-label-required auth-label-compact">Full Name</label>
+                            <input type="text" id="su-name" class="form-control auth-input-compact" placeholder="John Doe" required autocomplete="name">
+                        </div>
+                        <div class="form-group auth-form-group-compact">
+                            <label class="form-label form-label-required auth-label-compact">Email Address</label>
+                            <input type="email" id="su-email" class="form-control auth-input-compact" placeholder="john@example.com" required autocomplete="email">
+                        </div>
+                        <div class="form-group auth-form-group-compact">
+                            <label class="form-label form-label-required auth-label-compact">10-Digit Mobile Number</label>
+                            <input type="tel" id="su-mobile" class="form-control auth-input-compact" placeholder="9876543210" required pattern="[0-9]{10}" autocomplete="tel">
+                        </div>
+                        <div class="form-group auth-form-group-compact">
+                            <label class="form-label form-label-required auth-label-compact">Password</label>
+                            <div class="password-input-group">
+                                <input type="password" id="su-pass" class="form-control auth-input-compact" placeholder="Min 8 chars, 1 letter & 1 number" required autocomplete="new-password">
+                                <button type="button" class="password-toggle-btn" style="height:36px; width:36px; font-size:12px;" onclick="togglePasswordVisibility('su-pass', this)" aria-label="Toggle password visibility" tabindex="-1">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group auth-form-group-compact">
+                            <label class="form-label form-label-required auth-label-compact">Verification Code (OTP)</label>
+                            <div style="display:flex; gap:8px;">
+                                <input type="text" id="su-otp" class="form-control auth-input-compact" placeholder="6-digit code" maxlength="6" required>
+                                <button type="button" class="btn btn-secondary auth-input-compact" style="white-space:nowrap; padding:0 12px !important; font-size:12px;" onclick="sendUserOTP(event, 'register')">Send OTP</button>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block auth-btn-compact">
+                            Create Account
+                        </button>
+                    </form>
+                    <div class="auth-footer-compact">
+                        Already registered? <button type="button" class="btn-text-link" onclick="showForm('login')">Sign In</button>
+                    </div>
+                </div>
+
+                <!-- Candidate Login -->
+                <div id="form-login">
+                    <div class="auth-compact-header">
+                        <h3 class="auth-compact-title">Candidate Sign In</h3>
+                        <p class="auth-compact-sub">Access your dashboard, saved jobs, and assessments.</p>
+                    </div>
+
+                    <div id="base-cand-login-alert" class="auth-form-alert alert-error" style="display:none;" role="alert"></div>
+                    
+                    <form id="cand-login-form" onsubmit="event.preventDefault(); handleUserLogin(event);">
+                        <div class="form-group auth-form-group-compact">
+                            <label class="form-label form-label-required auth-label-compact">Email Address</label>
+                            <input type="email" id="li-email" class="form-control auth-input-compact" placeholder="john@example.com" required autocomplete="email">
+                        </div>
+                        <div class="form-group auth-form-group-compact">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <label class="form-label form-label-required auth-label-compact" style="margin-bottom:0;">Password</label>
+                                <button type="button" class="btn-text-link" onclick="showForm('forgot')" style="font-size:11px; font-weight:500;">Forgot Password?</button>
+                            </div>
+                            <div class="password-input-group" style="margin-top:3px;">
+                                <input type="password" id="li-pass" class="form-control auth-input-compact" placeholder="Enter your password" required autocomplete="current-password">
+                                <button type="button" class="password-toggle-btn" style="height:36px; width:36px; font-size:12px;" onclick="togglePasswordVisibility('li-pass', this)" aria-label="Toggle password visibility" tabindex="-1">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block auth-btn-compact">
+                            Sign In
+                        </button>
+                    </form>
+                    <div class="auth-footer-compact">
+                        New to HireVolt? <button type="button" class="btn-text-link" onclick="showForm('signup')">Create Account</button>
+                    </div>
+                </div>
+
+                <!-- Candidate Forgot Password -->
+                <div id="form-forgot" style="display:none;">
+                    <div class="auth-compact-header">
+                        <h3 class="auth-compact-title">Reset Your Password</h3>
+                        <p class="auth-compact-sub">Enter your registered email to receive an OTP code.</p>
+                    </div>
+
+                    <div id="base-cand-forgot-alert" class="auth-form-alert alert-error" style="display:none;" role="alert"></div>
+                    
+                    <form id="cand-forgot-form" onsubmit="event.preventDefault(); resetPass(event);">
+                        <div class="form-group auth-form-group-compact">
+                            <label class="form-label form-label-required auth-label-compact">Email Address</label>
+                            <input type="email" id="fp-email" class="form-control auth-input-compact" placeholder="john@example.com" required autocomplete="email">
+                        </div>
+                        <div class="form-group auth-form-group-compact">
+                            <label class="form-label form-label-required auth-label-compact">Verification Code (OTP)</label>
+                            <div style="display:flex; gap:8px;">
+                                <input type="text" id="fp-otp" class="form-control auth-input-compact" placeholder="6-digit code" maxlength="6" required>
+                                <button type="button" class="btn btn-secondary auth-input-compact" style="white-space:nowrap; padding:0 12px !important; font-size:12px;" onclick="sendUserOTP(event, 'forgot')">Send OTP</button>
+                            </div>
+                        </div>
+                        <div class="form-group auth-form-group-compact">
+                            <label class="form-label form-label-required auth-label-compact">New Password</label>
+                            <div class="password-input-group">
+                                <input type="password" id="fp-pass" class="form-control auth-input-compact" placeholder="Min 8 chars, 1 letter & 1 number" required autocomplete="new-password">
+                                <button type="button" class="password-toggle-btn" style="height:36px; width:36px; font-size:12px;" onclick="togglePasswordVisibility('fp-pass', this)" aria-label="Toggle password visibility" tabindex="-1">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block auth-btn-compact">
+                            Save New Password
+                        </button>
+                    </form>
+                    <div class="auth-footer-compact">
+                        Remember your password? <button type="button" class="btn-text-link" onclick="showForm('login')">Back to Sign In</button>
+                    </div>
+                </div>
+            </div><!-- /.modal-body -->
+        </div>
+    </div>
+
+    <!-- Global Employer Authentication Modal -->
+    <div class="modal-backdrop" id="emp-auth-modal" role="dialog" aria-modal="true" aria-labelledby="emp-auth-modal-title" onclick="handleBackdropClick(event, 'employer')">
+        <div class="modal-content" data-lenis-prevent onclick="event.stopPropagation()">
+            <button type="button" class="modal-close" onclick="closeEmpModal()" aria-label="Close" title="Close (Esc)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div class="modal-body auth-modal-body" id="base-emp-modal-body" style="overflow-y:hidden;">
+                <!-- Employer Modal Tabs -->
+                <div class="auth-tabs-compact">
+                    <button type="button" id="emp-tab-btn-signin" class="btn btn-sm" style="background:#FF5E14; color:#FFFFFF;" onclick="showEmpForm('login')">
+                        <i class="fas fa-sign-in-alt"></i> Employer Sign In
+                    </button>
+                    <button type="button" id="emp-tab-btn-register" class="btn btn-sm btn-ghost" style="color:#94A3B8;" onclick="showEmpForm('register')">
+                        <i class="fas fa-building"></i> Register Company
+                    </button>
+                </div>
+
+                <!-- Employer Register -->
+                <div id="emp-form-register" style="display:none;">
+                    <div class="auth-compact-header">
+                        <h3 id="emp-auth-modal-title" class="auth-compact-title">Register Employer Account</h3>
+                        <p class="auth-compact-sub">Connect with qualified talent across global pipelines.</p>
+                    </div>
+
+                    <div id="base-emp-signup-alert" class="auth-form-alert alert-error" style="display:none;" role="alert"></div>
+                    
+                    <form id="emp-signup-form" onsubmit="event.preventDefault(); handleEmpRegister(event);">
+                        <div class="form-group auth-form-group-compact">
+                            <label class="form-label form-label-required auth-label-compact">Company Name</label>
+                            <input type="text" id="emp-su-name" class="form-control auth-input-compact" placeholder="Acme Technologies" required autocomplete="organization">
+                        </div>
+                        <div class="form-group auth-form-group-compact">
+                            <label class="form-label form-label-required auth-label-compact">Company Mobile Number</label>
+                            <input type="tel" id="emp-su-mobile" class="form-control auth-input-compact" placeholder="9876543210" required pattern="[0-9]{10}" autocomplete="tel">
+                        </div>
+                        <div class="form-group auth-form-group-compact">
+                            <label class="form-label form-label-required auth-label-compact">Work Email Address</label>
+                            <input type="email" id="emp-su-email" class="form-control auth-input-compact" placeholder="recruiter@company.com" required autocomplete="email">
+                        </div>
+                        <div class="form-group auth-form-group-compact">
+                            <label class="form-label form-label-required auth-label-compact">Password</label>
+                            <div class="password-input-group">
+                                <input type="password" id="emp-su-pass" class="form-control auth-input-compact" placeholder="Min 8 chars, 1 letter & 1 number" required autocomplete="new-password">
+                                <button type="button" class="password-toggle-btn" style="height:36px; width:36px; font-size:12px;" onclick="togglePasswordVisibility('emp-su-pass', this)" aria-label="Toggle password visibility" tabindex="-1">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group auth-form-group-compact">
+                            <label class="form-label form-label-required auth-label-compact">Verification Code (OTP)</label>
+                            <div style="display:flex; gap:8px;">
+                                <input type="text" id="emp-su-otp" class="form-control auth-input-compact" placeholder="6-digit code" maxlength="6" required>
+                                <button type="button" class="btn btn-secondary auth-input-compact" style="white-space:nowrap; padding:0 12px !important; font-size:12px;" onclick="sendUserOTP(event, 'emp_register')">Send OTP</button>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block auth-btn-compact">
+                            Register Company
+                        </button>
+                    </form>
+                    <div class="auth-footer-compact">
+                        Already an employer? <button type="button" class="btn-text-link" onclick="showEmpForm('login')">Employer Sign In</button>
+                    </div>
+                </div>
+
+                <!-- Employer Login -->
+                <div id="emp-form-login">
+                    <div class="auth-compact-header">
+                        <h3 class="auth-compact-title">Employer Portal Sign In</h3>
+                        <p class="auth-compact-sub">Access your applicant pipelines, job listings, and analytics.</p>
+                    </div>
+
+                    <div id="base-emp-login-alert" class="auth-form-alert alert-error" style="display:none;" role="alert"></div>
+                    
+                    <form id="emp-login-form" onsubmit="event.preventDefault(); handleEmpLogin(event);">
+                        <div class="form-group auth-form-group-compact">
+                            <label class="form-label form-label-required auth-label-compact">Work Email Address</label>
+                            <input type="email" id="emp-li-email" class="form-control auth-input-compact" placeholder="recruiter@company.com" required autocomplete="email">
+                        </div>
+                        <div class="form-group auth-form-group-compact">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <label class="form-label form-label-required auth-label-compact" style="margin-bottom:0;">Password</label>
+                                <button type="button" class="btn-text-link" onclick="showEmpForm('forgot')" style="font-size:11px; font-weight:500;">Forgot Password?</button>
+                            </div>
+                            <div class="password-input-group" style="margin-top:3px;">
+                                <input type="password" id="emp-li-pass" class="form-control auth-input-compact" placeholder="Enter company password" required autocomplete="current-password">
+                                <button type="button" class="password-toggle-btn" style="height:36px; width:36px; font-size:12px;" onclick="togglePasswordVisibility('emp-li-pass', this)" aria-label="Toggle password visibility" tabindex="-1">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block auth-btn-compact">
+                            Sign In to Portal
+                        </button>
+                    </form>
+                    <div class="auth-footer-compact">
+                        New employer? <button type="button" class="btn-text-link" onclick="showEmpForm('register')">Register Account</button>
+                    </div>
+                </div>
+
+                <!-- Employer Forgot Password -->
+                <div id="emp-form-forgot" style="display:none;">
+                    <div class="auth-compact-header">
+                        <h3 class="auth-compact-title">Reset Employer Password</h3>
+                        <p class="auth-compact-sub">Enter your registered work email to receive an OTP code.</p>
+                    </div>
+
+                    <div id="base-emp-forgot-alert" class="auth-form-alert alert-error" style="display:none;" role="alert"></div>
+
+                    <form id="emp-forgot-form" onsubmit="event.preventDefault(); resetEmpPass(event);">
+                        <div class="form-group auth-form-group-compact">
+                            <label class="form-label form-label-required auth-label-compact">Work Email Address</label>
+                            <input type="email" id="emp-fp-email" class="form-control auth-input-compact" placeholder="recruiter@company.com" required autocomplete="email">
+                        </div>
+                        <div class="form-group auth-form-group-compact">
+                            <label class="form-label form-label-required auth-label-compact">Verification Code (OTP)</label>
+                            <div style="display:flex; gap:8px;">
+                                <input type="text" id="emp-fp-otp" class="form-control auth-input-compact" placeholder="6-digit code" maxlength="6" required>
+                                <button type="button" class="btn btn-secondary auth-input-compact" style="white-space:nowrap; padding:0 12px !important; font-size:12px;" onclick="sendUserOTP(event, 'emp_forgot')">Send OTP</button>
+                            </div>
+                        </div>
+                        <div class="form-group auth-form-group-compact">
+                            <label class="form-label form-label-required auth-label-compact">New Password</label>
+                            <div class="password-input-group">
+                                <input type="password" id="emp-fp-pass" class="form-control auth-input-compact" placeholder="Min 8 chars, 1 letter & 1 number" required autocomplete="new-password">
+                                <button type="button" class="password-toggle-btn" style="height:36px; width:36px; font-size:12px;" onclick="togglePasswordVisibility('emp-fp-pass', this)" aria-label="Toggle password visibility" tabindex="-1">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block auth-btn-compact">
+                            Save New Password
+                        </button>
+                    </form>
+                    <div class="auth-footer-compact">
+                        Remember your password? <button type="button" class="btn-text-link" onclick="showEmpForm('login')">Back to Sign In</button>
+                    </div>
+                </div>
+            </div><!-- /.modal-body -->
+        </div><!-- /.modal-content -->
+    </div>
+
+    <script>
+        // Modal & Scroll Lock Management with Focus Handling
+        var authLastFocusedTrigger = null;
+
+        function lockBodyScroll() {
+            if (window.lenis) window.lenis.stop();
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+            if (scrollbarWidth > 0) {
+                document.body.style.paddingRight = scrollbarWidth + 'px';
+            }
+            document.body.style.overflow = 'hidden';
+        }
+
+        function unlockBodyScroll() {
+            const activeModals = document.querySelectorAll('.modal-backdrop.active');
+            if (activeModals.length === 0) {
+                if (window.lenis) window.lenis.start();
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+            }
+        }
+
+        function openUserModal(formType) {
+            authLastFocusedTrigger = document.activeElement;
+            closeEmpModal(false);
+            showForm(formType || 'login');
+            const modal = document.getElementById('user-auth-modal');
+            if (modal) {
+                modal.classList.add('active');
+                lockBodyScroll();
+                setTimeout(() => {
+                    const activePane = modal.querySelector('#form-' + (formType || 'login'));
+                    const firstInput = activePane ? activePane.querySelector('input:not([type=hidden])') : null;
+                    if (firstInput) {
+                        firstInput.focus();
+                    } else {
+                        const closeBtn = modal.querySelector('.modal-close');
+                        if (closeBtn) closeBtn.focus();
+                    }
+                }, 50);
+            }
+        }
+
+        function closeUserModal() {
+            const modal = document.getElementById('user-auth-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                unlockBodyScroll();
+                if (authLastFocusedTrigger && typeof authLastFocusedTrigger.focus === 'function') {
+                    try { authLastFocusedTrigger.focus(); } catch(e) {}
+                }
+            }
+        }
+
+        function openEmpModal(formType) {
+            authLastFocusedTrigger = document.activeElement;
+            closeUserModal(false);
+            showEmpForm(formType || 'login');
+            const modal = document.getElementById('emp-auth-modal');
+            if (modal) {
+                modal.classList.add('active');
+                lockBodyScroll();
+                setTimeout(() => {
+                    const activePane = modal.querySelector('#emp-form-' + (formType || 'login'));
+                    const firstInput = activePane ? activePane.querySelector('input:not([type=hidden])') : null;
+                    if (firstInput) {
+                        firstInput.focus();
+                    } else {
+                        const closeBtn = modal.querySelector('.modal-close');
+                        if (closeBtn) closeBtn.focus();
+                    }
+                }, 50);
+            }
+        }
+
+        function closeEmpModal(unlock = true) {
+            const modal = document.getElementById('emp-auth-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                if (unlock) unlockBodyScroll();
+                if (authLastFocusedTrigger && typeof authLastFocusedTrigger.focus === 'function') {
+                    try { authLastFocusedTrigger.focus(); } catch(e) {}
+                }
+            }
+        }
+
+        function closeAllModals() {
+            closeUserModal();
+            closeEmpModal();
+        }
+
+        function handleBackdropClick(e, type) {
+            if (e.target === e.currentTarget) {
+                if (type === 'user') closeUserModal();
+                else if (type === 'employer') closeEmpModal();
+                else closeAllModals();
+            }
+        }
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' || e.key === 'Esc' || e.keyCode === 27) {
+                closeAllModals();
+            }
+        });
+
+        // Global aliases for seamless triggering
+        window.openSignInModal = function() { openUserModal('login'); };
+        window.openSignUpModal = function() { openUserModal('signup'); };
+        window.openUserModal = openUserModal;
+        window.openLogoutModal = function() {
+            authLastFocusedTrigger = document.activeElement;
+            closeUserModal(null);
+            closeEmpModal(null, false);
+            const m = document.getElementById('logout-confirm-modal');
+            if (m) {
+                m.classList.add('active');
+                lockBodyScroll();
+                setTimeout(() => {
+                    const c = document.getElementById('btn-cancel-logout');
+                    if (c) c.focus();
+                }, 60);
+            }
+        };
+        window.closeLogoutModal = function(e) {
+            if (e) {
+                if (typeof e.preventDefault === 'function') e.preventDefault();
+                if (typeof e.stopPropagation === 'function') e.stopPropagation();
+            }
+            const m = document.getElementById('logout-confirm-modal');
+            if (m) {
+                m.classList.remove('active');
+                unlockBodyScroll();
+                if (authLastFocusedTrigger && typeof authLastFocusedTrigger.focus === 'function') {
+                    try { authLastFocusedTrigger.focus({ preventScroll: true }); } catch (err) {
+                        try { authLastFocusedTrigger.focus(); } catch(e2) {}
+                    }
+                }
+            }
+        };
+        window.executeLogout = function() {
+            const btn = document.getElementById('btn-confirm-logout');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i> Logging out...';
+            }
+            try {
+                sessionStorage.setItem('post_logout_toast', 'You have been successfully logged out.');
+            } catch (e) {}
+            window.location.href = '/logout';
+        };
+        window.closeUserModal = closeUserModal;
+        window.openEmpModal = openEmpModal;
+        window.closeEmpModal = closeEmpModal;
+        window.closeAllModals = closeAllModals;
+        window.showForm = showForm;
+        window.showEmpForm = showEmpForm;
+
+        // Auto-open modal if specified in URL query (e.g. redirected from dashboard)
+        (function handleAuthQueryParam() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const auth = params.get('auth');
+                if (auth === 'login' || auth === 'signin') {
+                    setTimeout(() => openUserModal('login'), 80);
+                } else if (auth === 'signup' || auth === 'register') {
+                    setTimeout(() => openUserModal('signup'), 80);
+                } else if (auth === 'emp_login' || auth === 'employer_login') {
+                    setTimeout(() => openEmpModal('login'), 80);
+                } else if (auth === 'emp_register' || auth === 'employer_register') {
+                    setTimeout(() => openEmpModal('register'), 80);
+                }
+                if (auth) {
+                    const cleanUrl = window.location.pathname + (window.location.hash || '');
+                    window.history.replaceState({}, document.title, cleanUrl);
+                }
+            } catch(e) {}
+        })();
+
+        function showForm(type) {
+            ['form-signup', 'form-login', 'form-forgot'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = (id === 'form-' + type) ? 'block' : 'none';
+            });
+            const body = document.getElementById('base-user-modal-body');
+            if (body) {
+                body.style.overflowY = (type === 'login') ? 'hidden' : 'auto';
+            }
+            const tabIn = document.getElementById('tab-btn-signin');
+            const tabUp = document.getElementById('tab-btn-signup');
+            if (tabIn && tabUp) {
+                if (type === 'login') {
+                    tabIn.style.background = '#FF5E14';
+                    tabIn.style.color = '#FFFFFF';
+                    tabUp.style.background = 'transparent';
+                    tabUp.style.color = '#94A3B8';
+                } else if (type === 'signup') {
+                    tabUp.style.background = '#FF5E14';
+                    tabUp.style.color = '#FFFFFF';
+                    tabIn.style.background = 'transparent';
+                    tabIn.style.color = '#94A3B8';
+                } else {
+                    tabIn.style.background = 'transparent';
+                    tabIn.style.color = '#94A3B8';
+                    tabUp.style.background = 'transparent';
+                    tabUp.style.color = '#94A3B8';
+                }
+            }
+        }
+
+        function showEmpForm(type) {
+            ['emp-form-register', 'emp-form-login', 'emp-form-forgot'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = (id === 'emp-form-' + type) ? 'block' : 'none';
+            });
+
+            const empBody = document.getElementById('base-emp-modal-body');
+            if (empBody) {
+                empBody.style.overflowY = (type === 'login') ? 'hidden' : 'auto';
+            }
+
+            const tabIn = document.getElementById('emp-tab-btn-signin');
+            const tabReg = document.getElementById('emp-tab-btn-register');
+            if (tabIn && tabReg) {
+                if (type === 'login') {
+                    tabIn.style.background = '#FF5E14';
+                    tabIn.style.color = '#FFFFFF';
+                    tabReg.style.background = 'transparent';
+                    tabReg.style.color = '#94A3B8';
+                } else if (type === 'register') {
+                    tabReg.style.background = '#FF5E14';
+                    tabReg.style.color = '#FFFFFF';
+                    tabIn.style.background = 'transparent';
+                    tabIn.style.color = '#94A3B8';
+                } else {
+                    tabIn.style.background = 'transparent';
+                    tabIn.style.color = '#94A3B8';
+                    tabReg.style.background = 'transparent';
+                    tabReg.style.color = '#94A3B8';
+                }
+            }
+        }
+
+        // Authentication API Handlers
+        async function sendUserOTP(evt, action) {
+            const btn = evt ? evt.currentTarget : null;
+            let emailId = 'su-email';
+            if (action === 'forgot') emailId = 'fp-email';
+            else if (action === 'emp_register') emailId = 'emp-su-email';
+            else if (action === 'emp_forgot') emailId = 'emp-fp-email';
+
+            const email = (document.getElementById(emailId)?.value || '').trim();
+            if (!email || !email.includes('@')) {
+                showToast('Please enter a valid email address first.', 'warning');
+                return;
+            }
+
+            let origHtml = '';
+            if (btn) {
+                origHtml = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            }
+
+            const res = await postReq('/api/send_otp', { email: email, action: action });
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = origHtml;
+            }
+
+            if (res.success) {
+                showToast(res.message || 'Verification code sent to your email.', 'success');
+            } else if (res.message) {
+                showToast(res.message, 'error');
+            }
+        }
+
+        async function registerUser(evt) {
+            const form = evt && evt.target ? (evt.target.tagName === 'FORM' ? evt.target : evt.target.closest('form')) : document.getElementById('cand-signup-form');
+            const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+            const alertEl = document.getElementById('base-cand-signup-alert');
+            if (alertEl) { alertEl.style.display = 'none'; alertEl.innerHTML = ''; }
+
+            const name = document.getElementById('su-name')?.value.trim();
+            const email = document.getElementById('su-email')?.value.trim();
+            const mobile = document.getElementById('su-mobile')?.value.trim();
+            const password = document.getElementById('su-pass')?.value;
+            const otp = document.getElementById('su-otp')?.value.trim();
+
+            if (!name || name.length < 2) {
+                const msg = 'Please enter your full name (min 2 characters).';
+                if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+                showToast(msg, 'error');
+                return;
+            }
+            if (!email || !email.includes('@')) {
+                const msg = 'Please enter a valid email address.';
+                if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+                showToast(msg, 'error');
+                return;
+            }
+            if (!mobile || !/^[0-9]{10}$/.test(mobile)) {
+                const msg = 'Please enter a valid 10-digit mobile number.';
+                if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+                showToast(msg, 'error');
+                return;
+            }
+            if (!password || password.length < 8 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+                const msg = 'Password must be at least 8 chars with 1 letter & 1 number.';
+                if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+                showToast(msg, 'error');
+                return;
+            }
+            if (!otp) {
+                const msg = 'Please enter the 6-digit OTP sent to your email.';
+                if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+                showToast(msg, 'error');
+                return;
+            }
+
+            let origHtml = '';
+            if (submitBtn) {
+                origHtml = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+            }
+
+            const res = await postReq('/api/user/register', { name, email, mobile, password, otp });
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = origHtml;
+            }
+
+            if (res && res.success) {
+                closeUserModal();
+                unlockBodyScroll();
+                showToast(res.message || 'Account created successfully!', 'success');
+                sessionStorage.removeItem('pending_job_action');
+                const redirectUrl = res.redirect || '/user_dashboard';
+                setTimeout(() => { window.location.href = redirectUrl; }, 350);
+            } else if (res && res.message) {
+                if (alertEl) {
+                    alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${res.message}</span>`;
+                    alertEl.style.display = 'flex';
+                }
+                showToast(res.message, 'error');
+            }
+        }
+
+        async function handleUserLogin(evt) {
+            const form = evt && evt.target ? (evt.target.tagName === 'FORM' ? evt.target : evt.target.closest('form')) : document.getElementById('cand-login-form');
+            const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+            const alertEl = document.getElementById('base-cand-login-alert');
+            if (alertEl) { alertEl.style.display = 'none'; alertEl.innerHTML = ''; }
+
+            const email = document.getElementById('li-email')?.value.trim();
+            const password = document.getElementById('li-pass')?.value;
+
+            if (!email || !email.includes('@')) {
+                const msg = 'Please enter a valid email address.';
+                if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+                showToast(msg, 'error');
+                return;
+            }
+            if (!password) {
+                const msg = 'Please enter your password.';
+                if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+                showToast(msg, 'error');
+                return;
+            }
+
+            let origHtml = '';
+            if (submitBtn) {
+                origHtml = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing In...';
+            }
+
+            const res = await postReq('/api/user/login', { email, password });
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = origHtml;
+            }
+
+            if (res && res.success) {
+                closeUserModal();
+                unlockBodyScroll();
+                showToast(res.message || 'Successfully Signed In', 'success');
+                
+                let targetUrl = res.redirect || '/user_dashboard';
+                const pending = sessionStorage.getItem('pending_job_action');
+                if (pending && (window.location.pathname.startsWith('/jobs') || window.location.pathname.startsWith('/job/'))) {
+                    targetUrl = window.location.href;
+                } else if (pending) {
+                    try {
+                        const parsed = JSON.parse(pending);
+                        if (parsed && parsed.jobId) {
+                            targetUrl = '/job/' + parsed.jobId;
+                        }
+                    } catch(e) {}
+                    sessionStorage.removeItem('pending_job_action');
+                }
+                setTimeout(() => { window.location.href = targetUrl; }, 350);
+            } else if (res && res.message) {
+                if (alertEl) {
+                    let extraAction = '';
+                    if (res.suggest_role === 'employer') {
+                        extraAction = `<button type="button" class="btn-text-link" onclick="openEmpModal('login')">Switch to Employer Sign In</button>`;
+                    }
+                    alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${res.message}</span> ${extraAction}`;
+                    alertEl.style.display = 'flex';
+                }
+                showToast(res.message, 'error');
+            }
+        }
+
+        async function resetPass(evt) {
+            const form = evt && evt.target ? (evt.target.tagName === 'FORM' ? evt.target : evt.target.closest('form')) : document.getElementById('cand-forgot-form');
+            const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+            const alertEl = document.getElementById('base-cand-forgot-alert');
+            if (alertEl) { alertEl.style.display = 'none'; alertEl.innerHTML = ''; }
+
+            const email = document.getElementById('fp-email')?.value.trim();
+            const otp = document.getElementById('fp-otp')?.value.trim();
+            const password = document.getElementById('fp-pass')?.value;
+
+            if (!email || !email.includes('@')) {
+                showToast('Please enter a valid email address.', 'error');
+                return;
+            }
+            if (!otp) {
+                showToast('Please enter the 6-digit OTP code.', 'error');
+                return;
+            }
+            if (!password || password.length < 8) {
+                showToast('Password must be at least 8 characters.', 'error');
+                return;
+            }
+
+            let origHtml = '';
+            if (submitBtn) {
+                origHtml = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Resetting...';
+            }
+
+            const res = await postReq('/api/reset_password', { email, otp, password });
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = origHtml;
+            }
+
+            if (res && res.success) {
+                showToast(res.message || 'Password reset successfully!', 'success');
+                showForm('login');
+            } else if (res && res.message) {
+                if (alertEl) {
+                    alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${res.message}</span>`;
+                    alertEl.style.display = 'flex';
+                }
+                showToast(res.message, 'error');
+            }
+        }
+
+        async function handleEmpRegister(evt) {
+            const form = evt && evt.target ? (evt.target.tagName === 'FORM' ? evt.target : evt.target.closest('form')) : document.getElementById('emp-signup-form');
+            const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+            const alertEl = document.getElementById('base-emp-signup-alert');
+            if (alertEl) { alertEl.style.display = 'none'; alertEl.innerHTML = ''; }
+
+            const name = document.getElementById('emp-su-name')?.value.trim();
+            const mobile = document.getElementById('emp-su-mobile')?.value.trim();
+            const email = document.getElementById('emp-su-email')?.value.trim();
+            const password = document.getElementById('emp-su-pass')?.value;
+            const otp = document.getElementById('emp-su-otp')?.value.trim();
+
+            if (!name || name.length < 2) {
+                const msg = 'Please enter your company name.';
+                if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+                showToast(msg, 'error');
+                return;
+            }
+            if (!mobile || !/^[0-9]{10}$/.test(mobile)) {
+                const msg = 'Please enter a valid 10-digit mobile number.';
+                if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+                showToast(msg, 'error');
+                return;
+            }
+            if (!email || !email.includes('@')) {
+                const msg = 'Please enter a valid work email address.';
+                if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+                showToast(msg, 'error');
+                return;
+            }
+            if (!password || password.length < 8 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+                const msg = 'Password must be at least 8 chars with 1 letter & 1 number.';
+                if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+                showToast(msg, 'error');
+                return;
+            }
+            if (!otp) {
+                const msg = 'Please enter the OTP sent to your work email.';
+                if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+                showToast(msg, 'error');
+                return;
+            }
+
+            let origHtml = '';
+            if (submitBtn) {
+                origHtml = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registering...';
+            }
+
+            const res = await postReq('/api/employer/register', { name, mobile, email, password, otp });
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = origHtml;
+            }
+
+            if (res && res.success) {
+                closeEmpModal();
+                unlockBodyScroll();
+                showToast(res.message || 'Company registered successfully!', 'success');
+                sessionStorage.removeItem('pending_job_action');
+                const redirectUrl = res.redirect || '/employer_dashboard';
+                setTimeout(() => { window.location.href = redirectUrl; }, 350);
+            } else if (res && res.message) {
+                if (alertEl) {
+                    alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${res.message}</span>`;
+                    alertEl.style.display = 'flex';
+                }
+                showToast(res.message, 'error');
+            }
+        }
+
+        async function handleEmpLogin(evt) {
+            const form = evt && evt.target ? (evt.target.tagName === 'FORM' ? evt.target : evt.target.closest('form')) : document.getElementById('emp-login-form');
+            const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+            const alertEl = document.getElementById('base-emp-login-alert');
+            if (alertEl) { alertEl.style.display = 'none'; alertEl.innerHTML = ''; }
+
+            const email = document.getElementById('emp-li-email')?.value.trim();
+            const password = document.getElementById('emp-li-pass')?.value;
+
+            if (!email || !email.includes('@')) {
+                const msg = 'Please enter a valid work email address.';
+                if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+                showToast(msg, 'error');
+                return;
+            }
+            if (!password) {
+                const msg = 'Please enter your company password.';
+                if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+                showToast(msg, 'error');
+                return;
+            }
+
+            let origHtml = '';
+            if (submitBtn) {
+                origHtml = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing In...';
+            }
+
+            const res = await postReq('/api/employer/login', { email, password });
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = origHtml;
+            }
+
+            if (res && res.success) {
+                closeEmpModal();
+                unlockBodyScroll();
+                showToast(res.message || 'Successfully Signed In', 'success');
+                sessionStorage.removeItem('pending_job_action');
+                const redirectUrl = res.redirect || '/employer_dashboard';
+                setTimeout(() => { window.location.href = redirectUrl; }, 350);
+            } else if (res && res.message) {
+                if (alertEl) {
+                    let extraAction = '';
+                    if (res.suggest_role === 'candidate') {
+                        extraAction = `<button type="button" class="btn-text-link" onclick="openUserModal('login')">Switch to Candidate Sign In</button>`;
+                    }
+                    alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${res.message}</span> ${extraAction}`;
+                    alertEl.style.display = 'flex';
+                }
+                showToast(res.message, 'error');
+            }
+        }
+
+        async function resetEmpPass(evt) {
+            const form = evt && evt.target ? (evt.target.tagName === 'FORM' ? evt.target : evt.target.closest('form')) : document.getElementById('emp-forgot-form');
+            const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+            const alertEl = document.getElementById('base-emp-forgot-alert');
+            if (alertEl) { alertEl.style.display = 'none'; alertEl.innerHTML = ''; }
+
+            const email = document.getElementById('emp-fp-email')?.value.trim();
+            const otp = document.getElementById('emp-fp-otp')?.value.trim();
+            const password = document.getElementById('emp-fp-pass')?.value;
+
+            if (!email || !email.includes('@')) {
+                showToast('Please enter a valid work email address.', 'error');
+                return;
+            }
+            if (!otp) {
+                showToast('Please enter the 6-digit OTP code.', 'error');
+                return;
+            }
+            if (!password || password.length < 8) {
+                showToast('Password must be at least 8 characters.', 'error');
+                return;
+            }
+
+            let origHtml = '';
+            if (submitBtn) {
+                origHtml = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Resetting...';
+            }
+
+            const res = await postReq('/api/reset_password', { email, otp, password });
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = origHtml;
+            }
+
+            if (res && res.success) {
+                showToast(res.message || 'Password reset successfully!', 'success');
+                showEmpForm('login');
+            } else if (res && res.message) {
+                if (alertEl) {
+                    alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${res.message}</span>`;
+                    alertEl.style.display = 'flex';
+                }
+                showToast(res.message, 'error');
+            }
+        }
+    </script>

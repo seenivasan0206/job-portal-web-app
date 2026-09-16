@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}Company Details — HireVolt{% endblock %}
+
+{% block extra_head %}
+<style>
+    .trust-card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-card);
+        padding: var(--space-6);
+        margin-bottom: var(--space-6);
+    }
+    .trust-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: var(--space-4);
+        margin: var(--space-6) 0;
+        padding: var(--space-4);
+        background: var(--color-surface-alt);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--color-border-subtle);
+    }
+    .trust-stat-item {
+        display: flex;
+        flex-direction: column;
+    }
+    .trust-stat-value {
+        font-size: var(--font-size-xl);
+        font-weight: 800;
+        color: var(--color-text);
+    }
+    .trust-stat-label {
+        font-size: var(--font-size-xs);
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        font-weight: 600;
+        margin-top: 2px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="app-container" style="padding-top:var(--space-6); padding-bottom:var(--space-12);">
+    <div style="margin-bottom:var(--space-4);">
+        <a href="/companies" class="btn btn-ghost btn-sm" style="padding-left:0;">
+            <i class="fas fa-arrow-left"></i> Back to Companies
+        </a>
+    </div>
+
+    <!-- Company Detail Profile Card -->
+    <div id="company-detail" class="trust-card">
+        <div class="empty-state">
+            <div class="empty-state-icon"><i class="fas fa-spinner fa-spin"></i></div>
+            <p>Loading company details...</p>
+        </div>
+    </div>
+
+    <!-- Open Roles at this Company -->
+    <div>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--space-5);">
+            <h2 style="font-size:var(--font-size-xl); font-weight:700;">
+                <i class="fas fa-briefcase" style="color:var(--color-primary); margin-right:8px;"></i> Open Positions
+            </h2>
+        </div>
+        <div id="jobs-list" class="job-grid">
+            <div class="card skeleton" style="height: 180px;"></div>
+            <div class="card skeleton" style="height: 180px;"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const companyId = window.location.pathname.split('/').pop();
+
+    async function loadCompany() {
+        const detailEl = document.getElementById('company-detail');
+        try {
+            const res = await getReq(`/api/company/${companyId}`);
+            if (res && res.success && res.company) {
+                const c = res.company;
+
+                // Build verification trust badge
+                let verifBadgeHtml = '';
+                if (c.verification_status === 'verified') {
+                    verifBadgeHtml = `
+                        <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                            <span class="badge badge-success" style="font-size:0.9rem; padding:6px 14px; display:inline-flex; align-items:center; gap:6px;" title="Company information has been reviewed by HireVolt.">
+                                <i class="fas fa-check-circle"></i> Verified Employer
+                            </span>
+                            ${c.verified_on ? `<span style="font-size:11px; color:#10B981; margin-top:4px;">Verified on ${escapeHtml(c.verified_on)}</span>` : ''}
+                        </div>
+                    `;
+                } else if (c.verification_status === 'pending') {
+                    verifBadgeHtml = `
+                        <span class="badge badge-warning" style="font-size:0.85rem; padding:6px 12px; background:rgba(245, 158, 11, 0.15); color:#F59E0B; border:1px solid rgba(245, 158, 11, 0.3);">
+                            <i class="fas fa-clock"></i> Verification Pending
+                        </span>
+                    `;
+                } else if (c.verification_status === 'rejected') {
+                    verifBadgeHtml = `
+                        <span class="badge badge-error" style="font-size:0.85rem; padding:6px 12px; background:rgba(239, 68, 68, 0.15); color:#EF4444; border:1px solid rgba(239, 68, 68, 0.3);">
+                            <i class="fas fa-exclamation-triangle"></i> Verification Requires Information
+                        </span>
+                    `;
+                } else {
+                    verifBadgeHtml = `
+                        <span class="badge badge-slate" style="font-size:0.85rem; padding:6px 12px; color:#94A3B8;">
+                            <i class="fas fa-info-circle"></i> Unverified Employer
+                        </span>
+                    `;
+                }
+
+                detailEl.innerHTML = `
+                    <div style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:var(--space-4); margin-bottom:var(--space-4);">
+                        <div style="display:flex; align-items:center; gap:var(--space-4);">
+                            <div class="company-logo-avatar" style="width:68px; height:68px; font-size:1.6rem; border-radius:14px;">
+                                ${escapeHtml((c.company_name || 'C').substring(0, 2).toUpperCase())}
+                            </div>
+                            <div>
+                                <h1 style="font-size:var(--font-size-2xl); font-weight:800; margin-bottom:4px;">${escapeHtml(c.company_name || 'Company')}</h1>
+                                <div style="font-size:var(--font-size-sm); color:var(--color-text-muted); font-weight:500; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                                    <span><i class="fas fa-industry" style="color:var(--color-primary);"></i> ${escapeHtml(c.industry || 'Technology')}</span>
+                                    <span>•</span>
+                                    <span><i class="fas fa-map-marker-alt" style="color:var(--color-primary);"></i> ${escapeHtml(c.location || 'India / Remote')}</span>
+                                    ${c.website ? `<span>•</span><a href="${escapeHtml(c.website)}" target="_blank" rel="noopener noreferrer" style="color:var(--color-primary);"><i class="fas fa-external-link-alt"></i> Website</a>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        ${verifBadgeHtml}
+                    </div>
+
+                    <!-- Trust Signals Metrics Grid -->
+                    <div class="trust-stat-grid">
+                        <div class="trust-stat-item">
+                            <span class="trust-stat-value" style="color:var(--color-primary);">${c.open_jobs || 0}</span>
+                            <span class="trust-stat-label">Active Openings</span>
+                        </div>
+                        <div class="trust-stat-item">
+                            <span class="trust-stat-value">${c.total_jobs || 0}</span>
+                            <span class="trust-stat-label">Total Jobs Posted</span>
+                        </div>
+                        <div class="trust-stat-item">
+                            <span class="trust-stat-value">${c.completeness || 80}%</span>
+                            <span class="trust-stat-label">Profile Complete</span>
+                        </div>
+                        <div class="trust-stat-item">
+                            <span class="trust-stat-value" style="font-size:var(--font-size-base);">${escapeHtml(c.member_since || '2026')}</span>
+                            <span class="trust-stat-label">Member Since</span>
+                        </div>
+                    </div>
+
+                    <!-- Company Info Details -->
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:var(--space-4); margin-bottom:var(--space-6); padding:var(--space-4); background:var(--color-surface-alt); border-radius:var(--radius-lg);">
+                        <div>
+                            <span style="font-size:var(--font-size-xs); color:var(--color-text-muted); text-transform:uppercase; font-weight:600;">Company Size</span>
+                            <div style="font-weight:600; margin-top:2px;"><i class="fas fa-users" style="color:var(--color-primary);"></i> ${escapeHtml(c.size || '50-200 Employees')}</div>
+                        </div>
+                        <div>
+                            <span style="font-size:var(--font-size-xs); color:var(--color-text-muted); text-transform:uppercase; font-weight:600;">Contact Email</span>
+                            <div style="font-weight:600; margin-top:2px;"><i class="fas fa-envelope" style="color:var(--color-primary);"></i> ${escapeHtml(c.email || 'Contact through job listings')}</div>
+                        </div>
+                        ${c.founded_year ? `
+                        <div>
+                            <span style="font-size:var(--font-size-xs); color:var(--color-text-muted); text-transform:uppercase; font-weight:600;">Founded</span>
+                            <div style="font-weight:600; margin-top:2px;"><i class="fas fa-calendar" style="color:var(--color-primary);"></i> ${escapeHtml(c.founded_year)}</div>
+                        </div>` : ''}
+                    </div>
+
+                    <div>
+                        <h3 style="font-size:var(--font-size-base); font-weight:700; margin-bottom:var(--space-2);">About Organization</h3>
+                        <p style="font-size:var(--font-size-sm); color:var(--color-text-secondary); line-height:1.7;">
+                            ${escapeHtml(c.description)}
+                        </p>
+                    </div>
+                `;
+                loadCompanyJobs(c.id);
+            } else {
+                detailEl.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon"><i class="fas fa-building"></i></div>
+                        <div class="empty-state-title">Company details unavailable</div>
+                        <a href="/companies" class="btn btn-primary">Browse All Companies</a>
+                    </div>
+                `;
+            }
+        } catch (err) {
+            console.error('loadCompany error:', err);
+        }
+    }
+
+    async function loadCompanyJobs(compId) {
+        const jobsList = document.getElementById('jobs-list');
+        const res = await getReq(`/api/company/${compId}/jobs`);
+        if (res && res.success && res.jobs && res.jobs.length > 0) {
+            jobsList.innerHTML = res.jobs.map(j => `
+                <div class="card" style="display:flex; flex-direction:column; justify-content:space-between; padding:var(--space-5);">
+                    <div>
+                        <h3 style="font-size:var(--font-size-base); font-weight:700; margin-bottom:4px;">
+                            <a href="/job/${j.id}" style="color:var(--color-text);">${escapeHtml(j.title)}</a>
+                        </h3>
+                        <div style="display:flex; gap:12px; font-size:var(--font-size-xs); color:var(--color-text-muted); margin-bottom:var(--space-3); flex-wrap:wrap;">
+                            <span><i class="fas fa-map-marker-alt"></i> ${escapeHtml(j.location || 'Remote')}</span>
+                            ${j.job_type ? `<span><i class="fas fa-clock"></i> ${escapeHtml(j.job_type)}</span>` : ''}
+                            ${j.experience ? `<span><i class="fas fa-briefcase"></i> ${escapeHtml(j.experience)}</span>` : ''}
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--color-border-subtle); padding-top:var(--space-3); margin-top:var(--space-3);">
+                        <span style="font-weight:700; color:var(--color-primary); font-size:var(--font-size-xs);">${escapeHtml(j.salary || 'Competitive')}</span>
+                        <a href="/job/${j.id}" class="btn btn-primary btn-sm">View & Apply</a>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            jobsList.innerHTML = `
+                <div class="empty-state card" style="grid-column: 1 / -1;">
+                    <div class="empty-state-icon"><i class="fas fa-briefcase"></i></div>
+                    <div class="empty-state-title">No current openings</div>
+                    <p class="empty-state-desc">This company has no active job postings right now. Check back soon!</p>
+                </div>
+            `;
+        }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
+    }
+
+    document.addEventListener('DOMContentLoaded', loadCompany);
+</script>
+{% endblock %}

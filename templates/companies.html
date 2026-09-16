@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}Explore Companies — HireVolt{% endblock %}
+
+{% block extra_head %}
+<style>
+    .companies-header {
+        text-align: center;
+        max-width: 600px;
+        margin: var(--space-8) auto var(--space-8);
+    }
+
+    .companies-filter-bar {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        padding: var(--space-4);
+        box-shadow: var(--shadow-sm);
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr auto;
+        gap: var(--space-3);
+        margin-bottom: var(--space-8);
+        align-items: center;
+    }
+
+    @media (max-width: 992px) {
+        .companies-filter-bar {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .company-card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: var(--space-6);
+        margin-bottom: var(--space-12);
+    }
+
+    .company-card-item {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-card);
+        padding: var(--space-6);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+    }
+
+    .company-card-item:hover {
+        transform: translateY(-3px);
+        border-color: var(--color-primary);
+        box-shadow: var(--shadow-lg);
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="app-container">
+    <div class="companies-header">
+        <span class="badge badge-primary" style="margin-bottom:var(--space-2);">Direct Employer Network</span>
+        <h1 style="font-size:var(--font-size-3xl); font-weight:800; margin-bottom:var(--space-2);">Explore Top Companies</h1>
+        <p style="font-size:var(--font-size-base); color:var(--color-text-secondary); margin:0;">
+            Discover verified companies, explore company culture, and apply directly to their latest job openings.
+        </p>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="companies-filter-bar">
+        <div class="input-icon-wrapper">
+            <i class="fas fa-search"></i>
+            <input type="text" id="filter-name" class="form-control" placeholder="Search company name..." onkeydown="handleSearchKey(event)">
+        </div>
+
+        <select id="filter-industry" class="form-select" onchange="applyCompanyFilters()">
+            <option value="">All Industries</option>
+            <option value="IT & Software">IT & Software</option>
+            <option value="Banking & Finance">Banking & Finance</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="Engineering">Engineering</option>
+            <option value="Education">Education</option>
+        </select>
+
+        <select id="filter-size" class="form-select" onchange="applyCompanyFilters()">
+            <option value="">All Sizes</option>
+            <option value="1-50">1 - 50 Employees</option>
+            <option value="51-200">51 - 200 Employees</option>
+            <option value="201-1000">201 - 1,000 Employees</option>
+            <option value="1000+">1,000+ Employees</option>
+        </select>
+
+        <select id="filter-location" class="form-select" onchange="applyCompanyFilters()">
+            <option value="">All Locations</option>
+        </select>
+
+        <button type="button" class="btn btn-primary" onclick="applyCompanyFilters()">
+            <i class="fas fa-search"></i> Search
+        </button>
+    </div>
+
+    <!-- Companies Grid -->
+    <div id="companies-grid" class="company-card-grid">
+        <div class="card skeleton" style="height: 200px;"></div>
+        <div class="card skeleton" style="height: 200px;"></div>
+        <div class="card skeleton" style="height: 200px;"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let allCompanies = [];
+
+    async function loadCompanies() {
+        if (typeof window.populateLocationSelect === 'function') {
+            window.populateLocationSelect('filter-location', '', 'All Locations');
+        }
+        const grid = document.getElementById('companies-grid');
+        try {
+            const res = await getReq('/api/companies');
+            if (res && res.success && res.companies) {
+                allCompanies = res.companies;
+                renderCompanies(allCompanies);
+            } else {
+                renderCompanies([]);
+            }
+        } catch (e) {
+            console.error('Error loading companies:', e);
+            renderCompanies([]);
+        }
+    }
+
+    function renderCompanies(companies) {
+        const grid = document.getElementById('companies-grid');
+        if (!companies || companies.length === 0) {
+            grid.innerHTML = `
+                <div class="empty-state card" style="grid-column: 1 / -1;">
+                    <div class="empty-state-icon"><i class="fas fa-building"></i></div>
+                    <div class="empty-state-title">No companies found</div>
+                    <p class="empty-state-desc">Try searching for a different company name or adjusting your filters.</p>
+                </div>
+            `;
+            return;
+        }
+
+        grid.innerHTML = companies.map(c => {
+            const name = c.company_name || 'Verified Company';
+            const badge = name.substring(0, 2).toUpperCase();
+            return `
+            <div class="company-card-item">
+                <div>
+                    <div style="display:flex; align-items:center; gap:var(--space-4); margin-bottom:var(--space-4);">
+                        <div class="company-logo-avatar" style="width:52px; height:52px; font-size:1.2rem;">
+                            ${escapeHtml(badge)}
+                        </div>
+                        <div>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <h2 style="font-size:var(--font-size-base); font-weight:700; margin:0;">
+                                    <a href="/company/${c.id}" style="color:var(--color-text);">${escapeHtml(name)}</a>
+                                </h2>
+                                ${c.is_company_verified ? `<span style="color:#10B981; font-size:11px;" title="Company information has been reviewed by HireVolt."><i class="fas fa-check-circle"></i></span>` : ''}
+                            </div>
+                            <div style="font-size:var(--font-size-xs); color:var(--color-text-muted); font-weight:500; margin-top:2px;">
+                                ${escapeHtml(c.industry || 'Technology & Services')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap:6px; font-size:var(--font-size-xs); color:var(--color-text-secondary); margin-bottom:var(--space-4);">
+                        <span><i class="fas fa-map-marker-alt" style="color:var(--color-primary); width:16px;"></i> ${escapeHtml(c.location || 'Remote / India')}</span>
+                        <span><i class="fas fa-users" style="color:var(--color-primary); width:16px;"></i> ${escapeHtml(c.size || '50-500 Employees')}</span>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:8px; padding-top:var(--space-4); border-top:1px solid var(--color-border-subtle);">
+                    <a href="/company/${c.id}" class="btn btn-secondary btn-sm" style="flex:1;">Company Info</a>
+                    <a href="/jobs?company=${encodeURIComponent(name)}" class="btn btn-primary btn-sm" style="flex:1;">View Jobs</a>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function handleSearchKey(e) {
+        if (e.key === 'Enter') applyCompanyFilters();
+    }
+
+    function applyCompanyFilters() {
+        const nameQuery = document.getElementById('filter-name').value.trim().toLowerCase();
+        const industryQuery = document.getElementById('filter-industry').value.toLowerCase();
+        const sizeQuery = document.getElementById('filter-size').value;
+        const locationQuery = document.getElementById('filter-location').value.toLowerCase();
+
+        const filtered = allCompanies.filter(c => {
+            const matchName = !nameQuery || (c.company_name || '').toLowerCase().includes(nameQuery);
+            const matchInd = !industryQuery || (c.industry || '').toLowerCase().includes(industryQuery);
+            const matchLoc = !locationQuery || (c.location || '').toLowerCase().includes(locationQuery);
+
+            let matchSize = true;
+            if (sizeQuery) {
+                const cSize = (c.size || '').replace(/\s+/g, '').toLowerCase();
+                const qSize = sizeQuery.replace(/\s+/g, '').toLowerCase();
+                if (qSize === '1-50') {
+                    matchSize = cSize.includes('1-50') || cSize.includes('10-50') || cSize.includes('1-10');
+                } else if (qSize === '51-200') {
+                    matchSize = cSize.includes('51-200') || cSize.includes('50-200') || cSize.includes('51-500');
+                } else if (qSize === '201-1000') {
+                    matchSize = cSize.includes('201-1000') || cSize.includes('200-1000') || cSize.includes('201-500') || cSize.includes('500-1000');
+                } else if (qSize === '1000+') {
+                    matchSize = cSize.includes('1000') || cSize.includes('1,000') || cSize.includes('5000') || cSize.includes('10000');
+                } else {
+                    matchSize = cSize.includes(qSize);
+                }
+            }
+
+            return matchName && matchInd && matchLoc && matchSize;
+        });
+
+        renderCompanies(filtered);
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
+    }
+
+    document.addEventListener('DOMContentLoaded', loadCompanies);
+</script>
+{% endblock %}

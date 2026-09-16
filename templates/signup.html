@@ -1,0 +1,424 @@
+{% extends "base.html" %}
+
+{% block title %}Account Access & Registration — HireVolt{% endblock %}
+
+{% block body %}
+<div class="app-container" style="min-height:calc(100vh - 160px); display:flex; align-items:center; justify-content:center; padding-top:var(--space-8); padding-bottom:var(--space-12);">
+    <div class="card" style="width:100%; max-width:540px; padding:var(--space-8); box-shadow:var(--shadow-xl);">
+        <!-- Navigation Tabs -->
+        <div style="display:flex; background:var(--color-surface-alt); border-radius:var(--radius-lg); padding:4px; margin-bottom:var(--space-6);">
+            <button type="button" id="tab-candidate" class="btn btn-sm" style="flex:1; border-radius:var(--radius-md); font-weight:600; background:var(--color-surface); color:var(--color-primary); box-shadow:var(--shadow-subtle);" onclick="switchAuthTab('candidate')">
+                <i class="fas fa-user"></i> Candidate
+            </button>
+            <button type="button" id="tab-employer" class="btn btn-sm btn-ghost" style="flex:1; border-radius:var(--radius-md); font-weight:600;" onclick="switchAuthTab('employer')">
+                <i class="fas fa-building"></i> Employer
+            </button>
+            <button type="button" id="tab-login" class="btn btn-sm btn-ghost" style="flex:1; border-radius:var(--radius-md); font-weight:600;" onclick="switchAuthTab('login')">
+                <i class="fas fa-sign-in-alt"></i> Sign In
+            </button>
+        </div>
+
+        <!-- 1. Candidate Registration Form -->
+        <div id="pane-candidate">
+            <div style="text-align:center; margin-bottom:var(--space-5);">
+                <h1 style="font-size:var(--font-size-2xl); font-weight:800; margin-bottom:2px;">Create Candidate Profile</h1>
+                <p style="font-size:var(--font-size-sm); color:var(--color-text-secondary); margin:0;">Unlock personalized job matches and direct recruiter chats.</p>
+            </div>
+
+            <div id="pane-cand-alert" class="auth-form-alert alert-error" style="display:none;" role="alert"></div>
+
+            <form id="candidate-reg-form" onsubmit="event.preventDefault(); submitCandidateRegister(event);">
+                <div class="form-group">
+                    <label class="form-label form-label-required">Full Name</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="c-name" class="form-control" placeholder="Jane Doe" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label form-label-required">Email Address</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="c-email" class="form-control" placeholder="jane@example.com" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label form-label-required">10-Digit Mobile Number</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fas fa-phone"></i>
+                        <input type="tel" id="c-mobile" class="form-control" placeholder="9876543210" pattern="[0-9]{10}" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label form-label-required">Password</label>
+                    <div class="input-icon-wrapper password-input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="c-pass" class="form-control" placeholder="Min 8 chars, 1 letter, 1 number" required autocomplete="new-password">
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('c-pass', this)" aria-label="Toggle password visibility" tabindex="-1">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label form-label-required">Verification Code (OTP)</label>
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="c-otp" class="form-control" placeholder="6-digit code" maxlength="6" required>
+                        <button type="button" id="btn-c-otp" class="btn btn-secondary" onclick="requestOTP('c-email', 'register', 'btn-c-otp')">
+                            Send OTP
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-c-submit" class="btn btn-primary btn-block btn-lg" style="margin-top:var(--space-3);">
+                    Create Candidate Account
+                </button>
+            </form>
+        </div>
+
+        <!-- 2. Employer Registration Form -->
+        <div id="pane-employer" style="display:none;">
+            <div style="text-align:center; margin-bottom:var(--space-5);">
+                <h1 style="font-size:var(--font-size-2xl); font-weight:800; margin-bottom:2px;">Register Employer Account</h1>
+                <p style="font-size:var(--font-size-sm); color:var(--color-text-secondary); margin:0;">Post job openings and hire verified candidates.</p>
+            </div>
+
+            <div id="pane-emp-alert" class="auth-form-alert alert-error" style="display:none;" role="alert"></div>
+
+            <form id="employer-reg-form" onsubmit="event.preventDefault(); submitEmployerRegister(event);">
+                <div class="form-group">
+                    <label class="form-label form-label-required">Company Name</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fas fa-building"></i>
+                        <input type="text" id="e-name" class="form-control" placeholder="Acme Technologies" required autocomplete="organization">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label form-label-required">Work Email Address</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="e-email" class="form-control" placeholder="recruiter@company.com" required autocomplete="email">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label form-label-required">Company Mobile Number</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fas fa-phone"></i>
+                        <input type="tel" id="e-mobile" class="form-control" placeholder="9876543210" pattern="[0-9]{10}" required autocomplete="tel">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label form-label-required">Password</label>
+                    <div class="input-icon-wrapper password-input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="e-pass" class="form-control" placeholder="Min 8 chars, 1 letter, 1 number" required autocomplete="new-password">
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('e-pass', this)" aria-label="Toggle password visibility" tabindex="-1">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label form-label-required">Verification Code (OTP)</label>
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="e-otp" class="form-control" placeholder="6-digit code" maxlength="6" required>
+                        <button type="button" id="btn-e-otp" class="btn btn-secondary" onclick="requestOTP('e-email', 'emp_register', 'btn-e-otp')">
+                            Send OTP
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-e-submit" class="btn btn-primary btn-block btn-lg" style="margin-top:var(--space-3);">
+                    Register Employer Account
+                </button>
+            </form>
+        </div>
+
+        <!-- 3. Unified Sign In Form -->
+        <div id="pane-login" style="display:none;">
+            <div style="text-align:center; margin-bottom:var(--space-5);">
+                <h1 style="font-size:var(--font-size-2xl); font-weight:800; margin-bottom:2px;">Sign In to HireVolt</h1>
+                <p style="font-size:var(--font-size-sm); color:var(--color-text-secondary); margin:0;">Candidate & Employer Portal Access</p>
+            </div>
+
+            <div style="display:flex; gap:8px; margin-bottom:var(--space-4);">
+                <button type="button" id="login-as-candidate" class="btn btn-sm btn-primary" style="flex:1;" onclick="setLoginRole('candidate')">Candidate</button>
+                <button type="button" id="login-as-employer" class="btn btn-sm btn-secondary" style="flex:1;" onclick="setLoginRole('employer')">Employer</button>
+            </div>
+
+            <div id="pane-login-alert" class="auth-form-alert alert-error" style="display:none;" role="alert"></div>
+
+            <form id="login-form" onsubmit="event.preventDefault(); submitLogin(event);">
+                <div class="form-group">
+                    <label class="form-label form-label-required">Email Address</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="l-email" class="form-control" placeholder="name@example.com" required autocomplete="email">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <label class="form-label form-label-required">Password</label>
+                        <a href="{{ url_for('forgot_password_page') }}" style="font-size:var(--font-size-xs); color:var(--color-primary); font-weight:500;">Forgot Password?</a>
+                    </div>
+                    <div class="input-icon-wrapper password-input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="l-pass" class="form-control" placeholder="Your account password" required autocomplete="current-password">
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('l-pass', this)" aria-label="Toggle password visibility" tabindex="-1">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-l-submit" class="btn btn-primary btn-block btn-lg" style="margin-top:var(--space-3);">
+                    Sign In
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentLoginRole = 'candidate';
+
+    function switchAuthTab(tab) {
+        ['candidate', 'employer', 'login'].forEach(t => {
+            const btn = document.getElementById('tab-' + t);
+            const pane = document.getElementById('pane-' + t);
+            if (t === tab) {
+                btn.className = 'btn btn-sm';
+                btn.style.background = 'var(--color-surface)';
+                btn.style.color = 'var(--color-primary)';
+                btn.style.boxShadow = 'var(--shadow-subtle)';
+                pane.style.display = 'block';
+            } else {
+                btn.className = 'btn btn-sm btn-ghost';
+                btn.style.background = 'transparent';
+                btn.style.color = 'var(--color-text-secondary)';
+                btn.style.boxShadow = 'none';
+                pane.style.display = 'none';
+            }
+        });
+    }
+
+    function setLoginRole(role) {
+        currentLoginRole = role;
+        const cBtn = document.getElementById('login-as-candidate');
+        const eBtn = document.getElementById('login-as-employer');
+        if (role === 'candidate') {
+            cBtn.className = 'btn btn-sm btn-primary';
+            eBtn.className = 'btn btn-sm btn-secondary';
+        } else {
+            cBtn.className = 'btn btn-sm btn-secondary';
+            eBtn.className = 'btn btn-sm btn-primary';
+        }
+    }
+
+    async function requestOTP(emailInputId, action, btnId) {
+        const email = document.getElementById(emailInputId).value.trim();
+        if (!email || !email.includes('@')) {
+            showToast('Please enter a valid email address first.', 'warning');
+            return;
+        }
+
+        const btn = document.getElementById(btnId);
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+        const res = await postReq('/api/send_otp', { email: email, action: action });
+        btn.disabled = false;
+        btn.innerHTML = 'Send OTP';
+
+        if (res.success) {
+            showToast(res.message || 'OTP verification code sent to your email.', 'success');
+        }
+    }
+
+    async function submitCandidateRegister(e) {
+        const alertEl = document.getElementById('pane-cand-alert');
+        if (alertEl) { alertEl.style.display = 'none'; alertEl.innerHTML = ''; }
+
+        const name = document.getElementById('c-name').value.trim();
+        const email = document.getElementById('c-email').value.trim();
+        const mobile = document.getElementById('c-mobile').value.trim();
+        const password = document.getElementById('c-pass').value;
+        const otp = document.getElementById('c-otp').value.trim();
+
+        if (!name || name.length < 2) {
+            const msg = 'Please enter your full name (min 2 characters).';
+            if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+            showToast(msg, 'error');
+            return;
+        }
+        if (!email || !email.includes('@')) {
+            const msg = 'Please enter a valid email address.';
+            if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+            showToast(msg, 'error');
+            return;
+        }
+        if (!mobile || !/^[0-9]{10}$/.test(mobile)) {
+            const msg = 'Please enter a valid 10-digit mobile number.';
+            if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+            showToast(msg, 'error');
+            return;
+        }
+        if (!password || password.length < 8 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+            const msg = 'Password must be min 8 chars with at least 1 letter and 1 digit.';
+            if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+            showToast(msg, 'error');
+            return;
+        }
+        if (!otp) {
+            const msg = 'Please enter the 6-digit OTP verification code.';
+            if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+            showToast(msg, 'error');
+            return;
+        }
+
+        const btn = document.getElementById('btn-c-submit');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+
+        const res = await postReq('/api/user/register', { name, email, mobile, password, otp });
+        btn.disabled = false;
+        btn.innerHTML = 'Create Candidate Account';
+
+        if (res && res.success) {
+            showToast(res.message || 'Account created successfully!', 'success');
+            setTimeout(() => window.location.href = res.redirect || '/user_dashboard', 350);
+        } else if (res && res.message) {
+            if (alertEl) {
+                alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${res.message}</span>`;
+                alertEl.style.display = 'flex';
+            }
+            showToast(res.message, 'error');
+        }
+    }
+
+    async function submitEmployerRegister(e) {
+        const alertEl = document.getElementById('pane-emp-alert');
+        if (alertEl) { alertEl.style.display = 'none'; alertEl.innerHTML = ''; }
+
+        const name = document.getElementById('e-name').value.trim();
+        const email = document.getElementById('e-email').value.trim();
+        const mobile = document.getElementById('e-mobile').value.trim();
+        const password = document.getElementById('e-pass').value;
+        const otp = document.getElementById('e-otp').value.trim();
+
+        if (!name || name.length < 2) {
+            const msg = 'Please enter your company name.';
+            if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+            showToast(msg, 'error');
+            return;
+        }
+        if (!email || !email.includes('@')) {
+            const msg = 'Please enter a valid work email address.';
+            if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+            showToast(msg, 'error');
+            return;
+        }
+        if (!mobile || !/^[0-9]{10}$/.test(mobile)) {
+            const msg = 'Please enter a valid 10-digit mobile number.';
+            if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+            showToast(msg, 'error');
+            return;
+        }
+        if (!password || password.length < 8 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+            const msg = 'Password must be min 8 chars with at least 1 letter and 1 digit.';
+            if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+            showToast(msg, 'error');
+            return;
+        }
+        if (!otp) {
+            const msg = 'Please enter the 6-digit OTP verification code.';
+            if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+            showToast(msg, 'error');
+            return;
+        }
+
+        const btn = document.getElementById('btn-e-submit');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registering Company...';
+
+        const res = await postReq('/api/employer/register', { name, email, mobile, password, otp });
+        btn.disabled = false;
+        btn.innerHTML = 'Register Employer Account';
+
+        if (res && res.success) {
+            showToast(res.message || 'Company registered successfully!', 'success');
+            setTimeout(() => window.location.href = res.redirect || '/employer_dashboard', 350);
+        } else if (res && res.message) {
+            if (alertEl) {
+                alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${res.message}</span>`;
+                alertEl.style.display = 'flex';
+            }
+            showToast(res.message, 'error');
+        }
+    }
+
+    async function submitLogin(e) {
+        const alertEl = document.getElementById('pane-login-alert');
+        if (alertEl) { alertEl.style.display = 'none'; alertEl.innerHTML = ''; }
+
+        const email = document.getElementById('l-email').value.trim();
+        const password = document.getElementById('l-pass').value;
+
+        if (!email || !password) {
+            const msg = 'Please enter your email and password.';
+            if (alertEl) { alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`; alertEl.style.display = 'flex'; }
+            showToast(msg, 'error');
+            return;
+        }
+
+        const btn = document.getElementById('btn-l-submit');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing In...';
+
+        const endpoint = currentLoginRole === 'employer' ? '/api/employer/login' : '/api/user/login';
+        const res = await postReq(endpoint, { email, password });
+        btn.disabled = false;
+        btn.innerHTML = 'Sign In';
+
+        if (res && res.success) {
+            showToast(res.message || 'Signed in successfully!', 'success');
+            const dest = res.redirect || (currentLoginRole === 'employer' ? '/employer_dashboard' : '/user_dashboard');
+            setTimeout(() => window.location.href = dest, 350);
+        } else if (res && res.message) {
+            if (res.suggest_role) {
+                setLoginRole(res.suggest_role);
+            }
+            if (alertEl) {
+                alertEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${res.message}</span>`;
+                alertEl.style.display = 'flex';
+            }
+            showToast(res.message, 'error');
+        }
+    }
+
+    // Auto-select tab based on URL query
+    document.addEventListener('DOMContentLoaded', () => {
+        const params = new URLSearchParams(window.location.search);
+        const tab = (params.get('tab') || params.get('auth') || '').toLowerCase();
+        if (tab === 'employer' || tab === 'emp_register') {
+            switchAuthTab('employer');
+        } else if (tab === 'login' || tab === 'signin') {
+            switchAuthTab('login');
+            setLoginRole('candidate');
+        } else if (tab === 'emp_login') {
+            switchAuthTab('login');
+            setLoginRole('employer');
+        } else if (tab === 'candidate' || tab === 'signup' || tab === 'register') {
+            switchAuthTab('candidate');
+        }
+    });
+</script>
+{% endblock %}

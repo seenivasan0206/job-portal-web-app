@@ -1,0 +1,369 @@
+{% extends "base.html" %}
+
+{% block title %}Administrator Authentication — HireVolt Command Center{% endblock %}
+
+{% block extra_head %}
+<style>
+    .admin-login-wrapper {
+        min-height: calc(100vh - 160px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at 50% 20%, rgba(6, 182, 212, 0.12) 0%, rgba(15, 23, 42, 0.98) 70%), #0B1120;
+        padding: var(--space-8) var(--space-4);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .admin-login-wrapper::before {
+        content: '';
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+        top: -150px;
+        right: -150px;
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .admin-login-wrapper::after {
+        content: '';
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(0, 0, 0, 0) 70%);
+        bottom: -100px;
+        left: -100px;
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .admin-card {
+        width: 100%;
+        max-width: 440px;
+        background: rgba(30, 41, 59, 0.75);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(6, 182, 212, 0.15);
+        padding: 40px 36px;
+        position: relative;
+        z-index: 10;
+        color: #F8FAFC;
+    }
+
+    .admin-badge-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #06B6D4 0%, #2563EB 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        color: white;
+        margin: 0 auto 20px;
+        box-shadow: 0 10px 25px -5px rgba(6, 182, 212, 0.4);
+    }
+
+    .admin-card h1 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        text-align: center;
+        margin-bottom: 6px;
+        color: #FFFFFF;
+        letter-spacing: -0.02em;
+    }
+
+    .admin-card p.subtitle {
+        font-size: 0.875rem;
+        color: #94A3B8;
+        text-align: center;
+        margin-bottom: 28px;
+    }
+
+    .admin-field {
+        margin-bottom: 20px;
+    }
+
+    .admin-field label {
+        display: block;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: #CBD5E1;
+        margin-bottom: 8px;
+    }
+
+    .admin-input-group {
+        position: relative;
+    }
+
+    .admin-input-group i.input-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #64748B;
+        font-size: 15px;
+    }
+
+    .admin-input {
+        width: 100%;
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 10px;
+        padding: 12px 14px 12px 42px;
+        color: #FFFFFF;
+        font-size: 0.9375rem;
+        transition: all 0.2s ease;
+        outline: none;
+    }
+
+    .admin-input:focus {
+        border-color: #06B6D4;
+        box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.25);
+        background: rgba(15, 23, 42, 0.95);
+    }
+
+    .admin-input::placeholder {
+        color: #64748B;
+    }
+
+    .toggle-password-btn {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #64748B;
+        cursor: pointer;
+        padding: 4px 6px;
+        font-size: 14px;
+        transition: color 0.2s;
+    }
+
+    .toggle-password-btn:hover {
+        color: #CBD5E1;
+    }
+
+    .admin-btn {
+        width: 100%;
+        background: linear-gradient(135deg, #06B6D4 0%, #0284C7 100%);
+        color: white;
+        border: none;
+        padding: 13px;
+        font-size: 0.9375rem;
+        font-weight: 700;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 26px;
+        box-shadow: 0 4px 14px rgba(6, 182, 212, 0.35);
+    }
+
+    .admin-btn:hover {
+        background: linear-gradient(135deg, #0891B2 0%, #0369A1 100%);
+        box-shadow: 0 6px 20px rgba(6, 182, 212, 0.5);
+        transform: translateY(-1px);
+    }
+
+    .admin-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .admin-alert {
+        padding: 12px 14px;
+        border-radius: 8px;
+        font-size: 0.8125rem;
+        margin-bottom: 20px;
+        display: none;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .admin-alert.alert-error {
+        background: rgba(239, 68, 68, 0.15);
+        border: 1px solid rgba(239, 68, 68, 0.35);
+        color: #FCA5A5;
+    }
+
+    .admin-alert.alert-success {
+        background: rgba(16, 185, 129, 0.15);
+        border: 1px solid rgba(16, 185, 129, 0.35);
+        color: #6EE7B7;
+    }
+
+    .admin-security-note {
+        margin-top: 24px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        text-align: center;
+        font-size: 0.75rem;
+        color: #64748B;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="admin-login-wrapper">
+    <div class="admin-card">
+        <div class="admin-badge-icon">
+            <i class="fas fa-shield-alt"></i>
+        </div>
+        
+        <h1>HireVolt Admin Console</h1>
+        <p class="subtitle">Platform Moderation & Trust Verification Gateway</p>
+
+        <div id="admin-alert" class="admin-alert">
+            <i id="alert-icon" class="fas fa-exclamation-circle" style="margin-top:2px;"></i>
+            <span id="alert-text"></span>
+        </div>
+
+        <form id="admin-login-form" onsubmit="handleAdminLogin(event)">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="admin-field">
+                <label for="admin-email">Administrator Email</label>
+                <div class="admin-input-group">
+                    <i class="fas fa-envelope input-icon"></i>
+                    <input 
+                        type="email" 
+                        id="admin-email" 
+                        name="email" 
+                        class="admin-input" 
+                        placeholder="admin@hirevolt.com" 
+                        required 
+                        autocomplete="email"
+                        autofocus
+                    >
+                </div>
+            </div>
+
+            <div class="admin-field">
+                <label for="admin-password">Administrator Password</label>
+                <div class="admin-input-group">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input 
+                        type="password" 
+                        id="admin-password" 
+                        name="password" 
+                        class="admin-input" 
+                        placeholder="••••••••••••" 
+                        required 
+                        autocomplete="current-password"
+                        style="padding-right: 42px;"
+                    >
+                    <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility()" aria-label="Toggle password visibility">
+                        <i id="eye-icon" class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" id="admin-submit-btn" class="admin-btn">
+                <i class="fas fa-fingerprint"></i> Authenticate & Enter Console
+            </button>
+        </form>
+
+        <div class="admin-security-note">
+            <i class="fas fa-lock" style="font-size:10px;"></i>
+            <span>256-Bit Encrypted Session &bull; Rate-Limited &bull; SSRF Protected</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function togglePasswordVisibility() {
+        const input = document.getElementById('admin-password');
+        const icon = document.getElementById('eye-icon');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    function showAlert(message, type) {
+        const alertBox = document.getElementById('admin-alert');
+        const alertText = document.getElementById('alert-text');
+        const alertIcon = document.getElementById('alert-icon');
+        
+        alertBox.className = 'admin-alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
+        alertIcon.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+        alertText.textContent = message;
+        alertBox.style.display = 'flex';
+    }
+
+    function hideAlert() {
+        document.getElementById('admin-alert').style.display = 'none';
+    }
+
+    async function handleAdminLogin(e) {
+        e.preventDefault();
+        hideAlert();
+
+        const btn = document.getElementById('admin-submit-btn');
+        const email = document.getElementById('admin-email').value.trim();
+        const password = document.getElementById('admin-password').value;
+        const csrfToken = document.querySelector('input[name="csrf_token"]')?.value || '';
+
+        if (!email || !password) {
+            showAlert('Please provide both administrator email and password.', 'error');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Authenticating...';
+
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const nextParam = urlParams.get('next') || '';
+
+            const response = await fetch('/api/admin/login' + (nextParam ? `?next=${encodeURIComponent(nextParam)}` : ''), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ email: email, password: password })
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (response.ok && data.success) {
+                showAlert('Authentication successful! Initializing command center...', 'success');
+                setTimeout(() => {
+                    window.location.href = data.redirect || '/admin/dashboard';
+                }, 400);
+            } else {
+                showAlert(data.message || 'Authentication failed. Please verify your credentials.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-fingerprint"></i> Authenticate & Enter Console';
+            }
+        } catch (err) {
+            showAlert('Network or connection error. Please try again.', 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-fingerprint"></i> Authenticate & Enter Console';
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,600 @@
+{% extends "base.html" %}
+
+{% block title %}Skill Assessment Marketplace & Verified Badges (90+ Skills) — HireVolt{% endblock %}
+
+{% block body %}
+<div class="app-container" style="padding-top:var(--space-8); padding-bottom:var(--space-16);">
+
+    <!-- Header Section -->
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:var(--space-8); flex-wrap:wrap; gap:var(--space-4);">
+        <div>
+            <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.25); color:#a5b4fc; padding:4px 12px; border-radius:9999px; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:var(--space-2);">
+                <i class="fas fa-certificate"></i> Standardized Skill Verification Library
+            </div>
+            <h1 style="font-size:32px; font-weight:800; color:#f8fafc; margin:0 0 8px 0; letter-spacing:-0.02em;">
+                Professional Skill Assessments
+            </h1>
+            <p style="font-size:15px; color:#94a3b8; margin:0; max-width:740px; line-height:1.6;">
+                Validate your technical mastery across 90+ industry domains with standardized programming, database, analytics, and software engineering assessments to earn verifiable badges visible to hiring recruiters.
+            </p>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            {% if session.get('user_id') %}
+            <a href="/user_dashboard" class="btn btn-secondary btn-sm" style="background:#1e293b; border-color:#334155; color:#e2e8f0;">
+                <i class="fas fa-user-circle"></i> Candidate Dashboard
+            </a>
+            <a href="/candidate/profile" class="btn btn-primary btn-sm">
+                <i class="fas fa-id-badge"></i> View Verified Profile
+            </a>
+            {% else %}
+            <a href="/signup?tab=candidate" class="btn btn-primary btn-sm">
+                <i class="fas fa-user-plus"></i> Sign In to Save Badges
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Verified Skill Badges Banner (If candidate has earned badges) -->
+    {% if user_badges and user_badges|length > 0 %}
+    <div class="card" style="background:linear-gradient(135deg, rgba(30, 27, 75, 0.75) 0%, rgba(15, 23, 42, 0.95) 100%); border:1px solid rgba(99, 102, 241, 0.4); border-radius:16px; padding:var(--space-6); margin-bottom:var(--space-8); box-shadow:0 12px 32px rgba(0,0,0,0.35);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-5); flex-wrap:wrap; gap:12px;">
+            <div style="display:flex; align-items:center; gap:14px;">
+                <div style="width:46px; height:46px; border-radius:12px; background:linear-gradient(135deg, #6366f1, #8b5cf6); color:#fff; display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:0 4px 14px rgba(99,102,241,0.45);">
+                    <i class="fas fa-award"></i>
+                </div>
+                <div>
+                    <h3 style="font-size:18px; font-weight:700; color:#f8fafc; margin:0 0 2px 0;">Your Verified Skill Badges & Credentials</h3>
+                    <p style="font-size:13px; color:#a5b4fc; margin:0;">These certifications are active on your profile and increase recruiter interview request rates by up to 3.4x.</p>
+                </div>
+            </div>
+            <span class="badge" style="background:rgba(34,197,94,0.18); color:#86efac; border:1px solid rgba(34,197,94,0.4); padding:6px 16px; font-size:13px; font-weight:700; border-radius:20px;">
+                <i class="fas fa-check-circle"></i> {{ user_badges|length }} Badges Earned
+            </span>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:14px;">
+            {% for badge in user_badges %}
+            <div style="background:rgba(15, 23, 42, 0.75); border:1px solid rgba(34,197,94,0.3); border-radius:12px; padding:14px; display:flex; align-items:center; gap:12px; transition:transform 0.2s, border-color 0.2s;">
+                <div style="width:40px; height:40px; border-radius:10px; background:rgba(34, 197, 94, 0.15); color:#4ade80; display:flex; align-items:center; justify-content:center; font-size:18px; border:1px solid rgba(34,197,94,0.35); flex-shrink:0;">
+                    <i class="fas fa-shield-check"></i>
+                </div>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-size:14px; font-weight:700; color:#f8fafc; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        {{ badge.skill_name }}
+                    </div>
+                    <div style="font-size:12px; color:#94a3b8; display:flex; gap:6px; align-items:center; margin-top:2px;">
+                        <span style="color:#4ade80; font-weight:700;">{{ badge.score }}% Score</span>
+                        <span>•</span>
+                        <span>{{ badge.badge_level or 'Verified Skill' }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Filter & Search Toolbar Card -->
+    <div class="card" style="background:#0f172a; border:1px solid #1e293b; border-radius:16px; padding:var(--space-6); margin-bottom:var(--space-8); box-shadow:0 6px 20px rgba(0,0,0,0.2);">
+        
+        <!-- Search & Dropdown Filters Row -->
+        <div style="display:flex; gap:var(--space-4); align-items:center; flex-wrap:wrap; margin-bottom:var(--space-4);">
+            
+            <!-- Search input -->
+            <div class="input-icon-wrapper" style="flex:3; min-width:280px; position:relative;">
+                <i class="fas fa-search" style="position:absolute; left:16px; top:50%; transform:translateY(-50%); color:#64748b;"></i>
+                <input type="text" id="assessment-search" class="form-control" placeholder="Search 90+ skills (e.g. Python, React, SQL, AWS, Docker, Machine Learning)..." oninput="filterAssessments()" style="padding-left:44px; padding-right:36px; background:#1e293b; border-color:#334155; color:#f8fafc; border-radius:10px; height:46px; font-size:14px;">
+                <button type="button" id="btn-clear-search" onclick="clearSearch()" style="display:none; position:absolute; right:12px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:#94a3b8; cursor:pointer; font-size:14px;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Difficulty Filter -->
+            <div style="flex:1; min-width:160px;">
+                <select id="filter-difficulty" class="form-control" onchange="filterAssessments()" style="background:#1e293b; border-color:#334155; color:#f8fafc; border-radius:10px; height:46px; font-size:13px;">
+                    <option value="">All Difficulties</option>
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div style="flex:1; min-width:160px;">
+                <select id="filter-status" class="form-control" onchange="filterAssessments()" style="background:#1e293b; border-color:#334155; color:#f8fafc; border-radius:10px; height:46px; font-size:13px;">
+                    <option value="">All Statuses</option>
+                    <option value="passed">✓ Verified / Passed</option>
+                    <option value="retake">Needs Retake</option>
+                    <option value="not_attempted">Not Attempted</option>
+                </select>
+            </div>
+
+            <!-- Sort Filter -->
+            <div style="flex:1; min-width:160px;">
+                <select id="filter-sort" class="form-control" onchange="sortAssessments()" style="background:#1e293b; border-color:#334155; color:#f8fafc; border-radius:10px; height:46px; font-size:13px;">
+                    <option value="default">Default Catalog</option>
+                    <option value="popular">Popular First</option>
+                    <option value="new">Newest First</option>
+                    <option value="rating">Highest Rated</option>
+                    <option value="alpha">Alphabetical (A-Z)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Domain Category Chips Row (Horizontally Scrollable) -->
+        <div style="padding-top:var(--space-3); border-top:1px solid #1e293b;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                <span style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; display:inline-flex; align-items:center; gap:6px;">
+                    <i class="fas fa-layer-group" style="color:#6366f1;"></i> Domains:
+                </span>
+                <span id="domain-scroll-hint" style="font-size:11px; color:#64748b; display:none; align-items:center; gap:4px;">
+                    <i class="fas fa-arrows-left-right"></i> Scroll for more
+                </span>
+            </div>
+            <div class="domain-chips-container" id="domain-chips-wrapper">
+                <button type="button" class="domain-chip cat-pill active" data-domain="" onclick="setDomainFilter('', this)">
+                    <i class="fas fa-globe"></i> All (<span class="chip-count">{{ total_assessments_count or assessments|length }}</span>)
+                </button>
+                <button type="button" class="domain-chip cat-pill" data-domain="Programming" onclick="setDomainFilter('Programming', this)">
+                    <i class="fab fa-code"></i> Programming (<span class="chip-count">{{ (domain_counts.get('Programming', 16) if domain_counts else 16) }}</span>)
+                </button>
+                <button type="button" class="domain-chip cat-pill" data-domain="Web Development" onclick="setDomainFilter('Web Development', this)">
+                    <i class="fas fa-window-maximize"></i> Web Dev (<span class="chip-count">{{ (domain_counts.get('Web Development', 17) if domain_counts else 17) }}</span>)
+                </button>
+                <button type="button" class="domain-chip cat-pill" data-domain="Database & SQL" onclick="setDomainFilter('Database & SQL', this)">
+                    <i class="fas fa-database"></i> Database & SQL (<span class="chip-count">{{ (domain_counts.get('Database & SQL', 13) if domain_counts else 13) }}</span>)
+                </button>
+                <button type="button" class="domain-chip cat-pill" data-domain="Data Analytics" onclick="setDomainFilter('Data Analytics', this)">
+                    <i class="fas fa-chart-pie"></i> Data Analytics (<span class="chip-count">{{ (domain_counts.get('Data Analytics', 20) if domain_counts else 20) }}</span>)
+                </button>
+                <button type="button" class="domain-chip cat-pill" data-domain="Data Science & AI" onclick="setDomainFilter('Data Science & AI', this)">
+                    <i class="fas fa-brain"></i> Data Science & AI (<span class="chip-count">{{ (domain_counts.get('Data Science & AI', 16) if domain_counts else 16) }}</span>)
+                </button>
+                <button type="button" class="domain-chip cat-pill" data-domain="Cloud & DevOps" onclick="setDomainFilter('Cloud & DevOps', this)">
+                    <i class="fas fa-cloud"></i> Cloud & DevOps (<span class="chip-count">{{ (domain_counts.get('Cloud & DevOps', 12) if domain_counts else 12) }}</span>)
+                </button>
+                <button type="button" class="domain-chip cat-pill" data-domain="Software Engineering" onclick="setDomainFilter('Software Engineering', this)">
+                    <i class="fas fa-laptop-code"></i> Software Engineering (<span class="chip-count">{{ (domain_counts.get('Software Engineering', 11) if domain_counts else 11) }}</span>)
+                </button>
+                <button type="button" class="domain-chip cat-pill" data-domain="Cybersecurity" onclick="setDomainFilter('Cybersecurity', this)">
+                    <i class="fas fa-shield-halved"></i> Cybersecurity (<span class="chip-count">{{ (domain_counts.get('Cybersecurity', 7) if domain_counts else 7) }}</span>)
+                </button>
+                <button type="button" class="domain-chip cat-pill" data-domain="Business & Professional Skills" onclick="setDomainFilter('Business & Professional Skills', this)">
+                    <i class="fas fa-briefcase"></i> Business Skills (<span class="chip-count">{{ (domain_counts.get('Business & Professional Skills', 10) if domain_counts else 10) }}</span>)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Count Bar -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-5); color:#94a3b8; font-size:13px;">
+        <div>
+            Showing <strong id="results-count" style="color:#f8fafc;">{{ assessments|length }}</strong> skill assessments
+        </div>
+        <div id="active-filters-desc" style="font-size:12px; color:#64748b;"></div>
+    </div>
+
+    <!-- Assessment Cards Grid -->
+    <div id="assessments-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:var(--space-6);">
+        {% for test in assessments %}
+        {% set att = user_attempts.get(test.id) %}
+        <div class="card assessment-card" 
+             data-id="{{ test.id }}"
+             data-category="{{ test.category|lower }}" 
+             data-domain="{{ (test.domain or 'technical')|lower }}"
+             data-difficulty="{{ test.difficulty or 'Intermediate' }}"
+             data-title="{{ test.title|lower }} {{ test.category|lower }} {{ (test.domain or '')|lower }} {{ test.description|lower }}"
+             data-name="{{ test.title }}"
+             data-passed="{% if att and att.passed %}true{% else %}false{% endif %}"
+             data-attempted="{% if att %}true{% else %}false{% endif %}"
+             data-score="{{ att.best_score if att else 0 }}"
+             data-rating="{{ test.rating or 4.85 }}"
+             data-attempts="{{ test.total_attempts or 0 }}"
+             data-popular="{{ test.total_attempts or (1 if test.is_popular else 0) }}"
+             data-created="{{ test.created_at.strftime('%Y-%m-%d %H:%M:%S') if test.created_at else '' }}"
+             data-new="{{ 1 if test.is_new else 0 }}"
+             style="background:#0f172a; border:1px solid {% if att and att.passed %}rgba(34,197,94,0.45){% else %}#1e293b{% endif %}; border-radius:16px; padding:var(--space-6); display:flex; flex-direction:column; justify-content:space-between; transition:transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; position:relative; overflow:hidden;">
+            
+            <!-- Verified Ribbon -->
+            {% if att and att.passed %}
+            <div style="position:absolute; top:0; right:0; background:linear-gradient(135deg, #16a34a, #22c55e); color:#fff; font-size:10px; font-weight:800; padding:4px 14px; border-bottom-left-radius:12px; letter-spacing:0.04em; display:flex; align-items:center; gap:4px; box-shadow:0 2px 10px rgba(34,197,94,0.35);">
+                <i class="fas fa-check-circle"></i> VERIFIED ({{ att.best_score }}%)
+            </div>
+            {% elif att and att.attempt_count > 0 %}
+            <div style="position:absolute; top:0; right:0; background:linear-gradient(135deg, #d97706, #f59e0b); color:#fff; font-size:10px; font-weight:800; padding:4px 12px; border-bottom-left-radius:12px; letter-spacing:0.04em; display:flex; align-items:center; gap:4px;">
+                <i class="fas fa-history"></i> RETRY ({{ att.last_score }}%)
+            </div>
+            {% endif %}
+
+            <div>
+                <!-- Top Row: Icon, Domain, Difficulty -->
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:var(--space-4);">
+                    <div style="width:50px; height:50px; border-radius:12px; background:linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.15)); border:1px solid rgba(99,102,241,0.3); color:#818cf8; display:flex; align-items:center; justify-content:center; font-size:22px;">
+                        <i class="{{ test.icon or 'fas fa-code' }}"></i>
+                    </div>
+                    <div style="display:flex; gap:6px; flex-direction:column; align-items:flex-end;">
+                        <span class="badge" style="background:#1e293b; color:#cbd5e1; border:1px solid #334155; font-size:11px; font-weight:600; padding:3px 9px; border-radius:20px;">
+                            {{ test.difficulty or 'Intermediate' }}
+                        </span>
+                        <span style="font-size:11px; color:#64748b; font-weight:600;">
+                            {{ test.domain or 'Technical' }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Title & Category -->
+                <h3 style="font-size:18px; font-weight:700; color:#f8fafc; margin:0 0 6px 0; line-height:1.35;">
+                    {{ test.title }}
+                </h3>
+                <p style="font-size:13px; color:#94a3b8; line-height:1.55; margin:0 0 var(--space-5) 0; min-height:56px;">
+                    {{ test.description }}
+                </p>
+
+                <!-- Spec Grid -->
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:var(--space-5); padding:10px 12px; background:#1e293b; border-radius:10px; font-size:12px; color:#cbd5e1;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <i class="fas fa-question-circle" style="color:#6366f1;"></i>
+                        <span>{{ test.questions_count or 10 }} Questions</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <i class="fas fa-clock" style="color:#f59e0b;"></i>
+                        <span>{{ test.time_limit_minutes or 15 }} Mins</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <i class="fas fa-percentage" style="color:#10b981;"></i>
+                        <span>Pass: {{ test.passing_score or 70 }}%</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        {% if att and att.passed %}
+                        <i class="fas fa-check-circle" style="color:#22c55e;"></i>
+                        <span style="color:#86efac; font-weight:600;">Badge Earned</span>
+                        {% elif att %}
+                        <i class="fas fa-redo-alt" style="color:#f59e0b;"></i>
+                        <span>{{ att.attempt_count }} Attempts</span>
+                        {% else %}
+                        <i class="fas fa-award" style="color:#ec4899;"></i>
+                        <span>Verified Badge</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div style="display:flex; gap:10px; align-items:center;">
+                {% if session.get('user_id') %}
+                <a href="/candidate/assessments/{{ test.id }}" class="btn btn-primary btn-block btn-sm" style="font-weight:600; padding:10px; border-radius:10px; display:flex; justify-content:center; align-items:center; gap:8px;">
+                    {% if att and att.passed %}
+                        <i class="fas fa-certificate"></i> View Verified Badge / Retake
+                    {% elif att %}
+                        <i class="fas fa-redo"></i> Retake Assessment
+                    {% else %}
+                        <i class="fas fa-play"></i> Start Assessment
+                    {% endif %}
+                </a>
+                {% else %}
+                <button type="button" onclick="openUserModal('login')" class="btn btn-primary btn-block btn-sm" style="font-weight:600; padding:10px; border-radius:10px; display:flex; justify-content:center; align-items:center; gap:8px;">
+                    <i class="fas fa-play"></i> Start Assessment
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Empty State -->
+    <div id="no-assessments" style="display:none; text-align:center; padding:var(--space-12); background:#0f172a; border:1px solid #1e293b; border-radius:16px; margin-top:var(--space-6);">
+        <div style="width:64px; height:64px; border-radius:16px; background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.25); color:#818cf8; display:flex; align-items:center; justify-content:center; font-size:26px; margin:0 auto 16px auto;">
+            <i class="fas fa-search"></i>
+        </div>
+        <h3 style="font-size:20px; color:#f8fafc; font-weight:700; margin-bottom:6px;">No assessments found</h3>
+        <p style="font-size:14px; color:#94a3b8; margin:0 0 var(--space-5) 0;">Try changing your filters or search criteria.</p>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="resetAllFilters()" style="background:#1e293b; border-color:#334155; color:#f8fafc; padding:8px 20px; border-radius:10px;">
+            <i class="fas fa-rotate-left"></i> Clear Filters
+        </button>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    .domain-chips-container {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        overflow-x: auto;
+        overflow-y: hidden;
+        white-space: nowrap;
+        padding: 4px 2px 8px 2px;
+        margin: 0;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+        max-width: 100%;
+    }
+
+    .domain-chips-container::-webkit-scrollbar {
+        height: 4px;
+    }
+
+    .domain-chips-container::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+    }
+
+    .domain-chip {
+        background: #1e293b;
+        color: #94a3b8;
+        border: 1px solid #334155;
+        padding: 8px 16px;
+        border-radius: 9999px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+        user-select: none;
+        outline: none;
+    }
+
+    .domain-chip:hover {
+        background: #334155;
+        color: #f8fafc;
+        border-color: #475569;
+        transform: translateY(-1px);
+    }
+
+    .domain-chip.active {
+        background: #6366f1 !important;
+        color: #ffffff !important;
+        border-color: #6366f1 !important;
+        box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4) !important;
+    }
+
+    .domain-chip .chip-count {
+        background: rgba(255, 255, 255, 0.12);
+        color: inherit;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 7px;
+        border-radius: 10px;
+        line-height: 1.2;
+    }
+
+    .domain-chip.active .chip-count {
+        background: rgba(255, 255, 255, 0.25);
+        color: #ffffff;
+    }
+
+    .cat-pill {
+        /* Alias class preserving backward-compatibility */
+    }
+
+    .assessment-card:hover {
+        transform: translateY(-4px);
+        border-color: #6366f1 !important;
+        box-shadow: 0 12px 28px rgba(0,0,0,0.45);
+    }
+
+    @media (max-width: 768px) {
+        #domain-scroll-hint {
+            display: inline-flex !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let activeDomain = '';
+
+    function normalizeDomain(d) {
+        if (!d) return '';
+        const lower = d.trim().toLowerCase();
+        if (lower === 'web dev' || lower === 'web development') return 'web development';
+        if (lower === 'business skills' || lower === 'business & professional skills') return 'business & professional skills';
+        return lower;
+    }
+
+    function setDomainFilter(domain, buttonEl) {
+        activeDomain = normalizeDomain(domain);
+        document.querySelectorAll('.domain-chip').forEach(btn => btn.classList.remove('active'));
+        if (buttonEl) {
+            buttonEl.classList.add('active');
+        } else {
+            const matchBtn = Array.from(document.querySelectorAll('.domain-chip')).find(b => normalizeDomain(b.getAttribute('data-domain') || '') === activeDomain);
+            if (matchBtn) matchBtn.classList.add('active');
+        }
+        filterAssessments();
+    }
+
+    function clearSearch() {
+        const input = document.getElementById('assessment-search');
+        input.value = '';
+        document.getElementById('btn-clear-search').style.display = 'none';
+        filterAssessments();
+    }
+
+    function resetAllFilters() {
+        document.getElementById('assessment-search').value = '';
+        const clearBtn = document.getElementById('btn-clear-search');
+        if (clearBtn) clearBtn.style.display = 'none';
+        document.getElementById('filter-difficulty').value = '';
+        document.getElementById('filter-status').value = '';
+        document.getElementById('filter-sort').value = 'default';
+        setDomainFilter('', document.querySelector('.domain-chip[data-domain=""]'));
+        sortAssessments();
+    }
+
+    function updateDomainCounts(cards) {
+        // Calculate matching assessments per domain under current search, difficulty and status filters
+        const difficulty = (document.getElementById('filter-difficulty').value || '').toLowerCase();
+        const status = (document.getElementById('filter-status').value || '').toLowerCase();
+        const searchInput = document.getElementById('assessment-search');
+        const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+        const countsByDomain = {};
+        let totalCount = 0;
+
+        cards.forEach(card => {
+            const cardDiff = (card.getAttribute('data-difficulty') || '').toLowerCase();
+            const cardTitle = (card.getAttribute('data-title') || '').toLowerCase();
+            const cardName = (card.getAttribute('data-name') || '').toLowerCase();
+            const cardPassed = card.getAttribute('data-passed') === 'true';
+            const cardAttempted = card.getAttribute('data-attempted') === 'true';
+            const cardDomain = normalizeDomain(card.getAttribute('data-domain') || '');
+
+            const matchQuery = !query || cardTitle.includes(query) || cardName.includes(query);
+            const matchDiff = !difficulty || cardDiff === difficulty;
+            let matchStatus = true;
+            if (status === 'passed') matchStatus = cardPassed;
+            else if (status === 'retake') matchStatus = cardAttempted && !cardPassed;
+            else if (status === 'not_attempted') matchStatus = !cardAttempted;
+
+            if (matchQuery && matchDiff && matchStatus) {
+                totalCount++;
+                countsByDomain[cardDomain] = (countsByDomain[cardDomain] || 0) + 1;
+            }
+        });
+
+        // Update count badges on domain chips
+        document.querySelectorAll('.domain-chip').forEach(btn => {
+            const d = normalizeDomain(btn.getAttribute('data-domain') || '');
+            const badge = btn.querySelector('.chip-count');
+            if (badge) {
+                if (!d) {
+                    badge.textContent = totalCount;
+                } else {
+                    badge.textContent = countsByDomain[d] || 0;
+                }
+            }
+        });
+    }
+
+    function filterAssessments() {
+        const searchInput = document.getElementById('assessment-search');
+        const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+        const clearBtn = document.getElementById('btn-clear-search');
+        if (clearBtn) {
+            clearBtn.style.display = query.length > 0 ? 'block' : 'none';
+        }
+
+        const difficulty = (document.getElementById('filter-difficulty').value || '').toLowerCase();
+        const status = (document.getElementById('filter-status').value || '').toLowerCase();
+
+        const cards = Array.from(document.querySelectorAll('.assessment-card'));
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            const cardDomain = normalizeDomain(card.getAttribute('data-domain') || '');
+            const cardCat = (card.getAttribute('data-category') || '').toLowerCase();
+            const cardDiff = (card.getAttribute('data-difficulty') || '').toLowerCase();
+            const cardTitle = (card.getAttribute('data-title') || '').toLowerCase();
+            const cardName = (card.getAttribute('data-name') || '').toLowerCase();
+            const cardPassed = card.getAttribute('data-passed') === 'true';
+            const cardAttempted = card.getAttribute('data-attempted') === 'true';
+
+            // 1. Domain match
+            let matchDomain = true;
+            if (activeDomain) {
+                matchDomain = cardDomain === activeDomain || cardCat === activeDomain;
+            }
+
+            // 2. Search query match
+            const matchQuery = !query || cardTitle.includes(query) || cardName.includes(query);
+
+            // 3. Difficulty match
+            const matchDiff = !difficulty || cardDiff === difficulty;
+
+            // 4. Status match
+            let matchStatus = true;
+            if (status === 'passed') {
+                matchStatus = cardPassed;
+            } else if (status === 'retake') {
+                matchStatus = cardAttempted && !cardPassed;
+            } else if (status === 'not_attempted') {
+                matchStatus = !cardAttempted;
+            }
+
+            if (matchDomain && matchQuery && matchDiff && matchStatus) {
+                card.style.display = 'flex';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        const countEl = document.getElementById('results-count');
+        if (countEl) countEl.innerText = visibleCount;
+
+        const noMatchEl = document.getElementById('no-assessments');
+        if (noMatchEl) {
+            noMatchEl.style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+
+        updateDomainCounts(cards);
+        sortAssessments();
+    }
+
+    function sortAssessments() {
+        const sortVal = document.getElementById('filter-sort').value;
+        const grid = document.getElementById('assessments-grid');
+        if (!grid) return;
+        const cards = Array.from(grid.querySelectorAll('.assessment-card'));
+
+        cards.sort((a, b) => {
+            if (sortVal === 'popular') {
+                // Primary: total candidate attempts
+                const attA = parseInt(a.getAttribute('data-attempts')) || 0;
+                const attB = parseInt(b.getAttribute('data-attempts')) || 0;
+                if (attB !== attA) return attB - attA;
+
+                // Secondary: is_popular flag
+                const popA = parseInt(a.getAttribute('data-popular')) || 0;
+                const popB = parseInt(b.getAttribute('data-popular')) || 0;
+                if (popB !== popA) return popB - popA;
+
+                // Tertiary: rating
+                const rateA = parseFloat(a.getAttribute('data-rating')) || 0;
+                const rateB = parseFloat(b.getAttribute('data-rating')) || 0;
+                if (rateB !== rateA) return rateB - rateA;
+
+                return (parseInt(a.getAttribute('data-id')) || 0) - (parseInt(b.getAttribute('data-id')) || 0);
+            } else if (sortVal === 'new') {
+                // Sort by real creation date string descending
+                const dateA = a.getAttribute('data-created') || '';
+                const dateB = b.getAttribute('data-created') || '';
+                if (dateA && dateB && dateB !== dateA) {
+                    return dateB.localeCompare(dateA);
+                }
+                const newA = parseInt(a.getAttribute('data-new')) || 0;
+                const newB = parseInt(b.getAttribute('data-new')) || 0;
+                if (newB !== newA) return newB - newA;
+                return (parseInt(b.getAttribute('data-id')) || 0) - (parseInt(a.getAttribute('data-id')) || 0);
+            } else if (sortVal === 'rating') {
+                const rateA = parseFloat(a.getAttribute('data-rating')) || 0;
+                const rateB = parseFloat(b.getAttribute('data-rating')) || 0;
+                if (rateB !== rateA) return rateB - rateA;
+                return (parseInt(a.getAttribute('data-id')) || 0) - (parseInt(b.getAttribute('data-id')) || 0);
+            } else if (sortVal === 'alpha') {
+                const titleA = (a.getAttribute('data-name') || a.querySelector('h3').innerText).trim().toLowerCase();
+                const titleB = (b.getAttribute('data-name') || b.querySelector('h3').innerText).trim().toLowerCase();
+                return titleA.localeCompare(titleB);
+            } else {
+                // Default Catalog order
+                return (parseInt(a.getAttribute('data-id')) || 0) - (parseInt(b.getAttribute('data-id')) || 0);
+            }
+        });
+
+        cards.forEach(c => grid.appendChild(c));
+    }
+
+    // Initialize dynamic counts on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = Array.from(document.querySelectorAll('.assessment-card'));
+        updateDomainCounts(cards);
+    });
+</script>
+{% endblock %}

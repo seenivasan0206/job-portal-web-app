@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}Recruiter Company Profile — HireVolt{% endblock %}
+
+{% block body %}
+<div class="app-container" style="padding-top:var(--space-6); padding-bottom:var(--space-12);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-6);">
+        <div>
+            <h1 style="font-size:var(--font-size-2xl); font-weight:800; margin-bottom:2px;">Company Branding Profile</h1>
+            <p style="font-size:var(--font-size-sm); color:var(--color-text-secondary); margin:0;">Configure how your organization appears to job seekers across listings.</p>
+        </div>
+        <a href="/employer_dashboard" class="btn btn-ghost btn-sm">
+            <i class="fas fa-arrow-left"></i> Dashboard
+        </a>
+    </div>
+
+        <!-- Verification Status & Trust Banner -->
+    <div id="verif-status-card" class="card" style="margin-bottom:var(--space-6); background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1);">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+            <div style="display:flex; align-items:center; gap:16px;">
+                <div id="verif-icon" style="width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.4rem; background:rgba(148, 163, 184, 0.1); color:#94A3B8;">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <h3 id="verif-heading" style="font-size:1.1rem; font-weight:700; margin:0;">Company Verification Status</h3>
+                        <span id="verif-badge" class="badge badge-slate">Checking...</span>
+                    </div>
+                    <p id="verif-desc" style="font-size:0.85rem; color:#94A3B8; margin:4px 0 0 0;">
+                        Verify your organization to earn candidate trust and increase application response rates.
+                    </p>
+                </div>
+            </div>
+            <button type="button" id="btn-request-verif" class="btn btn-primary btn-sm" onclick="openVerificationModal()">
+                <i class="fas fa-check-circle"></i> Request Verification
+            </button>
+        </div>
+    </div>
+
+    <div class="card">
+        <form id="rec-comp-form" onsubmit="event.preventDefault(); saveCompanyBranding();">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:var(--space-5);">
+                <div class="form-group">
+                    <label class="form-label form-label-required">Company Name</label>
+                    <input type="text" id="company-name" class="form-control" placeholder="Acme Technologies" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Contact Email (Account Primary)</label>
+                    <input type="email" id="company-email" class="form-control" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Primary Mobile Number</label>
+                    <input type="tel" id="company-mobile" class="form-control" placeholder="9876543210">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Primary Industry</label>
+                    <select id="company-industry" class="form-select">
+                        <option value="">Select Industry</option>
+                        <option value="IT & Software">IT & Software</option>
+                        <option value="Banking & Finance">Banking & Finance</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Engineering">Engineering</option>
+                        <option value="Education">Education</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Headquarters / Location</label>
+                    <input type="text" id="company-location" class="form-control" placeholder="e.g. Bengaluru, India">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Company Size</label>
+                    <select id="company-size" class="form-select">
+                        <option value="1-50">1 - 50 Employees</option>
+                        <option value="51-200">51 - 200 Employees</option>
+                        <option value="201-1000">201 - 1,000 Employees</option>
+                        <option value="1000+">1,000+ Employees</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="grid-column:1/-1;">
+                    <label class="form-label">Official Website URL</label>
+                    <input type="url" id="company-website" class="form-control" placeholder="https://acme.com">
+                </div>
+
+                <div class="form-group" style="grid-column:1/-1;">
+                    <label class="form-label">About Company & Culture</label>
+                    <textarea id="company-desc" class="form-control" rows="4" placeholder="Describe your mission, values, and why candidates love working here..."></textarea>
+                </div>
+            </div>
+
+            <div style="margin-top:var(--space-6); display:flex; justify-content:flex-end; gap:10px;">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save"></i> Save Profile Branding
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+    <!-- Verification Submission Modal -->
+    <div class="modal-backdrop" id="request-verif-modal" role="dialog" aria-modal="true" aria-labelledby="verif-modal-title" onclick="if(event.target===this) closeVerificationModal()">
+        <div class="modal-content" data-lenis-prevent onclick="event.stopPropagation()" style="max-width:480px; padding:28px;">
+            <button type="button" class="modal-close" onclick="closeVerificationModal()" aria-label="Close">&times;</button>
+            <div class="modal-body" style="padding:0;">
+                <h3 id="verif-modal-title" style="font-size:1.25rem; font-weight:700; color:#FFFFFF; margin-bottom:6px;">Request Employer Verification</h3>
+                <p style="font-size:0.85rem; color:#94A3B8; margin-bottom:20px; line-height:1.5;">
+                    Submit your company details for review by HireVolt moderators. You can optionally attach proof of registration (GST, Certificate of Incorporation, etc.).
+                </p>
+
+                <form id="verif-form" onsubmit="event.preventDefault(); submitVerificationRequest();">
+                    <div class="form-group">
+                        <label class="form-label">Business Registration Document (Optional)</label>
+                        <input type="file" id="verif-doc-file" class="form-control" accept=".pdf,.png,.jpg,.jpeg">
+                        <span style="font-size:11px; color:#94A3B8; display:block; margin-top:4px;">Supported: PDF, PNG, JPG (Max 5MB)</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Additional Verification Notes</label>
+                        <textarea id="verif-notes" class="form-control" rows="3" placeholder="Provide any additional company identification, official email domain, or company registration numbers..."></textarea>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeVerificationModal()">Cancel</button>
+                        <button type="submit" id="btn-submit-verif" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Submit for Review
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function loadCompanyProfile() {
+        const res = await getReq('/api/employer/profile');
+        if (res && res.success && res.employer) {
+            const e = res.employer;
+            document.getElementById('company-name').value = e.company_name || '';
+            document.getElementById('company-email').value = e.email || '';
+            document.getElementById('company-mobile').value = e.mobile || '';
+            document.getElementById('company-industry').value = e.industry || '';
+            document.getElementById('company-location').value = e.location || '';
+            document.getElementById('company-size').value = e.company_size || e.size || '51-200';
+            document.getElementById('company-website').value = e.website || '';
+            document.getElementById('company-desc').value = e.description || '';
+
+            // Update verification badge
+            const badge = document.getElementById('verif-badge');
+            const desc = document.getElementById('verif-desc');
+            const icon = document.getElementById('verif-icon');
+            const btn = document.getElementById('btn-request-verif');
+
+            if (e.verification_status === 'verified') {
+                badge.className = 'badge badge-success';
+                badge.innerHTML = '<i class="fas fa-check-circle"></i> Verified Employer';
+                icon.style.background = 'rgba(16, 185, 129, 0.15)';
+                icon.style.color = '#10B981';
+                desc.textContent = e.verified_at_formatted ? `Your organization was verified on ${e.verified_at_formatted}.` : 'Your organization has been reviewed and verified by HireVolt.';
+                if (btn) btn.style.display = 'none';
+            } else if (e.verification_status === 'pending') {
+                badge.className = 'badge badge-warning';
+                badge.innerHTML = '<i class="fas fa-clock"></i> Verification Under Review';
+                icon.style.background = 'rgba(245, 158, 11, 0.15)';
+                icon.style.color = '#F59E0B';
+                desc.textContent = 'Your verification request is currently being reviewed by our trust team.';
+                if (btn) { btn.disabled = true; btn.textContent = 'Review Pending'; }
+            } else if (e.verification_status === 'rejected') {
+                badge.className = 'badge badge-error';
+                badge.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Verification Incomplete';
+                icon.style.background = 'rgba(239, 68, 68, 0.15)';
+                icon.style.color = '#EF4444';
+                desc.textContent = e.verification_notes ? `Feedback: ${e.verification_notes}` : 'Verification was rejected. Please review your company information and resubmit.';
+                if (btn) { btn.disabled = false; btn.textContent = 'Resubmit Verification'; }
+            } else {
+                badge.className = 'badge badge-slate';
+                badge.innerHTML = '<i class="fas fa-info-circle"></i> Unverified Employer';
+                if (btn) { btn.disabled = false; btn.textContent = 'Request Verification'; }
+            }
+        }
+    }
+
+    function openVerificationModal() {
+        const m = document.getElementById('request-verif-modal');
+        if (m) m.classList.add('active');
+    }
+
+    function closeVerificationModal() {
+        const m = document.getElementById('request-verif-modal');
+        if (m) m.classList.remove('active');
+    }
+
+    async function submitVerificationRequest() {
+        const fileInput = document.getElementById('verif-doc-file');
+        const notes = document.getElementById('verif-notes').value.trim();
+        const submitBtn = document.getElementById('btn-submit-verif');
+
+        const formData = new FormData();
+        if (fileInput.files.length > 0) {
+            formData.append('verification_doc', fileInput.files[0]);
+        }
+        formData.append('notes', notes);
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+
+        try {
+            const res = await fetch('/api/employer/request_verification', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(data.message || 'Verification submitted!', 'success');
+                closeVerificationModal();
+                loadCompanyProfile();
+            } else {
+                showToast(data.message || 'Submission failed.', 'error');
+            }
+        } catch (err) {
+            showToast('Network error while submitting verification.', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit for Review';
+        }
+    }
+
+    async function saveCompanyBranding() {
+        const name = document.getElementById('company-name').value.trim();
+        const mobile = document.getElementById('company-mobile').value.trim();
+        const industry = document.getElementById('company-industry').value;
+        const location = document.getElementById('company-location').value.trim();
+        const size = document.getElementById('company-size').value;
+        const website = document.getElementById('company-website').value.trim();
+        const description = document.getElementById('company-desc').value.trim();
+
+        const res = await postReq('/api/employer/profile', {
+            company_name: name, mobile, industry, location, size, website, description
+        });
+
+        if (res.success) {
+            showToast('Company branding updated successfully!', 'success');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadCompanyProfile);
+</script>
+{% endblock %}

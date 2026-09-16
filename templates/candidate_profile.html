@@ -1,119 +1,576 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>{{ user.name }}'s Profile - Dream Jobs</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="{{ url_for('static', filename='csrf_protect.js') }}"></script>
-    <style>
-        .profile-container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
-        .profile-header { display: flex; gap: 30px; align-items: flex-start; margin-bottom: 30px; }
-        .profile-pic { width: 150px; height: 150px; border-radius: 50%; background: #e0e0e0; display: flex; align-items: center; justify-content: center; font-size: 50px; color: #666; }
-        .profile-pic img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-        .profile-info h1 { margin: 0 0 5px; font-size: 28px; }
-        .profile-headline { color: #666; font-size: 18px; margin: 0 0 10px; }
-        .profile-links { display: flex; gap: 15px; margin-top: 10px; }
-        .profile-links a { color: #0066cc; text-decoration: none; }
-        .profile-links a:hover { text-decoration: underline; }
-        .completeness-bar { background: #e0e0e0; border-radius: 10px; height: 8px; margin-top: 10px; overflow: hidden; }
-        .completeness-fill { height: 100%; background: #4caf50; transition: width 0.3s; }
-        .profile-section { background: #fff; border-radius: 8px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .profile-section h2 { margin-top: 0; color: #444; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; }
-        .skills-list { display: flex; flex-wrap: wrap; gap: 8px; }
-        .skill-tag { background: #e3f2fd; color: #0066cc; padding: 4px 12px; border-radius: 15px; font-size: 13px; }
-        .exp-item { margin-bottom: 15px; }
-        .exp-title { font-weight: 600; }
-        .exp-company { color: #666; font-size: 14px; }
-        .exp-dates { color: #999; font-size: 12px; }
-        .social-icon { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; background: #f0f0f0; border-radius: 5px; margin-right: 5px; }
-    </style>
-</head>
-<body>
-    <div class="profile-container">
-        <div class="profile-header">
-            <div class="profile-pic">
+{% extends "base.html" %}
+
+{% block title %}{{ user.name if user else 'Candidate' }}'s Profile — HireVolt{% endblock %}
+
+{% block body %}
+<div class="app-container" style="padding-top:var(--space-6); padding-bottom:var(--space-12); max-width:1120px; margin:0 auto;">
+    
+    <!-- Top Action Bar -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-5); flex-wrap:wrap; gap:12px;">
+        <a href="/user_dashboard" class="btn btn-ghost btn-sm" style="padding-left:0;">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+        <div style="display:flex; gap:10px; align-items:center;">
+            {% if is_owner %}
+            <a href="/candidate/profile/edit" class="btn btn-primary btn-sm">
+                <i class="fas fa-edit"></i> Edit Profile
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 1. Hero Identity Card -->
+    <div class="card" style="margin-bottom:var(--space-6); border:1px solid rgba(255,255,255,0.08); background:linear-gradient(135deg, rgba(30,41,59,0.7), rgba(15,23,42,0.9)); box-shadow:var(--shadow-lg);">
+        <div style="display:flex; gap:var(--space-6); align-items:center; flex-wrap:wrap;">
+            <div style="width:110px; height:110px; border-radius:var(--radius-full); background:#1E293B; color:#38BDF8; display:flex; align-items:center; justify-content:center; font-size:2.8rem; font-weight:800; border:3px solid #38BDF8; overflow:hidden; flex-shrink:0; box-shadow:0 4px 16px rgba(0,0,0,0.4);">
                 {% if profile and profile.profile_photo %}
-                    <img src="{{ url_for('static', filename='uploads/' + profile.profile_photo) }}" alt="Profile Photo">
+                    <img src="{{ url_for('static', filename='uploads/' + profile.profile_photo) }}" alt="Profile Photo" style="width:100%; height:100%; object-fit:cover;">
                 {% else %}
-                    <i class="fas fa-user"></i>
+                    {{ (user.name if user else 'C')[0]|upper }}
                 {% endif %}
             </div>
-            <div class="profile-info">
-                <h1>{{ user.name }}</h1>
-                {% if profile and profile.headline %}
-                    <p class="profile-headline">{{ profile.headline }}</p>
-                {% endif %}
-                <div class="profile-links">
-                    {% if profile and profile.linkedin_url %}
-                        <a href="{{ profile.linkedin_url }}" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+
+            <div style="flex:1; min-width:280px;">
+                <div style="display:flex; align-items:center; gap:var(--space-3); margin-bottom:4px; flex-wrap:wrap;">
+                    <h1 style="font-size:var(--font-size-3xl); font-weight:800; margin:0; color:#F8FAFC;">{{ user.name if user else 'Candidate' }}</h1>
+                    <span class="badge badge-success"><i class="fas fa-check-circle"></i> Active Candidate</span>
+                </div>
+
+                <p style="font-size:1.05rem; color:#38BDF8; font-weight:600; margin-bottom:var(--space-3);">
+                    {{ profile.headline if profile and profile.headline else 'Job Seeker' }}
+                </p>
+
+                <!-- Quick Location & Contact Meta -->
+                <div style="display:flex; gap:16px; flex-wrap:wrap; font-size:0.85rem; color:#94A3B8; margin-bottom:var(--space-3);">
+                    {% if personal and personal.current_location %}
+                    <span><i class="fas fa-map-marker-alt" style="color:#FF5E14; margin-right:4px;"></i> {{ personal.current_location }}</span>
                     {% endif %}
-                    {% if profile and profile.github_url %}
-                        <a href="{{ profile.github_url }}" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+                    {% if user and user.email %}
+                    <span><i class="fas fa-envelope" style="color:#38BDF8; margin-right:4px;"></i> {{ user.email }}</span>
                     {% endif %}
-                    {% if profile and profile.portfolio_url %}
-                        <a href="{{ profile.portfolio_url }}" target="_blank"><i class="fas fa-globe"></i> Portfolio</a>
+                    {% if user and user.mobile %}
+                    <span><i class="fas fa-phone" style="color:#10B981; margin-right:4px;"></i> {{ user.mobile }}</span>
                     {% endif %}
                 </div>
-                {% if completeness %}
-                    <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
-                        <span style="font-size:13px; color:#666;">Profile {{ completeness }}% complete</span>
-                        <div class="completeness-bar" style="flex:1; height:8px;">
-                            <div class="completeness-fill" style="width:{{ completeness }}%"></div>
-                        </div>
+
+                <!-- Social & Professional Links -->
+                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:var(--space-4);">
+                    {% if profile and profile.linkedin_url %}
+                    <a href="{{ profile.linkedin_url }}" target="_blank" class="badge badge-slate" style="padding:6px 12px; font-size:0.82rem; text-decoration:none;">
+                        <i class="fab fa-linkedin" style="color:#0A66C2;"></i> LinkedIn
+                    </a>
+                    {% endif %}
+                    {% if profile and profile.github_url %}
+                    <a href="{{ profile.github_url }}" target="_blank" class="badge badge-slate" style="padding:6px 12px; font-size:0.82rem; text-decoration:none;">
+                        <i class="fab fa-github" style="color:#F8FAFC;"></i> GitHub
+                    </a>
+                    {% endif %}
+                    {% if profile and profile.portfolio_url %}
+                    <a href="{{ profile.portfolio_url }}" target="_blank" class="badge badge-slate" style="padding:6px 12px; font-size:0.82rem; text-decoration:none;">
+                        <i class="fas fa-globe" style="color:#38BDF8;"></i> Portfolio
+                    </a>
+                    {% endif %}
+                </div>
+
+                <!-- Completeness Health Bar -->
+                {% if completeness is not none %}
+                <div style="display:flex; align-items:center; gap:12px; max-width:340px;">
+                    <span style="font-size:0.75rem; font-weight:700; color:#94A3B8; text-transform:uppercase; letter-spacing:0.04em;">Profile {{ completeness }}% Complete</span>
+                    <div style="flex:1; height:8px; background:rgba(255,255,255,0.08); border-radius:4px; overflow:hidden;">
+                        <div style="width:{{ completeness }}%; height:100%; background:linear-gradient(90deg, #FF5E14, #10B981); border-radius:4px;"></div>
                     </div>
+                </div>
                 {% endif %}
             </div>
         </div>
+    </div>
 
-        {% if profile and profile.summary %}
-            <div class="profile-section">
-                <h2><i class="fas fa-info-circle"></i> Summary</h2>
-                <p style="line-height:1.6;">{{ profile.summary }}</p>
+    <!-- 2. Career Preferences Card -->
+    {% if preferences and (preferences.preferred_job_role or preferences.current_job_role or preferences.expected_ctc or preferences.desired_employment_type or preferences.preferred_employment_type or preferences.current_industry or preferences.preferred_location or preferences.workplace_type) %}
+    <div class="card" style="margin-bottom:var(--space-6);">
+        <div class="card-header" style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px; margin-bottom:16px;">
+            <h2 class="card-title" style="font-size:1.1rem; margin:0;"><i class="fas fa-compass" style="color:#38BDF8; margin-right:8px;"></i> Career & Job Preferences</h2>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
+            {% if preferences.preferred_job_role or preferences.current_job_role %}
+            <div>
+                <span style="font-size:0.75rem; color:#94A3B8; text-transform:uppercase; font-weight:700;">Target Role</span>
+                <div style="font-size:0.95rem; font-weight:600; color:#F8FAFC; margin-top:2px;">{{ preferences.preferred_job_role or preferences.current_job_role }}</div>
             </div>
-        {% endif %}
-
-        {% if profile and profile.skills %}
-            <div class="profile-section">
-                <h2><i class="fas fa-cog"></i> Skills</h2>
-                <div class="skills-list">
-                    {% for skill in profile.skills.split(',') %}
-                        <span class="skill-tag">{{ skill.strip() }}</span>
-                    {% endfor %}
+            {% endif %}
+            {% if preferences.preferred_location %}
+            <div>
+                <span style="font-size:0.75rem; color:#94A3B8; text-transform:uppercase; font-weight:700;">Preferred Location</span>
+                <div style="font-size:0.95rem; font-weight:600; color:#F8FAFC; margin-top:2px;"><i class="fas fa-map-pin" style="color:#FF5E14; margin-right:4px;"></i> {{ preferences.preferred_location }}</div>
+            </div>
+            {% endif %}
+            {% if preferences.workplace_type %}
+            <div>
+                <span style="font-size:0.75rem; color:#94A3B8; text-transform:uppercase; font-weight:700;">Workplace Type</span>
+                <div style="font-size:0.95rem; font-weight:600; color:#F8FAFC; margin-top:2px;">{{ preferences.workplace_type }}</div>
+            </div>
+            {% endif %}
+            {% if preferences.current_industry %}
+            <div>
+                <span style="font-size:0.75rem; color:#94A3B8; text-transform:uppercase; font-weight:700;">Industry</span>
+                <div style="font-size:0.95rem; font-weight:600; color:#F8FAFC; margin-top:2px;">{{ preferences.current_industry }}</div>
+            </div>
+            {% endif %}
+            {% if preferences.desired_employment_type or preferences.preferred_employment_type %}
+            <div>
+                <span style="font-size:0.75rem; color:#94A3B8; text-transform:uppercase; font-weight:700;">Employment Type</span>
+                <div style="font-size:0.95rem; font-weight:600; color:#F8FAFC; margin-top:2px;">{{ preferences.desired_employment_type or preferences.preferred_employment_type }}</div>
+            </div>
+            {% endif %}
+            {% if preferences.desired_job_type and not preferences.workplace_type %}
+            <div>
+                <span style="font-size:0.75rem; color:#94A3B8; text-transform:uppercase; font-weight:700;">Job Nature</span>
+                <div style="font-size:0.95rem; font-weight:600; color:#F8FAFC; margin-top:2px;">{{ preferences.desired_job_type }}</div>
+            </div>
+            {% endif %}
+            {% if preferences.preferred_shift %}
+            <div>
+                <span style="font-size:0.75rem; color:#94A3B8; text-transform:uppercase; font-weight:700;">Preferred Shift</span>
+                <div style="font-size:0.95rem; font-weight:600; color:#F8FAFC; margin-top:2px;">{{ preferences.preferred_shift }}</div>
+            </div>
+            {% endif %}
+            {% if preferences.expected_ctc %}
+            <div>
+                <span style="font-size:0.75rem; color:#94A3B8; text-transform:uppercase; font-weight:700;">Expected CTC</span>
+                <div style="font-size:0.95rem; font-weight:600; color:#10B981; margin-top:2px;">{{ preferences.expected_ctc }}</div>
+            </div>
+            {% endif %}
+            {% if preferences.notice_period %}
+            <div>
+                <span style="font-size:0.75rem; color:#94A3B8; text-transform:uppercase; font-weight:700;">Notice Period</span>
+                <div style="font-size:0.95rem; font-weight:600; color:#F8FAFC; margin-top:2px;">{{ preferences.notice_period }}</div>
+            </div>
+            {% endif %}
+            {% if preferences.open_to_relocate is not none %}
+            <div>
+                <span style="font-size:0.75rem; color:#94A3B8; text-transform:uppercase; font-weight:700;">Relocation</span>
+                <div style="font-size:0.95rem; font-weight:600; color:#F8FAFC; margin-top:2px;">
+                    {% if preferences.open_to_relocate in (1, True, '1', 'true') %}
+                        <span style="color:#10B981;"><i class="fas fa-check"></i> Willing to relocate</span>
+                    {% else %}
+                        <span style="color:#94A3B8;">Preferred Location Only</span>
+                    {% endif %}
                 </div>
             </div>
-        {% endif %}
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
 
-        {% if profile and profile.experience %}
-            <div class="profile-section">
-                <h2><i class="fas fa-briefcase"></i> Experience</h2>
-                {% for exp in profile.experience %}
-                    <div class="exp-item">
-                        <div class="exp-title">{{ exp.title }}</div>
-                        <div class="exp-company">{{ exp.company }}</div>
-                        <div class="exp-dates">{{ exp.dates or exp.duration }}</div>
-                        {% if exp.description %}
-                            <p style="font-size:13px; color:#444; margin-top:5px;">{{ exp.description }}</p>
-                        {% endif %}
+    <!-- 3. Professional Summary -->
+    {% if summary %}
+    <div class="card" style="margin-bottom:var(--space-6);">
+        <div class="card-header" style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px; margin-bottom:16px;">
+            <h2 class="card-title" style="font-size:1.1rem; margin:0;"><i class="fas fa-align-left" style="color:#38BDF8; margin-right:8px;"></i> Professional Summary</h2>
+        </div>
+        <p style="font-size:0.95rem; color:#CBD5E1; line-height:1.75; margin:0; white-space:pre-line;">
+            {{ summary }}
+        </p>
+    </div>
+    {% endif %}
+
+    <!-- 4. Verified Skill Badges -->
+    {% if verified_badges and verified_badges|length > 0 %}
+    <div class="card" style="margin-bottom:var(--space-6); border:1px solid rgba(34,197,94,0.35); background:linear-gradient(135deg, rgba(15,23,42,0.85), rgba(6,78,59,0.15)); border-radius:14px; padding:var(--space-5);">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-4); border-bottom:1px solid rgba(34,197,94,0.2); padding-bottom:var(--space-3);">
+            <h2 class="card-title" style="color:#f8fafc; font-size:1.1rem; margin:0; display:flex; align-items:center; gap:8px;">
+                <i class="fas fa-shield-check" style="color:#22c55e;"></i> Verified Skills & Technical Certifications
+            </h2>
+            <span class="badge badge-success" style="background:#22c55e; color:#0f172a; font-weight:700;">
+                <i class="fas fa-check-circle"></i> {{ verified_badges|length }} Verified
+            </span>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px;">
+            {% for badge in verified_badges %}
+            <div style="background:rgba(15,23,42,0.7); border:1px solid rgba(34,197,94,0.3); border-radius:10px; padding:12px; display:flex; align-items:center; gap:12px;">
+                <div style="width:36px; height:36px; border-radius:8px; background:rgba(34,197,94,0.15); color:#4ade80; display:flex; align-items:center; justify-content:center; font-size:16px; border:1px solid rgba(34,197,94,0.3); flex-shrink:0;">
+                    <i class="{{ badge.icon or 'fas fa-check' }}"></i>
+                </div>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-size:13px; font-weight:700; color:#f8fafc; display:flex; align-items:center; gap:4px;">
+                        <span>{{ badge.skill_name }}</span>
+                        <i class="fas fa-check-circle" style="color:#22c55e; font-size:11px;" title="Verified Credential"></i>
                     </div>
+                    <div style="font-size:11px; color:#94a3b8; display:flex; gap:6px; align-items:center; margin-top:2px;">
+                        <span style="color:#4ade80; font-weight:700;">{{ badge.score }}% Score</span>
+                        <span>•</span>
+                        <span>{{ badge.badge_level or 'Verified' }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 5. Key Skills -->
+    {% if (key_skills and key_skills|length > 0) or (profile and profile.skills) %}
+    <div class="card" style="margin-bottom:var(--space-6);">
+        <div class="card-header" style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px; margin-bottom:16px;">
+            <h2 class="card-title" style="font-size:1.1rem; margin:0;"><i class="fas fa-tools" style="color:#38BDF8; margin-right:8px;"></i> Skills & Competencies</h2>
+        </div>
+
+        {% if technical_skills and technical_skills|length > 0 %}
+        <div style="margin-bottom:16px;">
+            <h3 style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.05em; color:#38BDF8; font-weight:700; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+                <i class="fas fa-code"></i> Technical Skills ({{ technical_skills|length }})
+            </h3>
+            <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                {% for s in technical_skills %}
+                <span class="badge badge-slate" style="font-size:0.85rem; padding:7px 14px; background:rgba(30,41,59,0.8); border:1px solid rgba(56,189,248,0.3); color:#F8FAFC;">
+                    <i class="fas fa-code" style="color:#38BDF8; margin-right:5px; font-size:0.75rem;"></i> {{ s.skill_name }}
+                </span>
                 {% endfor %}
             </div>
+        </div>
         {% endif %}
 
-        {% if profile and profile.education %}
-            <div class="profile-section">
-                <h2><i class="fas fa-graduation-cap"></i> Education</h2>
-                {% for edu in profile.education %}
-                    <div class="exp-item">
-                        <div class="exp-title">{{ edu.degree }}</div>
-                        <div class="exp-company">{{ edu.institution }}</div>
-                        <div class="exp-dates">{{ edu.year }}</div>
-                    </div>
+        {% if soft_skills and soft_skills|length > 0 %}
+        <div>
+            <h3 style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.05em; color:#10B981; font-weight:700; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+                <i class="fas fa-heart"></i> Soft Skills ({{ soft_skills|length }})
+            </h3>
+            <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                {% for s in soft_skills %}
+                <span class="badge badge-slate" style="font-size:0.85rem; padding:7px 14px; background:rgba(30,41,59,0.8); border:1px solid rgba(16,185,129,0.3); color:#F8FAFC;">
+                    <i class="fas fa-heart" style="color:#10B981; margin-right:5px; font-size:0.75rem;"></i> {{ s.skill_name }}
+                </span>
                 {% endfor %}
             </div>
+        </div>
+        {% endif %}
+
+        {% if not technical_skills and not soft_skills and key_skills and key_skills|length > 0 %}
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            {% for s in key_skills %}
+            <span class="badge badge-slate" style="font-size:0.85rem; padding:7px 14px; background:rgba(30,41,59,0.8); border:1px solid rgba(255,255,255,0.1); color:#F8FAFC;">
+                <i class="fas fa-code" style="color:#38BDF8; margin-right:5px; font-size:0.75rem;"></i> {{ s.skill_name }}
+            </span>
+            {% endfor %}
+        </div>
+        {% elif not technical_skills and not soft_skills and profile and profile.skills %}
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            {% for skill in profile.skills.split(',') %}
+                {% if skill.strip() %}
+                <span class="badge badge-slate" style="font-size:0.85rem; padding:7px 14px; background:rgba(30,41,59,0.8); border:1px solid rgba(255,255,255,0.1); color:#F8FAFC;">
+                    <i class="fas fa-check" style="color:#10B981; margin-right:5px; font-size:0.75rem;"></i> {{ skill.strip() }}
+                </span>
+                {% endif %}
+            {% endfor %}
+        </div>
         {% endif %}
     </div>
-</body>
-</html>
+    {% endif %}
+
+    <!-- 6. Work Experience -->
+    {% if employment and employment|length > 0 %}
+    <div class="card" style="margin-bottom:var(--space-6);">
+        <div class="card-header" style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px; margin-bottom:16px;">
+            <h2 class="card-title" style="font-size:1.1rem; margin:0;"><i class="fas fa-briefcase" style="color:#38BDF8; margin-right:8px;"></i> Work Experience</h2>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:20px;">
+            {% for exp in employment %}
+            <div style="padding-bottom:16px; {% if not loop.last %}border-bottom:1px solid rgba(255,255,255,0.06);{% endif %}">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
+                    <div>
+                        <div style="font-weight:700; font-size:1.05rem; color:#F8FAFC;">{{ exp.job_title or exp.designation or exp.title }}</div>
+                        <div style="font-size:0.9rem; color:#38BDF8; font-weight:600; margin-top:2px;">{{ exp.company_name or exp.organization or exp.company }}</div>
+                    </div>
+                    <span class="badge badge-slate" style="font-size:0.8rem;">
+                        {{ exp.start_date }} — {{ exp.end_date if not exp.is_current else 'Present' }}
+                    </span>
+                </div>
+                {% if exp.job_profile or exp.description %}
+                <p style="font-size:0.88rem; color:#94A3B8; line-height:1.65; margin:8px 0 0 0; white-space:pre-line;">
+                    {{ exp.job_profile or exp.description }}
+                </p>
+                {% endif %}
+                {% if exp.skills_used %}
+                <div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;">
+                    {% for sk in exp.skills_used.split(',') %}
+                    <span style="font-size:0.75rem; background:rgba(255,255,255,0.05); padding:2px 8px; border-radius:4px; color:#CBD5E1;">{{ sk.strip() }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 7. Internships -->
+    {% if internships and internships|length > 0 %}
+    <div class="card" style="margin-bottom:var(--space-6);">
+        <div class="card-header" style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px; margin-bottom:16px;">
+            <h2 class="card-title" style="font-size:1.1rem; margin:0;"><i class="fas fa-user-graduate" style="color:#38BDF8; margin-right:8px;"></i> Internships</h2>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:16px;">
+            {% for intern in internships %}
+            <div style="padding-bottom:12px; {% if not loop.last %}border-bottom:1px solid rgba(255,255,255,0.06);{% endif %}">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
+                    <div>
+                        <div style="font-weight:700; font-size:1rem; color:#F8FAFC;">{{ intern.internship_role or intern.role_title or intern.role }}</div>
+                        <div style="font-size:0.88rem; color:#38BDF8; font-weight:600;">{{ intern.organization or intern.organization_name or intern.company }}</div>
+                    </div>
+                    <span class="badge badge-slate" style="font-size:0.8rem;">
+                        {{ intern.start_date }} — {{ intern.end_date or 'Present' }}
+                    </span>
+                </div>
+                {% if intern.project_details %}
+                <p style="font-size:0.85rem; color:#94A3B8; line-height:1.6; margin:6px 0 0 0;">
+                    {{ intern.project_details }}
+                </p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 8. Education & Qualifications -->
+    {% if education and education|length > 0 %}
+    <div class="card" style="margin-bottom:var(--space-6);">
+        <div class="card-header" style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px; margin-bottom:16px;">
+            <h2 class="card-title" style="font-size:1.1rem; margin:0;"><i class="fas fa-graduation-cap" style="color:#38BDF8; margin-right:8px;"></i> Education & Qualifications</h2>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:16px;">
+            {% for edu in education %}
+            <div style="padding-bottom:12px; {% if not loop.last %}border-bottom:1px solid rgba(255,255,255,0.06);{% endif %}">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
+                    <div>
+                        <div style="font-weight:700; font-size:1rem; color:#F8FAFC;">
+                            {{ edu.course_degree or edu.degree or edu.qualification or 'Degree' }}{% if edu.specialization %} in {{ edu.specialization }}{% endif %}
+                        </div>
+                        <div style="font-size:0.88rem; color:#38BDF8; font-weight:600;">{{ edu.institute or edu.institute_name or edu.college_name }}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <span class="badge badge-slate" style="font-size:0.8rem;">{{ edu.year_of_passing or edu.passout_year or edu.year or 'Completed' }}</span>
+                        {% if edu.grade_value or edu.grade or edu.percentage or edu.cgpa %}
+                        <div style="font-size:0.8rem; color:#10B981; font-weight:700; margin-top:2px;">
+                            Score: {{ edu.grade_value or edu.grade or edu.percentage or edu.cgpa }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 9. Projects -->
+    {% if projects and projects|length > 0 %}
+    <div class="card" style="margin-bottom:var(--space-6);">
+        <div class="card-header" style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px; margin-bottom:16px;">
+            <h2 class="card-title" style="font-size:1.1rem; margin:0;"><i class="fas fa-project-diagram" style="color:#38BDF8; margin-right:8px;"></i> Projects Showcase</h2>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:16px;">
+            {% for proj in projects %}
+            <div style="padding-bottom:12px; {% if not loop.last %}border-bottom:1px solid rgba(255,255,255,0.06);{% endif %}">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
+                    <div>
+                        <div style="font-weight:700; font-size:1rem; color:#F8FAFC;">{{ proj.project_title or proj.title or proj.name }}</div>
+                        {% if proj.client_name %}
+                        <div style="font-size:0.85rem; color:#94A3B8;">Client / Context: {{ proj.client_name }}</div>
+                        {% endif %}
+                    </div>
+                    {% if proj.project_status %}
+                    <span class="badge badge-slate" style="font-size:0.75rem;">{{ proj.project_status }}</span>
+                    {% endif %}
+                </div>
+                {% if proj.project_details or proj.description %}
+                <p style="font-size:0.85rem; color:#CBD5E1; line-height:1.6; margin:6px 0 0 0;">
+                    {{ proj.project_details or proj.description }}
+                </p>
+                {% endif %}
+                {% if proj.skills_used or proj.technologies %}
+                <div style="margin-top:6px; font-size:0.78rem; color:#38BDF8;">
+                    <strong>Tech Stack:</strong> {{ proj.skills_used or proj.technologies }}
+                </div>
+                {% endif %}
+                {% if proj.project_url or proj.url or proj.site_url %}
+                <a href="{{ proj.project_url or proj.url or proj.site_url }}" target="_blank" style="font-size:0.78rem; color:#38BDF8; display:inline-block; margin-top:6px; text-decoration:none;">
+                    <i class="fas fa-external-link-alt" style="font-size:0.7rem;"></i> View Project
+                </a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 10. Certifications & Badges -->
+    {% if certifications and certifications|length > 0 %}
+    <div class="card" style="margin-bottom:var(--space-6);">
+        <div class="card-header" style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px; margin-bottom:16px;">
+            <h2 class="card-title" style="font-size:1.1rem; margin:0;"><i class="fas fa-certificate" style="color:#EAB308; margin-right:8px;"></i> Certifications & Licenses</h2>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:14px;">
+            {% for cert in certifications %}
+            <div style="background:rgba(30,41,59,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:14px;">
+                <div style="font-weight:700; font-size:0.95rem; color:#F8FAFC;">{{ cert.certification_name or cert.name }}</div>
+                <div style="font-size:0.85rem; color:#EAB308; font-weight:600; margin-top:2px;">{{ cert.issuing_authority or cert.issuing_organization or cert.organization or 'Certified' }}</div>
+                {% if cert.issue_date %}
+                <div style="font-size:0.75rem; color:#94A3B8; margin-top:4px;">Issued: {{ cert.issue_date }}</div>
+                {% endif %}
+                {% if cert.certification_url or cert.credential_url or cert.url %}
+                <a href="{{ cert.certification_url or cert.credential_url or cert.url }}" target="_blank" style="font-size:0.78rem; color:#38BDF8; display:inline-block; margin-top:6px; text-decoration:none;">
+                    <i class="fas fa-external-link-alt" style="font-size:0.7rem;"></i> View Credential
+                </a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 11. Languages Known -->
+    {% if languages and languages|length > 0 %}
+    <div class="card" style="margin-bottom:var(--space-6);">
+        <div class="card-header" style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px; margin-bottom:16px;">
+            <h2 class="card-title" style="font-size:1.1rem; margin:0;"><i class="fas fa-language" style="color:#8B5CF6; margin-right:8px;"></i> Languages Known</h2>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:12px;">
+            {% for lang in languages %}
+            <div style="background:rgba(30,41,59,0.7); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:8px 14px; display:flex; align-items:center; gap:10px;">
+                <span style="font-weight:700; color:#F8FAFC; font-size:0.9rem;">{{ lang.language_name or lang.name }}</span>
+                <div style="display:flex; gap:4px; font-size:0.72rem;">
+                    {% if lang.can_read %}<span class="badge" style="background:#1E293B; color:#38BDF8;">Read</span>{% endif %}
+                    {% if lang.can_write %}<span class="badge" style="background:#1E293B; color:#10B981;">Write</span>{% endif %}
+                    {% if lang.can_speak %}<span class="badge" style="background:#1E293B; color:#F97316;">Speak</span>{% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 12. Academic Achievements & Honors -->
+    {% if academic_achievements and academic_achievements|length > 0 %}
+    <div class="card" style="margin-bottom:var(--space-6);">
+        <div class="card-header" style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px; margin-bottom:16px;">
+            <h2 class="card-title" style="font-size:1.1rem; margin:0;"><i class="fas fa-medal" style="color:#10B981; margin-right:8px;"></i> Academic Honors & Achievements</h2>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            {% for a in academic_achievements %}
+            <div style="padding-bottom:10px; {% if not loop.last %}border-bottom:1px solid rgba(255,255,255,0.06);{% endif %}">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight:700; color:#F8FAFC; font-size:0.92rem;">{{ a.title }}</span>
+                    {% if a.year %}<span class="badge badge-slate" style="font-size:0.75rem;">{{ a.year }}</span>{% endif %}
+                </div>
+                {% if a.description %}
+                <p style="font-size:0.84rem; color:#94A3B8; margin:4px 0 0 0;">{{ a.description }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 13. Competitive Exams -->
+    {% if competitive_exams and competitive_exams|length > 0 %}
+    <div class="card" style="margin-bottom:var(--space-6);">
+        <div class="card-header" style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px; margin-bottom:16px;">
+            <h2 class="card-title" style="font-size:1.1rem; margin:0;"><i class="fas fa-award" style="color:#F97316; margin-right:8px;"></i> Competitive Exams</h2>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px;">
+            {% for exam in competitive_exams %}
+            <div style="background:rgba(30,41,59,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:12px;">
+                <div style="font-weight:700; color:#F8FAFC; font-size:0.9rem;">{{ exam.exam_name }}</div>
+                <div style="font-size:0.8rem; color:#F97316; font-weight:600; margin-top:2px;">Score: {{ exam.score or 'N/A' }}</div>
+                {% if exam.rank %}
+                <div style="font-size:0.75rem; color:#94A3B8;">Rank: {{ exam.rank }}</div>
+                {% endif %}
+                {% if exam.year %}
+                <div style="font-size:0.75rem; color:#64748B;">Year: {{ exam.year }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 14. Additional Personal Details -->
+    {% if personal and (personal.gender or personal.date_of_birth or personal.dob or personal.marital_status or personal.nationality or personal.hometown or personal.current_location or personal.address or personal.pincode or personal.work_permit_countries or personal.physically_challenged is not none) %}
+    <div class="card">
+        <div class="card-header" style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px; margin-bottom:16px;">
+            <h2 class="card-title" style="font-size:1.1rem; margin:0;"><i class="fas fa-id-card" style="color:#38BDF8; margin-right:8px;"></i> Personal Information</h2>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px; font-size:0.88rem;">
+            {% if personal.date_of_birth or personal.dob %}
+            <div>
+                <span style="color:#94A3B8; font-size:0.75rem; text-transform:uppercase; font-weight:700;">Date of Birth</span>
+                <div style="color:#F8FAFC; font-weight:600; margin-top:2px;">{{ personal.date_of_birth or personal.dob }}</div>
+            </div>
+            {% endif %}
+            {% if personal.gender %}
+            <div>
+                <span style="color:#94A3B8; font-size:0.75rem; text-transform:uppercase; font-weight:700;">Gender</span>
+                <div style="color:#F8FAFC; font-weight:600; margin-top:2px;">{{ personal.gender }}</div>
+            </div>
+            {% endif %}
+            {% if personal.marital_status %}
+            <div>
+                <span style="color:#94A3B8; font-size:0.75rem; text-transform:uppercase; font-weight:700;">Marital Status</span>
+                <div style="color:#F8FAFC; font-weight:600; margin-top:2px;">{{ personal.marital_status }}</div>
+            </div>
+            {% endif %}
+            {% if personal.nationality %}
+            <div>
+                <span style="color:#94A3B8; font-size:0.75rem; text-transform:uppercase; font-weight:700;">Nationality</span>
+                <div style="color:#F8FAFC; font-weight:600; margin-top:2px;">{{ personal.nationality }}</div>
+            </div>
+            {% endif %}
+            {% if personal.current_location %}
+            <div>
+                <span style="color:#94A3B8; font-size:0.75rem; text-transform:uppercase; font-weight:700;">Current Location</span>
+                <div style="color:#F8FAFC; font-weight:600; margin-top:2px;">{{ personal.current_location }}</div>
+            </div>
+            {% endif %}
+            {% if personal.hometown %}
+            <div>
+                <span style="color:#94A3B8; font-size:0.75rem; text-transform:uppercase; font-weight:700;">Hometown</span>
+                <div style="color:#F8FAFC; font-weight:600; margin-top:2px;">{{ personal.hometown }}</div>
+            </div>
+            {% endif %}
+            {% if personal.address %}
+            <div>
+                <span style="color:#94A3B8; font-size:0.75rem; text-transform:uppercase; font-weight:700;">Address</span>
+                <div style="color:#F8FAFC; font-weight:600; margin-top:2px;">{{ personal.address }}</div>
+            </div>
+            {% endif %}
+            {% if personal.pincode %}
+            <div>
+                <span style="color:#94A3B8; font-size:0.75rem; text-transform:uppercase; font-weight:700;">Pincode</span>
+                <div style="color:#F8FAFC; font-weight:600; margin-top:2px;">{{ personal.pincode }}</div>
+            </div>
+            {% endif %}
+            {% if personal.work_permit_countries %}
+            <div>
+                <span style="color:#94A3B8; font-size:0.75rem; text-transform:uppercase; font-weight:700;">Work Authorization</span>
+                <div style="color:#F8FAFC; font-weight:600; margin-top:2px;">{{ personal.work_permit_countries }}</div>
+            </div>
+            {% endif %}
+            {% if personal.physically_challenged is not none and personal.physically_challenged != '' %}
+            <div>
+                <span style="color:#94A3B8; font-size:0.75rem; text-transform:uppercase; font-weight:700;">Differently Abled</span>
+                <div style="color:#F8FAFC; font-weight:600; margin-top:2px;">
+                    {% if personal.physically_challenged in (1, True, '1', 'true', 'True') %}
+                        <span style="color:#38BDF8;">Yes</span>
+                    {% else %}
+                        <span style="color:#94A3B8;">No</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

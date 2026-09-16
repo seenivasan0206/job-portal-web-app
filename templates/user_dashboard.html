@@ -1,1343 +1,1539 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="utf-8">
-    <title>User Dashboard - Dream Jobs</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
-        body {
-            font-family: "Saira Condensed", sans-serif;
-            background: linear-gradient(150deg, #0b1b34, #0f9b8e);
-            min-height: 100vh;
-        }
-        
-        video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1;
-            opacity: 0.15;
-        }
-        
-        .sidebar {
-            width: 260px;
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            background: #0d1520;
-            color: white;
-            display: flex;
+{% block title %}Candidate Dashboard — HireVolt{% endblock %}
+
+{% block extra_head %}
+<script src="{{ url_for('static', filename='js/dashboard-shared.js') }}"></script>
+<style>
+    /* Workspace Layout */
+    .candidate-workspace {
+        display: flex;
+        gap: var(--space-8);
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: var(--space-6) var(--space-6) var(--space-12);
+        min-height: calc(100vh - var(--navbar-height));
+        align-items: flex-start;
+    }
+
+    /* Sticky Sidebar */
+    .workspace-sidebar {
+        width: 280px;
+        background: #0F172A;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: var(--radius-xl, 16px);
+        padding: var(--space-6) var(--space-5);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        flex-shrink: 0;
+        position: -webkit-sticky;
+        position: sticky;
+        top: calc(var(--navbar-height) + 24px);
+        max-height: calc(100vh - var(--navbar-height) - 48px);
+        overflow-y: auto;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Candidate Profile Badge in Sidebar */
+    .candidate-sidebar-profile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding-bottom: var(--space-5);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        margin-bottom: var(--space-5);
+    }
+
+    .candidate-avatar-wrapper {
+        position: relative;
+        margin-bottom: var(--space-3);
+    }
+
+    .candidate-avatar-large {
+        width: 72px;
+        height: 72px;
+        border-radius: var(--radius-full);
+        background: linear-gradient(135deg, rgba(255, 94, 20, 0.2), rgba(255, 123, 28, 0.4));
+        color: #FF5E14;
+        border: 2px solid rgba(255, 94, 20, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        font-weight: 800;
+        box-shadow: 0 0 20px rgba(255, 94, 20, 0.25);
+    }
+
+    .candidate-avatar-verified {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        background: #10B981;
+        color: #FFFFFF;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        border: 2px solid #0F172A;
+    }
+
+    .candidate-sidebar-name {
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: #F8FAFC;
+        margin-bottom: 4px;
+        word-break: break-word;
+    }
+
+    .candidate-sidebar-role {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #38BDF8;
+        background: rgba(56, 189, 248, 0.1);
+        border: 1px solid rgba(56, 189, 248, 0.2);
+        padding: 3px 10px;
+        border-radius: 20px;
+    }
+
+    /* Navigation Links */
+    .sidebar-nav-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .sidebar-section-title {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #64748B;
+        padding: var(--space-3) var(--space-3) var(--space-1);
+    }
+
+    .sidebar-nav-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        border-radius: var(--radius-md, 10px);
+        color: #94A3B8;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        cursor: pointer;
+    }
+
+    .sidebar-nav-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: #F8FAFC;
+        transform: translateX(3px);
+    }
+
+    .sidebar-nav-item.active {
+        background: rgba(255, 94, 20, 0.15);
+        color: #FF7B1C;
+        font-weight: 600;
+        border-left: 3px solid #FF5E14;
+    }
+
+    .sidebar-nav-item-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .sidebar-nav-badge {
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.1);
+        color: #CBD5E1;
+    }
+
+    .sidebar-nav-item.active .sidebar-nav-badge {
+        background: #FF5E14;
+        color: #FFFFFF;
+    }
+
+    /* Main Workspace */
+    .workspace-main {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-6);
+    }
+
+    /* Stat Cards Grid */
+    .dashboard-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: var(--space-4);
+    }
+
+    .dash-stat-card {
+        background: #0F172A;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: var(--radius-xl, 16px);
+        padding: var(--space-5);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.4);
+        transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .dash-stat-card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .dash-stat-number {
+        font-size: 1.85rem;
+        font-weight: 800;
+        color: #F8FAFC;
+        line-height: 1.2;
+        margin-bottom: 2px;
+    }
+
+    .dash-stat-label {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: #94A3B8;
+    }
+
+    .dash-stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        flex-shrink: 0;
+    }
+
+    /* Profile Completeness Card */
+    .profile-health-card {
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85));
+        border: 1px solid rgba(255, 94, 20, 0.3);
+        border-radius: var(--radius-xl, 16px);
+        padding: var(--space-6);
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-health-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 260px;
+        height: 260px;
+        background: radial-gradient(circle, rgba(255, 94, 20, 0.1) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .profile-progress-bar-bg {
+        width: 100%;
+        height: 10px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+        overflow: hidden;
+        margin: var(--space-4) 0;
+    }
+
+    .profile-progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #FF5E14, #10B981);
+        border-radius: 6px;
+        transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .checklist-pills-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: var(--space-4);
+    }
+
+    .checklist-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .checklist-pill-completed {
+        background: rgba(16, 185, 129, 0.12);
+        color: #34D399;
+        border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .checklist-pill-missing {
+        background: rgba(245, 158, 11, 0.12);
+        color: #FBBF24;
+        border: 1px dashed rgba(245, 158, 11, 0.4);
+    }
+
+    .checklist-pill-missing:hover {
+        background: rgba(245, 158, 11, 0.22);
+        color: #FCD34D;
+        transform: translateY(-1px);
+    }
+
+    /* Application & Saved Job Cards */
+    .job-record-card {
+        background: #0F172A;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: var(--radius-lg, 14px);
+        padding: var(--space-5);
+        margin-bottom: var(--space-4);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: var(--space-4);
+        transition: all 0.2s ease;
+    }
+
+    .job-record-card:hover {
+        border-color: rgba(255, 255, 255, 0.18);
+        box-shadow: 0 6px 20px -5px rgba(0, 0, 0, 0.6);
+    }
+
+    .job-record-left {
+        display: flex;
+        gap: var(--space-4);
+        align-items: center;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .company-logo-box {
+        width: 52px;
+        height: 52px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: #FF7B1C;
+        flex-shrink: 0;
+    }
+
+    .job-record-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #F8FAFC;
+        text-decoration: none;
+        margin-bottom: 3px;
+        display: inline-block;
+    }
+
+    .job-record-title:hover {
+        color: #FF5E14;
+    }
+
+    .job-record-company {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #94A3B8;
+        margin-bottom: 6px;
+    }
+
+    .job-record-meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        font-size: 0.8125rem;
+        color: #64748B;
+    }
+
+    .job-record-meta-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .job-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .status-applied { background: rgba(59, 130, 246, 0.15); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .status-review  { background: rgba(245, 158, 11, 0.15); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .status-shortlist { background: rgba(168, 85, 247, 0.15); color: #C084FC; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .status-interview { background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-rejected { background: rgba(239, 68, 68, 0.15); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .status-expired  { background: rgba(100, 116, 139, 0.2); color: #94A3B8; border: 1px solid rgba(100, 116, 139, 0.3); }
+    .status-active   { background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+        .candidate-workspace {
             flex-direction: column;
-            padding-top: 20px;
-            z-index: 100;
-            box-shadow: 4px 0 15px rgba(0,0,0,0.3);
+            gap: var(--space-5);
+            padding: var(--space-4);
         }
-        
-        .sidebar-logo {
-            text-align: center;
-            padding: 0 20px 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 10px;
-        }
-        
-        .sidebar-logo h2 {
-            font-size: 22px;
-            background: linear-gradient(135deg, #0f9b8e, #0c7d72);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .sidebar a,
-        .sidebar button {
-            display: flex;
-            align-items: center;
-            padding: 14px 25px;
-            color: #8a93a3;
-            text-decoration: none;
-            font-size: 15px;
-            transition: all 0.3s;
-            border: none;
-            background: none;
+        .workspace-sidebar {
             width: 100%;
-            text-align: left;
-            cursor: pointer;
+            position: static;
+            max-height: none;
         }
-        
-        .sidebar a:hover, .sidebar button:hover {
-            background: rgba(15, 155, 142, 0.12);
-            color: #fff;
-            padding-left: 30px;
-        }
-        
-        .sidebar a.active {
-            background: #0f9b8e;
-            color: white;
-            border-radius: 999px;
-            margin: 2px 14px;
-            padding: 14px 20px;
-        }
-        
-        .sidebar i {
-            margin-right: 12px;
-            width: 20px;
-            text-align: center;
-        }
-        
-        .notif-badge {
-            background: linear-gradient(135deg, #ff4e8a, #ff8c68);
-            color: white;
-            border-radius: 50%;
-            padding: 2px 7px;
-            font-size: 10px;
-            margin-left: auto;
-            min-width: 18px;
-            text-align: center;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        .bell-icon {
-            position: relative;
-            cursor: pointer;
-            font-size: 20px;
-            color: #0f9b8e;
-            transition: all 0.3s;
-            padding: 8px 12px;
-            border-radius: 8px;
-        }
-
-        .bell-icon:hover {
-            background: linear-gradient(135deg, rgba(15, 155, 142, 0.1), rgba(12, 125, 114, 0.1));
-        }
-
-        .bell-badge {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            background: linear-gradient(135deg, #dc3545, #e74c3c);
-            color: white;
-            border-radius: 50%;
-            min-width: 18px;
-            height: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: bold;
-            animation: pulse 2s infinite;
-        }
-
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 30px;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            margin-bottom: 25px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .topbar-left h2 {
-            color: #333;
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            position: relative;
-        }
-
-        /* Notification Dropdown */
-        #notif-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            width: 380px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
-            display: none;
-            z-index: 1000;
-            overflow: hidden;
-            margin-top: 10px;
-        }
-        
-        .main-content {
-            margin-left: 260px;
-            padding: 20px 40px;
-        }
-
-        .card {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-            margin-bottom: 25px;
-            transition: all 0.3s;
-            animation: fadeInUp 0.5s ease-out;
-        }
-        
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .card h2 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .card h2 i {
-            background: linear-gradient(135deg, #0f9b8e, #0c7d72);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        input, select, textarea {
-            width: 100%;
-            padding: 14px;
-            margin-bottom: 15px;
-            border-radius: 10px;
-            border: 2px solid #dee3e6;
-            font-family: inherit;
-            transition: all 0.3s;
-            font-size: 14px;
-        }
-        
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #0f9b8e;
-            box-shadow: 0 0 0 3px rgba(15, 155, 142, 0.12);
-        }
-        
-        .btn {
-            padding: 14px 28px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            color: white;
-            background: #0f9b8e;
-            transition: all 0.3s;
-            font-size: 14px;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            background: #0c7d72;
-            box-shadow: 0 8px 20px rgba(15, 155, 142, 0.4);
-        }
-        
-        .job-card {
-            background: white;
-            padding: 20px;
-            margin-top: 15px;
-            border-radius: 12px;
-            border-left: 4px solid #0f9b8e;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-            transition: all 0.3s;
-        }
-        
-        .job-card:hover {
-            transform: translateX(5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        }
-        
-        .job-card h3 {
-            color: #333;
-            margin-bottom: 8px;
-        }
-        
-        .job-card p {
-            color: #666;
-            font-size: 14px;
-            margin: 4px 0;
-        }
-        
-        .apply-btn {
-            margin-top: 12px;
-            padding: 10px 22px;
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 600;
-        }
-        
-        .apply-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
-        }
-        
-        .apply-btn:disabled {
-            background: #6c757d;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .save-btn {
-            background: linear-gradient(135deg, #ffc107, #ff9800);
-            color: #333;
-            margin-left: 8px;
-        }
-        
-        /* Modal Styles */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(8px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            animation: fadeIn 0.3s;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .modal-overlay.active { display: flex; }
-        
-        .modal-box {
-            background: white;
-            width: 650px;
-            max-width: 95%;
-            max-height: 90vh;
-            overflow-y: auto;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-            animation: slideUp 0.4s ease-out;
-        }
-        
-        @keyframes slideUp {
-            from { transform: translateY(50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
-        .modal-close {
-            position: absolute;
-            top: 20px;
-            right: 25px;
-            font-size: 28px;
-            color: #999;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .modal-close:hover { color: #0f9b8e; transform: rotate(90deg); }
-        
-        .modal-header {
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .modal-header h2 { color: #333; }
-        
-        .form-section-title {
-            font-size: 15px;
-            background: linear-gradient(135deg, #0f9b8e, #0c7d72);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin: 20px 0 12px 0;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        
-        .gradient-btn {
-            background: #0f9b8e;
-            border: none;
-            padding: 14px 25px;
-            color: white;
-            font-weight: bold;
-            border-radius: 10px;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.3s;
-        }
-        
-        .gradient-btn:hover {
-            background: #0c7d72;
-            box-shadow: 0 8px 20px rgba(15, 155, 142, 0.4);
-        }
-        
-        .cancel-btn {
-            background: #e0e0e0;
-            color: #333;
-            border: none;
-            padding: 14px 25px;
-            font-weight: bold;
-            border-radius: 10px;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.3s;
-        }
-        
-        .cancel-btn:hover { background: #d0d0d0; }
-        
-        /* Notification Dropdown */
-        #notif-dropdown {
-            position: absolute;
-            top: 55px;
-            left: 10px;
-            width: 380px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
-            display: none;
-            z-index: 1000;
-            overflow: hidden;
-        }
-
-        #notif-dropdown.show { display: block; animation: slideDown 0.3s ease-out; }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .notif-header {
-            background: #0f9b8e;
-            color: white;
-            padding: 15px 20px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .notif-header button {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 15px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.3s;
-        }
-
-        .notif-header button:hover { background: rgba(255,255,255,0.3); }
-
-        .notif-list {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .notif-item {
-            padding: 18px 20px;
-            border-bottom: 1px solid #f0f0f0;
-            transition: all 0.3s;
-            cursor: pointer;
-            animation: fadeIn 0.4s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateX(-10px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        .notif-item:hover {
-            background: linear-gradient(135deg, rgba(15, 155, 142, 0.08), rgba(12, 125, 114, 0.08));
-        }
-
-        .notif-item.unread {
-            background: linear-gradient(90deg, rgba(15, 155, 142, 0.06), transparent);
-            border-left: 3px solid #0f9b8e;
-        }
-
-        .notif-item:hover.unread {
-            background: linear-gradient(135deg, rgba(15, 155, 142, 0.12), rgba(12, 125, 114, 0.08));
-        }
-
-        .notif-item:last-child { border-bottom: none; }
-
-        .notif-item h4 {
-            color: #333;
-            font-size: 14px;
-            margin-bottom: 5px;
-        }
-
-        .notif-item p {
-            color: #666;
-            font-size: 13px;
-            line-height: 1.5;
-        }
-
-        .notif-time {
-            font-size: 11px;
-            color: #999;
-            margin-top: 8px;
-        }
-
-        .notif-success { color: #28a745; }
-        .notif-info { color: #0f9b8e; }
-        .notif-error { color: #dc3545; }
-
-        .notif-empty {
-            padding: 40px;
-            text-align: center;
-            color: #999;
-        }
-
-        .notif-empty i {
-            font-size: 40px;
-            margin-bottom: 10px;
-            color: #ddd;
-        }
-        
-        /* Resume Upload */
-        .upload-area {
-            border: 3px dashed #0f9b8e;
-            border-radius: 15px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: linear-gradient(135deg, rgba(15, 155, 142, 0.05), rgba(12, 125, 114, 0.05));
-        }
-        
-        .upload-area:hover {
-            border-color: #0c7d72;
-            background: linear-gradient(135deg, rgba(15, 155, 142, 0.1), rgba(12, 125, 114, 0.1));
-        }
-        
-        .upload-area i {
-            font-size: 50px;
-            background: linear-gradient(135deg, #0f9b8e, #0c7d72);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 15px;
-        }
-        
-        .upload-area p {
-            color: #666;
-            font-size: 15px;
-        }
-        
-        .match-score {
-            display: inline-block;
-            background: #0f9b8e;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: bold;
-        }
-        
-        .match-high { background: linear-gradient(135deg, #28a745, #20c997); }
-        .match-medium { background: linear-gradient(135deg, #ffc107, #ff9800); }
-        .match-low { background: linear-gradient(135deg, #dc3545, #e74c3c); }
-        
-        /* Toast Notifications */
-        #toast-container {
-            position: fixed;
-            top: 25px;
-            right: 25px;
-            z-index: 10000;
-            display: flex;
+        .job-record-card {
             flex-direction: column;
-            gap: 12px;
+            align-items: flex-start;
         }
-        
-        .toast {
-            padding: 18px 25px;
-            border-radius: 12px;
-            color: white;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            animation: slideInRight 0.4s forwards;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            min-width: 300px;
-            font-weight: 500;
-        }
-        
-        @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        .toast-success { background: linear-gradient(135deg, #28a745, #20c997); }
-        .toast-error { background: linear-gradient(135deg, #dc3545, #e74c3c); }
-        .toast-warning { background: linear-gradient(135deg, #ffc107, #ff9800); }
-        .toast-info { background: linear-gradient(135deg, #0f9b8e, #0c7d72); }
-        
-        .toast i { font-size: 20px; }
-        
-        /* Search Filters */
-        .search-field {
-            position: relative;
-        }
+    }
+</style>
+{% endblock %}
 
-        .search-field .field-icon {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #8a93a3;
-            font-size: 14px;
-            pointer-events: none;
-            z-index: 2;
-        }
-
-        .search-box {
-            padding-left: 40px;
-            margin-bottom: 0;
-        }
-
-        .search-box::placeholder {
-            color: #8a93a3;
-        }
-
-        .search-empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            margin-top: 20px;
-            border: 2px dashed #dee3e6;
-            border-radius: 15px;
-            color: #8a93a3;
-        }
-
-        .search-empty-state i {
-            font-size: 42px;
-            color: #8a93a3;
-            margin-bottom: 12px;
-        }
-
-        .search-empty-state h3 {
-            color: rgba(255,255,255,0.9);
-            font-size: 20px;
-            margin-bottom: 6px;
-        }
-
-        .search-empty-state p {
-            color: #bcd8d4;
-            font-size: 14px;
-        }
-
-        .search-filters {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        @media (max-width: 1200px) {
-            .search-filters { grid-template-columns: repeat(2, 1fr); }
-        }
-        
-        .logout-btn {
-            background: linear-gradient(135deg, #dc3545, #e74c3c);
-            color: white !important;
-            margin: 20px;
-            border-radius: 10px;
-            text-align: center;
-            padding: 14px !important;
-        }
-        
-        .logout-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
-        }
-    </style>
-</head>
-
-<body>
-    <video autoplay muted loop playsinline><source src="{{ url_for('static', filename='background1.mp4') }}" type="video/mp4"></video>
-    <div id="toast-container"></div>
-
-    <div class="sidebar">
-        <div class="sidebar-logo">
-            <h2><i class="fas fa-briefcase"></i> Dream Jobs</h2>
-        </div>
-        <a href="#" onclick="showSection('search')" id="nav-search" class="active"><i class="fas fa-search"></i> Find Jobs</a>
-        <a href="#" onclick="showSection('saved')" id="nav-saved"><i class="fas fa-bookmark"></i> Saved Jobs</a>
-        <a href="#" onclick="showSection('applications')" id="nav-applications"><i class="fas fa-file-alt"></i> My Applications</a>
-        <a href="#" onclick="showSection('upload')" id="nav-upload"><i class="fas fa-file-upload"></i> Upload Resume</a>
-        <a href="/user_settings"><i class="fas fa-cog"></i> Settings</a>
-        
-        <button onclick="openLogoutModal()" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
-    </div>
-
-    <div class="main-content">
-        <div class="topbar">
-            <div class="topbar-left">
-                <h2><i class="fas fa-search"></i> Search Jobs</h2>
-            </div>
-            <div class="topbar-right">
-                <div class="bell-icon" onclick="toggleNotifDropdown(event)">
-                    <i class="fas fa-bell"></i>
-                    <span id="bell-badge" class="bell-badge" style="display:none;">0</span>
-                </div>
-                <div id="notif-dropdown">
-                    <div class="notif-header">
-                        <span><i class="fas fa-bell"></i> Notifications</span>
-                        <button onclick="markAllAsRead(event)">Mark all read</button>
+{% block body %}
+<div class="candidate-workspace">
+    <!-- 1. Sticky Left Sidebar Navigation -->
+    <aside class="workspace-sidebar" data-lenis-prevent>
+        <div>
+            <div class="candidate-sidebar-profile">
+                <div class="candidate-avatar-wrapper">
+                    <div class="candidate-avatar-large" id="candidate-avatar-container" style="overflow:hidden;">
+                        {% if profile_photo %}
+                            <img src="{{ url_for('static', filename='uploads/' + profile_photo) }}" alt="Profile Photo" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+                        {% else %}
+                            {{ (user_name or 'U')[0]|upper }}
+                        {% endif %}
                     </div>
-                    <div class="notif-list" id="notif-list"></div>
+                    <div class="candidate-avatar-verified" title="Verified Job Seeker">
+                        <i class="fas fa-check"></i>
+                    </div>
+                </div>
+                <div class="candidate-sidebar-name">{{ user_name or 'Candidate Profile' }}</div>
+                <div class="candidate-sidebar-role"><i class="fas fa-bolt"></i> Active Job Seeker</div>
+            </div>
+
+            <nav class="sidebar-nav-group">
+                <span class="sidebar-section-title">Dashboard Views</span>
+                <a href="#recommendations" onclick="showSection('recommendations'); return false;" id="nav-recommendations" class="sidebar-nav-item active">
+                    <div class="sidebar-nav-item-content">
+                        <i class="fas fa-magic"></i>
+                        <span>AI Recommended</span>
+                    </div>
+                    <span class="sidebar-nav-badge" id="badge-recommendations" style="background:rgba(255,94,20,0.15); color:#FF5E14; border:1px solid rgba(255,94,20,0.3);">AI</span>
+                </a>
+                <a href="#search" onclick="showSection('search'); return false;" id="nav-search" class="sidebar-nav-item">
+                    <div class="sidebar-nav-item-content">
+                        <i class="fas fa-search"></i>
+                        <span>Search Jobs</span>
+                    </div>
+                </a>
+                <a href="#applications" onclick="showSection('applications'); return false;" id="nav-applications" class="sidebar-nav-item">
+                    <div class="sidebar-nav-item-content">
+                        <i class="fas fa-paper-plane"></i>
+                        <span>Applications</span>
+                    </div>
+                    <span class="sidebar-nav-badge" id="badge-total-apps" style="display:none;">0</span>
+                </a>
+                <a href="#saved" onclick="showSection('saved'); return false;" id="nav-saved" class="sidebar-nav-item">
+                    <div class="sidebar-nav-item-content">
+                        <i class="fas fa-bookmark"></i>
+                        <span>Saved Jobs</span>
+                    </div>
+                    <span class="sidebar-nav-badge" id="badge-saved" style="display:none;">0</span>
+                </a>
+                <a href="#profile-health" onclick="showSection('profile-health'); return false;" id="nav-profile-health" class="sidebar-nav-item">
+                    <div class="sidebar-nav-item-content">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Profile Health</span>
+                    </div>
+                    <span class="sidebar-nav-badge" id="badge-completeness">0%</span>
+                </a>
+                <a href="#analytics" onclick="showSection('analytics'); return false;" id="nav-analytics" class="sidebar-nav-item">
+                    <div class="sidebar-nav-item-content">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Career Analytics</span>
+                    </div>
+                </a>
+
+                <span class="sidebar-section-title" style="margin-top:var(--space-4);">Career Hub</span>
+                <a href="/candidate/profile/edit" class="sidebar-nav-item">
+                    <div class="sidebar-nav-item-content">
+                        <i class="fas fa-user-edit"></i>
+                        <span>Edit Profile</span>
+                    </div>
+                </a>
+                <a href="/candidate/resume" class="sidebar-nav-item">
+                    <div class="sidebar-nav-item-content">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>AI Resume Intelligence</span>
+                    </div>
+                </a>
+                <a href="/candidate/assessments" class="sidebar-nav-item">
+                    <div class="sidebar-nav-item-content">
+                        <i class="fas fa-tasks"></i>
+                        <span>Skill Assessments</span>
+                    </div>
+                </a>
+                <a href="/candidate/interviews" class="sidebar-nav-item">
+                    <div class="sidebar-nav-item-content">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Interviews</span>
+                    </div>
+                </a>
+                <a href="/candidate/messages" class="sidebar-nav-item" id="nav-messages">
+                    <div class="sidebar-nav-item-content">
+                        <i class="fas fa-comments"></i>
+                        <span>Recruiter Chat</span>
+                    </div>
+                    <span class="sidebar-nav-badge" id="badge-messages" style="display:none;">0</span>
+                </a>
+                <a href="/user_settings" class="sidebar-nav-item">
+                    <div class="sidebar-nav-item-content">
+                        <i class="fas fa-cog"></i>
+                        <span>Account Settings</span>
+                    </div>
+                </a>
+            </nav>
+        </div>
+
+        <div style="padding-top:var(--space-4); border-top:1px solid rgba(255,255,255,0.08); margin-top:var(--space-6);">
+            <a href="/logout" onclick="openLogoutModal(); return false;" class="sidebar-nav-item" style="color:#EF4444;">
+                <div class="sidebar-nav-item-content">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Sign Out</span>
+                </div>
+            </a>
+        </div>
+    </aside>
+
+    <!-- 2. Main Dashboard Content -->
+    <main class="workspace-main">
+        <!-- Top Metrics Cards -->
+        <div class="dashboard-stat-grid">
+            <div class="dash-stat-card" onclick="showSection('applications')" style="cursor:pointer;">
+                <div>
+                    <div class="dash-stat-number" id="stat-total-apps">0</div>
+                    <div class="dash-stat-label">Applications Sent</div>
+                </div>
+                <div class="dash-stat-icon" style="background:rgba(59,130,246,0.15); color:#3B82F6;">
+                    <i class="fas fa-paper-plane"></i>
+                </div>
+            </div>
+
+            <div class="dash-stat-card" onclick="showSection('saved')" style="cursor:pointer;">
+                <div>
+                    <div class="dash-stat-number" id="stat-saved">0</div>
+                    <div class="dash-stat-label">Bookmarked Jobs</div>
+                </div>
+                <div class="dash-stat-icon" style="background:rgba(245,158,11,0.15); color:#F59E0B;">
+                    <i class="fas fa-bookmark"></i>
+                </div>
+            </div>
+
+            <div class="dash-stat-card">
+                <div>
+                    <div class="dash-stat-number" id="stat-interviews">0</div>
+                    <div class="dash-stat-label">Interviews Scheduled</div>
+                </div>
+                <div class="dash-stat-icon" style="background:rgba(16,185,129,0.15); color:#10B981;">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+            </div>
+
+            <div class="dash-stat-card" onclick="showSection('profile-health')" style="cursor:pointer;">
+                <div>
+                    <div class="dash-stat-number" id="stat-completeness">0%</div>
+                    <div class="dash-stat-label">Profile Completeness</div>
+                </div>
+                <div class="dash-stat-icon" id="stat-completeness-icon" style="background:rgba(6,182,212,0.15); color:#06B6D4;">
+                    <i class="fas fa-shield-alt"></i>
                 </div>
             </div>
         </div>
 
-        <!-- Search Jobs Section -->
-        <div class="card" id="section-search">
-            <div class="search-filters">
-                <div class="search-field">
-                    <i class="fas fa-briefcase field-icon"></i>
-                    <input type="text" id="search-title" class="search-box" placeholder="Job Title">
+        <!-- Dynamic Profile Completeness & Health Checklist Card -->
+        <div id="profile-health-banner" class="profile-health-card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+                <div>
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+                        <h2 style="font-size:1.25rem; font-weight:800; color:#F8FAFC; margin:0;">Profile Completeness</h2>
+                        <span id="completeness-score-tag" class="job-status-badge status-review">Calculating...</span>
+                        <span id="candidate-track-tag" class="job-status-badge" style="background:rgba(56,189,248,0.15); color:#38BDF8; border:1px solid rgba(56,189,248,0.3);">Fresher Track</span>
+                    </div>
+                    <p style="font-size:0.875rem; color:#94A3B8; margin:0;">A complete profile increases recruiter interview callbacks by up to 4.5x.</p>
                 </div>
-                <div class="search-field">
-                    <i class="fas fa-map-pin field-icon"></i>
-                    <input type="text" id="search-location" class="search-box" placeholder="Location">
+                <a href="/candidate/profile/edit" class="btn btn-primary btn-sm" style="box-shadow:0 0 15px rgba(255,94,20,0.4);">
+                    <i class="fas fa-edit"></i> Complete Profile
+                </a>
+            </div>
+
+            <div class="profile-progress-bar-bg">
+                <div id="profile-progress-fill" class="profile-progress-bar-fill" style="width: 0%;"></div>
+            </div>
+
+            <div>
+                <div style="font-size:0.8125rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:#CBD5E1; margin-bottom:8px;">
+                    Profile Checklist & Recommendations:
                 </div>
-                <div class="search-field">
-                    <i class="fas fa-chart-bar field-icon"></i>
-                    <select id="search-exp" class="search-box">
-                        <option value="">Experience</option>
-                        <option value="Fresher">Fresher</option>
-                        <option value="1-3 Years">1-3 Years</option>
-                        <option value="3-5 Years">3-5 Years</option>
-                        <option value="5+ Years">5+ Years</option>
-                    </select>
-                </div>
-                <div class="search-field">
-                    <i class="fas fa-th field-icon"></i>
-                    <select id="search-category" class="search-box">
-                        <option value="">All Categories</option>
-                        <option value="IT & Software">IT & Software</option>
-                        <option value="Banking & Finance">Banking & Finance</option>
-                        <option value="Healthcare">Healthcare</option>
-                        <option value="Engineering">Engineering</option>
-                        <option value="Manufacturing">Manufacturing</option>
-                        <option value="Education">Education</option>
-                        <option value="Marketing">Marketing</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-                <div class="search-field">
-                    <i class="fas fa-briefcase field-icon"></i>
-                    <select id="search-job-type" class="search-box">
-                        <option value="">Job Type</option>
-                        <option value="Full-time">Full-time</option>
-                        <option value="Part-time">Part-time</option>
-                        <option value="Contract">Contract</option>
-                        <option value="Internship">Internship</option>
-                    </select>
-                </div>
-                <div class="search-field">
-                    <i class="fas fa-globe field-icon"></i>
-                    <select id="search-work-mode" class="search-box">
-                        <option value="">Work Mode</option>
-                        <option value="Onsite">Onsite</option>
-                        <option value="Remote">Remote</option>
-                        <option value="Hybrid">Hybrid</option>
-                    </select>
+                <div id="checklist-pills" class="checklist-pills-container">
+                    <span class="checklist-pill checklist-pill-completed"><i class="fas fa-spinner fa-spin"></i> Loading checklist...</span>
                 </div>
             </div>
-            <div style="display:flex; gap:15px; margin-bottom:15px;">
-                <select id="search-sort" class="search-box" style="max-width:200px;">
+        </div>
+
+        <!-- 2.5 Section: AI Recommended Opportunities -->
+        <div id="section-recommendations" class="card" style="margin-bottom:0;">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div>
+                    <h2 class="card-title"><i class="fas fa-magic" style="color:var(--color-primary); margin-right:8px;"></i> Personalized AI Job Matches</h2>
+                    <p style="font-size:0.8125rem; color:var(--color-text-muted); margin:4px 0 0 0;">Ranked multi-factor matches based on your skills, resume intelligence, target role, and experience.</p>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <button class="btn btn-secondary btn-sm" onclick="loadRecommendations()"><i class="fas fa-sync-alt"></i> Refresh Matches</button>
+                    <button class="btn btn-ghost btn-sm" onclick="showSection('search')"><i class="fas fa-sliders-h"></i> Custom Search</button>
+                </div>
+            </div>
+
+            <!-- Telemetry / Latency & Match Count Bar -->
+            <div id="recommendations-meta-bar" style="background:var(--color-surface-alt); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:8px 14px; margin-bottom:var(--space-4); display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--color-text-secondary); flex-wrap:wrap; gap:8px;">
+                <div id="recommendations-stat-text"><i class="fas fa-robot" style="color:var(--color-primary); margin-right:6px;"></i> Evaluating opportunities against your profile...</div>
+                <div id="recommendations-latency-badge" style="font-size:11px; color:var(--color-text-muted);"></div>
+            </div>
+
+            <div id="recommendations-area" class="job-card-grid" style="margin-top:var(--space-4); margin-bottom:0;">
+                <div class="card skeleton" style="height:180px;"></div>
+                <div class="card skeleton" style="height:180px;"></div>
+            </div>
+        </div>
+
+        <!-- 3. Section: Search Opportunities -->
+        <div id="section-search" class="card" style="display:none; margin-bottom:0;">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-search" style="color:var(--color-primary); margin-right:8px;"></i> Search Opportunities</h2>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:var(--space-3); margin-bottom:var(--space-4);">
+                <input type="text" id="search-title" class="form-control" placeholder="Job title, skills..." onkeydown="if(event.key==='Enter') searchJobs(1)">
+                <input type="text" id="search-location" class="form-control" placeholder="City or Remote" onkeydown="if(event.key==='Enter') searchJobs(1)">
+                <select id="search-category" class="form-select" onchange="searchJobs(1)">
+                    <option value="">All Categories</option>
+                </select>
+                <select id="search-exp" class="form-select" onchange="searchJobs(1)">
+                    <option value="">All Experience</option>
+                    <option value="Fresher">Fresher (0-1 Yrs)</option>
+                    <option value="1-3 Years">1-3 Years</option>
+                    <option value="3-5 Years">3-5 Years</option>
+                    <option value="5-8 Years">5-8 Years</option>
+                    <option value="8+ Years">8+ Years</option>
+                </select>
+                <select id="search-work-mode" class="form-select" onchange="searchJobs(1)">
+                    <option value="">All Work Modes</option>
+                    <option value="Onsite">On-site</option>
+                    <option value="Remote">Remote</option>
+                    <option value="Hybrid">Hybrid</option>
+                </select>
+                <select id="search-job-type" class="form-select" onchange="searchJobs(1)">
+                    <option value="">All Job Types</option>
+                    <option value="Full-time">Full-time</option>
+                    <option value="Part-time">Part-time</option>
+                    <option value="Contract">Contract</option>
+                    <option value="Internship">Internship</option>
+                </select>
+                <select id="search-salary" class="form-select" onchange="searchJobs(1)">
+                    <option value="">All Salaries</option>
+                    <option value="0-3">₹0 - 3 LPA</option>
+                    <option value="3-6">₹3 - 6 LPA</option>
+                    <option value="4-8">₹4 - 8 LPA</option>
+                    <option value="6-10">₹6 - 10 LPA</option>
+                    <option value="10-15">₹10 - 15 LPA</option>
+                    <option value="15-25">₹15 - 25 LPA</option>
+                    <option value="25+">₹25+ LPA</option>
+                </select>
+                <select id="search-sort" class="form-select" onchange="searchJobs(1)">
                     <option value="newest">Newest First</option>
                     <option value="salary_high_to_low">Salary: High to Low</option>
                     <option value="salary_low_to_high">Salary: Low to High</option>
+                    <option value="most_relevant">Most Relevant</option>
                 </select>
+                <button type="button" class="btn btn-primary" style="grid-column: 1 / -1; height: 38px;" onclick="searchJobs(1)">
+                    <i class="fas fa-search"></i> Search Opportunities
+                </button>
             </div>
-            <button class="btn" onclick="searchJobs()"><i class="fas fa-search"></i> Search Jobs</button>
-            <div id="result-area">
-                <div class="search-empty-state">
-                    <i class="fas fa-search"></i>
-                    <h3>No jobs searched yet</h3>
-                    <p>Use the filters above to find roles matched to you</p>
+
+            <div id="result-area" class="job-card-grid" style="margin-top:var(--space-6); margin-bottom:0;">
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <div class="empty-state-icon"><i class="fas fa-briefcase"></i></div>
+                    <div class="empty-state-title">Search above to discover matched jobs</div>
+                    <p class="empty-state-desc">Enter titles, keywords, or browse all categories.</p>
                 </div>
             </div>
         </div>
 
-        <!-- Saved Jobs Section -->
-        <div class="card" id="section-saved" style="display:none;">
-            <h2><i class="fas fa-bookmark"></i> Saved Jobs</h2>
-            <div id="saved-jobs-area"></div>
+        <!-- 4. Section: Applications Tracking (Database-Driven) -->
+        <div id="section-applications" class="card" style="display:none; margin-bottom:0;">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 class="card-title"><i class="fas fa-paper-plane" style="color:var(--color-primary); margin-right:8px;"></i> My Applications Tracking</h2>
+                <button class="btn btn-secondary btn-sm" onclick="loadApplications()"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+            <div id="applications-container" style="margin-top:var(--space-4);"></div>
         </div>
 
-        <!-- Applications Section -->
-        <div class="card" id="section-applications" style="display:none;">
-            <h2><i class="fas fa-file-alt"></i> My Applications</h2>
-            <div id="applications-area"></div>
+        <!-- 5. Section: Saved Jobs (Database-Driven) -->
+        <div id="section-saved" class="card" style="display:none; margin-bottom:0;">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 class="card-title"><i class="fas fa-bookmark" style="color:var(--color-primary); margin-right:8px;"></i> My Saved & Bookmarked Jobs</h2>
+                <button class="btn btn-secondary btn-sm" onclick="loadSavedJobs()"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+            <div id="saved-jobs-container" style="margin-top:var(--space-4);"></div>
         </div>
 
-        <!-- Upload Resume Section -->
-        <div class="card" id="section-upload" style="display:none;">
-            <h2><i class="fas fa-file-upload"></i> Upload Resume</h2>
-            <p style="margin-bottom:20px; color:#666;">Upload your resume to find jobs matching your skills with AI-powered matching.</p>
-            
-            <div class="upload-area" onclick="document.getElementById('resumeInput').click()">
-                <input type="file" id="resumeInput" style="display:none" accept=".txt,.pdf,.doc,.docx">
-                <i class="fas fa-cloud-upload-alt"></i>
-                <p id="fileName">Click to upload your resume</p>
-                <p style="font-size:12px; color:#999; margin-top:5px;">Supported: TXT, PDF, DOC, DOCX</p>
+        <!-- 6. Section: Profile Health Full View -->
+        <div id="section-profile-health" class="card" style="display:none; margin-bottom:0;">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-shield-check" style="color:#10B981; margin-right:8px;"></i> Comprehensive Profile Health & Sections</h2>
             </div>
-            
-            <div id="extracted-skills" style="margin-top:20px; display:none;">
-                <h4 style="color:#333; margin-bottom:10px;"><i class="fas fa-tools"></i> Extracted Skills:</h4>
-                <div id="skills-tags"></div>
-            </div>
-            
-            <button class="btn" style="margin-top:20px;" onclick="matchResume()"><i class="fas fa-magic"></i> Find Matching Jobs</button>
-            <div id="match-area" style="margin-top:25px;"></div>
+            <div id="profile-health-full-area" style="margin-top:var(--space-4);"></div>
         </div>
-    </div>
 
-    <!-- Apply Job Modal -->
-    <div id="applyModal" class="modal-overlay">
-        <div class="modal-box">
-            <span class="modal-close" onclick="closeApplyModal()">&times;</span>
-            <div class="modal-header">
-                <h2><i class="fas fa-paper-plane"></i> Apply for Job</h2>
+        <!-- 7. Section: Career Analytics -->
+        <div id="section-analytics" class="card" style="display:none; margin-bottom:0;">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 class="card-title"><i class="fas fa-chart-pie" style="color:var(--color-primary); margin-right:8px;"></i> Career Performance & Profile Analytics</h2>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="loadCareerPerformance()"><i class="fas fa-sync-alt"></i> Refresh</button>
             </div>
-            <form id="applicationForm" onsubmit="submitApplication(event)">
-                <div class="form-section-title"><i class="fas fa-user"></i> Personal Information</div>
-                <input type="text" id="mod-name" placeholder="Full Name *" required>
-                <input type="email" id="mod-email" placeholder="Email Address *" required>
-                <input type="tel" id="mod-mobile" placeholder="Mobile Number *" required>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:var(--space-5); margin-top:var(--space-2);">
+                <!-- Resume Visibility Card -->
+                <div class="card" style="background:var(--color-surface-alt); border:1px solid var(--color-border); display:flex; flex-direction:column; justify-content:space-between;">
+                    <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-2);">
+                            <h3 style="font-size:1rem; color:var(--color-text); margin:0; display:flex; align-items:center; gap:6px;">
+                                <i class="fas fa-eye" style="color:var(--color-primary);"></i> Resume Visibility
+                            </h3>
+                            <span class="badge badge-slate" id="badge-distinct-companies" style="font-size:11px;">Tracked</span>
+                        </div>
+                        <div id="stat-resume-views" style="font-size:2rem; font-weight:800; color:var(--color-primary); margin-bottom:var(--space-2);">
+                            No views yet
+                        </div>
+                        <p id="stat-resume-views-sub" style="font-size:0.8125rem; color:var(--color-text-secondary); margin:0; line-height:1.5;">
+                            Distinct employers that viewed your verified profile.
+                        </p>
+                    </div>
 
-                <div class="form-section-title"><i class="fas fa-graduation-cap"></i> Education</div>
-                <select id="mod-qual" required>
-                    <option value="">Highest Qualification *</option>
-                    <option value="B.E / B.Tech">B.E / B.Tech</option>
-                    <option value="B.Sc">B.Sc</option>
-                    <option value="BCA">BCA</option>
-                    <option value="MCA">MCA</option>
-                    <option value="M.Tech">M.Tech</option>
-                    <option value="MBA">MBA</option>
-                    <option value="Other">Other</option>
-                </select>
-                <input type="text" id="mod-college" placeholder="College Name *" required>
-                <input type="number" id="mod-yop" placeholder="Year of Passing *" required>
-
-                <div class="form-section-title"><i class="fas fa-briefcase"></i> Experience</div>
-                <select id="mod-exp-level" onchange="toggleExpFields(this.value)">
-                    <option value="Fresher">Fresher</option>
-                    <option value="Experienced">Experienced</option>
-                </select>
-                <div id="exp-fields" style="display:none;" class="form-row">
-                    <input type="text" id="mod-yoe" placeholder="Years of Experience">
-                    <input type="text" id="mod-prev-company" placeholder="Previous Company">
+                    <!-- Expandable Viewers Toggle & List -->
+                    <div style="margin-top:var(--space-4); padding-top:var(--space-3); border-top:1px solid var(--color-border-subtle);">
+                        <button type="button" id="btn-toggle-viewers" class="btn btn-ghost btn-xs" style="width:100%; justify-content:space-between; display:none; padding:6px 8px; color:var(--color-primary);" onclick="toggleViewersList()">
+                            <span><i class="fas fa-building" style="margin-right:4px;"></i> View who viewed you (<span id="viewer-count-badge">0</span>)</span>
+                            <i class="fas fa-chevron-down" id="viewer-toggle-icon"></i>
+                        </button>
+                        <div id="viewers-list-container" style="display:none; margin-top:var(--space-3); max-height:220px; overflow-y:auto;"></div>
+                    </div>
                 </div>
 
-                <div class="form-section-title"><i class="fas fa-tools"></i> Skills & Resume</div>
-                <input type="text" id="mod-skills" placeholder="Skills (comma separated) *" required>
-                <input type="file" id="mod-resume" accept=".pdf,.doc,.docx" required>
-
-                <div class="form-section-title"><i class="fas fa-map-marker-alt"></i> Additional Details</div>
-                <div class="form-row">
-                    <input type="text" id="mod-curr-loc" placeholder="Current Location">
-                    <input type="text" id="mod-pref-loc" placeholder="Preferred Location">
+                <!-- Interview Invite Rate Card -->
+                <div class="card" style="background:var(--color-surface-alt); border:1px solid var(--color-border); display:flex; flex-direction:column; justify-content:space-between;">
+                    <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-2);">
+                            <h3 style="font-size:1rem; color:var(--color-text); margin:0; display:flex; align-items:center; gap:6px;">
+                                <i class="fas fa-user-check" style="color:var(--color-success);"></i> Interview Invite Rate
+                            </h3>
+                            <span class="badge badge-success" style="font-size:11px;">Conversion</span>
+                        </div>
+                        <div id="stat-interview-rate" style="font-size:2rem; font-weight:800; color:var(--color-success); margin-bottom:var(--space-2);">
+                            Not enough data yet
+                        </div>
+                        <p id="stat-interview-rate-sub" style="font-size:0.8125rem; color:var(--color-text-secondary); margin:0; line-height:1.5;">
+                            Percentage of applications converted to interview or selection.
+                        </p>
+                    </div>
+                    <div style="margin-top:var(--space-4); font-size:0.75rem; color:var(--color-text-muted);" id="stat-interview-rate-meta">
+                        Requires 3+ applications for benchmark conversion tracking.
+                    </div>
                 </div>
-                <input type="text" id="mod-salary" placeholder="Expected Salary">
-                <textarea id="mod-cover" rows="3" placeholder="Cover Letter (Optional)"></textarea>
-
-                <div style="margin-top:25px;" class="form-row">
-                    <button type="button" class="cancel-btn" onclick="closeApplyModal()">Cancel</button>
-                    <button type="submit" class="gradient-btn"><i class="fas fa-paper-plane"></i> Submit Application</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Logout Modal -->
-    <div id="logoutModal" class="modal-overlay">
-        <div class="modal-box" style="width:400px; text-align:center;">
-            <div class="modal-header">
-                <h2><i class="fas fa-sign-out-alt"></i> Logout</h2>
-            </div>
-            <p style="margin-bottom:25px; color:#666;">Are you sure you want to logout?</p>
-            <div class="form-row">
-                <button class="cancel-btn" onclick="closeLogoutModal()">No</button>
-                <button class="gradient-btn" onclick="window.location.href='/logout'">Yes, Logout</button>
             </div>
         </div>
-    </div>
+    </main>
+</div>
+{% endblock %}
 
-    <script src="{{ url_for('static', filename='csrf_protect.js') }}"></script>
-    <script>
-        let currentJobId = null;
-        let appliedJobIds = new Set();
-        let savedJobIds = new Set();
+{% block extra_js %}
+<script>
+    let globalCompletenessData = null;
+    let globalStats = {
+        total_applications: 0,
+        total_saved: 0
+    };
 
-        // --- Toast Notification System ---
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast toast-${type}`;
-            
-            let icon = 'check-circle';
-            if (type === 'error') icon = 'times-circle';
-            else if (type === 'warning') icon = 'exclamation-triangle';
-            else if (type === 'info') icon = 'info-circle';
-            
-            toast.innerHTML = `<i class="fas fa-${icon}"></i> ${message}`;
-            container.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.style.animation = 'slideInRight 0.4s reverse forwards';
-                setTimeout(() => toast.remove(), 400);
-            }, 4000);
-        }
-
-        // --- Navigation ---
-        function showSection(id) {
-            document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
-            document.getElementById('section-' + id).style.display = 'block';
-            
-            document.querySelectorAll('.sidebar a').forEach(el => el.classList.remove('active'));
-            const navEl = document.getElementById('nav-' + id);
-            if (navEl) navEl.classList.add('active');
-            
-            if (id === 'saved') loadSavedJobs();
-            if (id === 'applications') loadApplicationStatus();
-            if (id === 'upload') loadUserProfile();
-            
-            // Close notification dropdown if open
-            document.getElementById('notif-dropdown').classList.remove('show');
-        }
-
-        // --- Fetch Data on Load ---
-        async function fetchSavedJobIds() {
-            const res = await fetch('/api/get_saved_job_ids');
-            const data = await res.json();
-            if (data.saved_ids) savedJobIds = new Set(data.saved_ids);
-        }
-
-        async function fetchAppliedJobs() {
-            const res = await fetch('/api/user/applied_jobs');
-            const data = await res.json();
-            if (data.success) appliedJobIds = new Set(data.applied_ids);
-        }
-
-        async function loadUserProfile() {
-            const res = await fetch('/api/get_user_profile');
-            const data = await res.json();
-            if (data.success) {
-                document.getElementById('mod-name').value = data.user.name || '';
-                document.getElementById('mod-email').value = data.user.email || '';
-                document.getElementById('mod-mobile').value = data.user.mobile || '';
-            }
-        }
-
-        fetchSavedJobIds();
-        fetchAppliedJobs();
-
-        // --- Notification Time Formatting ---
-        function formatTimeAgo(dateString) {
-            if (!dateString) return 'Unknown';
-            const date = new Date(dateString);
-            if (isNaN(date.getTime())) return dateString;
-            const now = new Date();
-            const diffMs = now - date;
-            const diffMins = Math.floor(diffMs / 60000);
-            const diffHours = Math.floor(diffMs / 3600000);
-            const diffDays = Math.floor(diffMs / 86400000);
-            if (diffMins < 1) return 'Just now';
-            if (diffMins < 60) return `${diffMins} mins ago`;
-            if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-            if (diffDays === 1) return 'Yesterday';
-            if (diffDays < 7) return `${diffDays} days ago`;
-            return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-        }
-
-        // --- Notification System ---
-        async function loadNotifCount() {
-            try {
-                const res = await fetch('/api/get_unread_count');
-                const data = await res.json();
-                const badge = document.getElementById('bell-badge');
-                if (data.count > 0) {
-                    badge.style.display = 'flex';
-                    badge.innerText = data.count > 99 ? '99+' : data.count;
-                } else {
-                    badge.style.display = 'none';
-                }
-            } catch(e) { console.log(e); }
-        }
-
-        async function toggleNotifDropdown(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const dd = document.getElementById('notif-dropdown');
-            
-            if (dd.classList.contains('show')) {
-                dd.classList.remove('show');
+    function updateNavBadges() {
+        const totalApps = globalStats.total_applications || 0;
+        const seenApps = parseInt(localStorage.getItem('seen_apps_count') || '0', 10);
+        const unreadApps = Math.max(0, totalApps - seenApps);
+        const badgeApps = document.getElementById('badge-total-apps');
+        if (badgeApps) {
+            if (unreadApps > 0) {
+                badgeApps.textContent = unreadApps;
+                badgeApps.style.display = 'inline-flex';
             } else {
-                dd.classList.add('show');
-                const res = await fetch('/api/get_user_notifications');
-                const data = await res.json();
-                const list = document.getElementById('notif-list');
-                list.innerHTML = '';
-                
-                if (data.notifications && data.notifications.length > 0) {
-                    data.notifications.forEach(n => {
-                        const isSelected = n.message.toLowerCase().includes('selected') || n.message.toLowerCase().includes('congratulations') || n.message.toLowerCase().includes('selected for');
-                        const isRejected = n.message.toLowerCase().includes('not selected') || n.message.toLowerCase().includes('rejected');
-                        const icon = isSelected ? 'trophy' : (isRejected ? 'times-circle' : 'bell');
-                        const colorClass = isSelected ? 'notif-success' : (isRejected ? 'notif-error' : 'notif-info');
-                        const bgClass = !n.is_read ? 'unread' : '';
-                        const timeAgo = formatTimeAgo(n.created_at);
-                        
-                        list.innerHTML += `
-                        <div class="notif-item ${bgClass}">
-                            <h4><i class="fas fa-${icon} ${colorClass}"></i> ${isSelected ? 'Congratulations!' : (isRejected ? 'Application Update' : 'Notification')}</h4>
-                            <p>${n.message}</p>
-                            <span class="notif-time"><i class="fas fa-clock"></i> ${timeAgo}</span>
-                        </div>`;
-                    });
-                } else {
-                    list.innerHTML = `
-                    <div class="notif-empty">
-                        <i class="fas fa-bell-slash"></i>
-                        <p>No notifications yet</p>
-                    </div>`;
-                }
-                loadNotifCount();
+                badgeApps.style.display = 'none';
             }
         }
 
-        async function markAllAsRead(e) {
-            e.stopPropagation();
-            await fetch('/api/mark_notifications_read', { method: 'POST' });
-            loadNotifCount();
-            showToast('All notifications marked as read', 'success');
-            toggleNotifDropdown({preventDefault: ()=>{}, stopPropagation: ()=>{}});
+        const totalSaved = globalStats.total_saved || 0;
+        const seenSaved = parseInt(localStorage.getItem('seen_saved_count') || '0', 10);
+        const unreadSaved = Math.max(0, totalSaved - seenSaved);
+        const badgeSaved = document.getElementById('badge-saved');
+        if (badgeSaved) {
+            if (unreadSaved > 0) {
+                badgeSaved.textContent = unreadSaved;
+                badgeSaved.style.display = 'inline-flex';
+            } else {
+                badgeSaved.style.display = 'none';
+            }
         }
+    }
 
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            const dropdown = document.getElementById('notif-dropdown');
-            const bell = document.querySelector('.bell-icon');
-            if (dropdown.classList.contains('show') && !dropdown.contains(e.target) && !bell.contains(e.target)) {
-                dropdown.classList.remove('show');
+    async function checkUnreadMessages() {
+        try {
+            const res = await getReq('/api/get_unread_count');
+            const unreadCount = (res && res.count) || 0;
+            const badgeMsgs = document.getElementById('badge-messages');
+            if (badgeMsgs) {
+                const seenMsgs = parseInt(localStorage.getItem('seen_messages_count') || '0', 10);
+                const newMsgs = Math.max(0, unreadCount - seenMsgs);
+                if (unreadCount > 0 && newMsgs > 0) {
+                    badgeMsgs.textContent = newMsgs;
+                    badgeMsgs.style.display = 'inline-flex';
+                } else {
+                    badgeMsgs.style.display = 'none';
+                }
+            }
+        } catch (e) {
+            // silent fail
+        }
+    }
+
+    function showSection(sectionId) {
+        ['recommendations', 'search', 'applications', 'saved', 'profile-health', 'analytics'].forEach(s => {
+            const sec = document.getElementById('section-' + s);
+            const nav = document.getElementById('nav-' + s);
+            if (sec) sec.style.display = (s === sectionId) ? 'block' : 'none';
+            if (nav) {
+                if (s === sectionId) nav.classList.add('active');
+                else nav.classList.remove('active');
             }
         });
 
-        setInterval(loadNotifCount, 5000);
-        loadNotifCount();
+        if (sectionId === 'recommendations') {
+            loadRecommendations();
+        }
+        if (sectionId === 'saved') {
+            localStorage.setItem('seen_saved_count', globalStats.total_saved || 0);
+            const badgeSaved = document.getElementById('badge-saved');
+            if (badgeSaved) badgeSaved.style.display = 'none';
+            loadSavedJobs();
+        }
+        if (sectionId === 'applications') {
+            localStorage.setItem('seen_apps_count', globalStats.total_applications || 0);
+            const badgeApps = document.getElementById('badge-total-apps');
+            if (badgeApps) badgeApps.style.display = 'none';
+            loadApplications();
+        }
+        if (sectionId === 'profile-health') renderFullProfileHealth();
+        if (sectionId === 'analytics') loadCareerPerformance();
+    }
 
-        // --- Logout Modal ---
-        function openLogoutModal() { document.getElementById('logoutModal').classList.add('active'); }
-        function closeLogoutModal() { document.getElementById('logoutModal').classList.remove('active'); }
+    // ----------------------------------------------------
+    // 0. Load AI Recommended Jobs (Multi-factor & Transparent)
+    // ----------------------------------------------------
+    async function loadRecommendations(page = 1) {
+        const area = document.getElementById('recommendations-area');
+        const statText = document.getElementById('recommendations-stat-text');
+        const latencyBadge = document.getElementById('recommendations-latency-badge');
+        if (!area) return;
 
-        // --- API Helper ---
-        async function postReq(url, data) {
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+        area.innerHTML = `
+            <div class="card skeleton" style="height:180px;"></div>
+            <div class="card skeleton" style="height:180px;"></div>
+        `;
+        if (statText) statText.innerHTML = '<i class="fas fa-spinner fa-spin" style="color:var(--color-primary); margin-right:6px;"></i> Analyzing opportunities against your skills, target role, and resume...';
+
+        try {
+            const res = await getReq(`/api/jobs/recommended?page=${page}&per_page=12`);
+            if (res && res.success && res.recommendations && res.recommendations.length > 0) {
+                const count = res.total || res.recommendations.length;
+                const latency = res.meta && res.meta.latency_ms ? res.meta.latency_ms : null;
+                const isSparse = res.meta && res.meta.is_sparse_profile;
+
+                if (statText) {
+                    statText.innerHTML = isSparse
+                        ? `<i class="fas fa-info-circle" style="color:#38BDF8; margin-right:6px;"></i> Showing <strong>${count} featured opportunit${count === 1 ? 'y' : 'ies'}</strong>. Complete your profile for deep AI scoring.`
+                        : `<i class="fas fa-check-circle" style="color:#10B981; margin-right:6px;"></i> Found <strong>${count} personalized job match${count === 1 ? '' : 'es'}</strong> for your profile.`;
+                }
+                if (latencyBadge && latency !== null) {
+                    latencyBadge.innerHTML = `<i class="fas fa-bolt" style="color:#F59E0B;"></i> Scored in ${latency}ms`;
+                }
+
+                area.innerHTML = res.recommendations.map(j => {
+                    const score = Math.round(j.match_score || 0);
+                    let scoreBadgeColor = '#10B981';
+                    let scoreBg = 'rgba(16, 185, 129, 0.15)';
+                    let scoreBorder = 'rgba(16, 185, 129, 0.35)';
+
+                    if (score < 50) {
+                        scoreBadgeColor = '#F59E0B';
+                        scoreBg = 'rgba(245, 158, 11, 0.15)';
+                        scoreBorder = 'rgba(245, 158, 11, 0.35)';
+                    } else if (score < 75) {
+                        scoreBadgeColor = '#38BDF8';
+                        scoreBg = 'rgba(56, 189, 248, 0.15)';
+                        scoreBorder = 'rgba(56, 189, 248, 0.35)';
+                    }
+
+                    const matchedSkills = j.matched_skills || [];
+                    const missingSkills = (j.missing_skills || []).slice(0, 3);
+                    const reason = j.match_reason || 'Personalized AI match based on your skills and experience.';
+
+                    return `
+                        <div class="job-card" style="display:flex; flex-direction:column; justify-content:space-between; position:relative; overflow:hidden; border:1px solid ${scoreBorder};">
+                            <div>
+                                <div class="job-card-header" style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                                    <div class="job-card-company" style="display:flex; gap:12px; align-items:center;">
+                                        <div class="company-logo-avatar">${(j.company_name || 'C')[0].toUpperCase()}</div>
+                                        <div>
+                                            <div style="font-size:var(--font-size-xs); font-weight:600; color:var(--color-text-muted); display:flex; align-items:center; gap:4px;">
+                                                ${escapeHtml(j.company_name || 'Verified Employer')}
+                                                ${j.employer_is_verified ? '<i class="fas fa-check-circle" style="color:#10B981; font-size:11px;" title="Verified Employer"></i>' : ''}
+                                            </div>
+                                            <div class="job-card-title" style="margin-top:2px;">
+                                                <a href="/job/${j.id}" style="color:inherit; text-decoration:none; font-weight:700;">${escapeHtml(j.title)}</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="text-align:right; flex-shrink:0;">
+                                        <div style="background:${scoreBg}; border:1px solid ${scoreBorder}; color:${scoreBadgeColor}; padding:4px 10px; border-radius:20px; font-weight:800; font-size:13px; display:inline-flex; align-items:center; gap:5px;">
+                                            <i class="fas fa-bolt"></i> ${score}% Match
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="background:rgba(255,94,20,0.08); border-left:3px solid #FF5E14; padding:6px 10px; border-radius:4px; margin-bottom:12px; font-size:12px; color:#CBD5E1; line-height:1.4;">
+                                    <i class="fas fa-sparkles" style="color:#FF7B1C; margin-right:4px;"></i> ${escapeHtml(reason)}
+                                </div>
+
+                                <div class="job-meta-row" style="margin-bottom:12px;">
+                                    <span class="job-meta-item"><i class="fas fa-map-marker-alt" style="color:var(--color-primary);"></i> ${escapeHtml(j.location || 'Remote')}</span>
+                                    <span class="job-meta-item"><i class="fas fa-briefcase" style="color:var(--color-primary);"></i> ${escapeHtml(j.job_type || 'Full-time')}</span>
+                                    ${j.work_mode ? `<span class="job-meta-item"><i class="fas fa-globe" style="color:var(--color-primary);"></i> ${escapeHtml(j.work_mode)}</span>` : ''}
+                                    ${j.experience ? `<span class="job-meta-item"><i class="fas fa-user-clock" style="color:var(--color-primary);"></i> ${escapeHtml(j.experience)}</span>` : ''}
+                                </div>
+
+                                ${matchedSkills.length > 0 ? `
+                                <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px;">
+                                    ${matchedSkills.map(s => `
+                                        <span class="badge" style="background:rgba(16,185,129,0.12); color:#34D399; border:1px solid rgba(16,185,129,0.3); font-size:11px; padding:2px 8px;">
+                                            <i class="fas fa-check" style="font-size:9px; margin-right:3px;"></i> ${escapeHtml(s)}
+                                        </span>
+                                    `).join('')}
+                                    ${missingSkills.map(s => `
+                                        <span class="badge" style="background:rgba(100,116,139,0.12); color:#94A3B8; border:1px dashed rgba(100,116,139,0.35); font-size:11px; padding:2px 8px;" title="Skill to learn">
+                                            + ${escapeHtml(s)}
+                                        </span>
+                                    `).join('')}
+                                </div>` : ''}
+                            </div>
+
+                            <div class="job-card-footer" style="padding-top:12px; border-top:1px solid rgba(255,255,255,0.06); margin-top:auto;">
+                                <span class="job-salary-text" style="font-weight:700; color:#F8FAFC;">${escapeHtml(j.salary_display || j.salary || 'Competitive Salary')}</span>
+                                <div style="display:flex; gap:8px;">
+                                    <button class="btn btn-secondary btn-sm" onclick="saveJob(${j.id})" title="Bookmark Job"><i class="far fa-bookmark"></i></button>
+                                    <a href="/job/${j.id}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-paper-plane"></i> View & Apply
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                if (statText) statText.innerHTML = '<i class="fas fa-info-circle" style="color:#94A3B8; margin-right:6px;"></i> No personalized recommendations available yet.';
+                area.innerHTML = `
+                    <div class="empty-state card" style="grid-column: 1 / -1; text-align:center; padding:40px 20px;">
+                        <div class="empty-state-icon" style="font-size:2.5rem; color:#64748B; margin-bottom:12px;"><i class="fas fa-magic"></i></div>
+                        <div class="empty-state-title" style="font-size:1.15rem; font-weight:700; color:#F8FAFC; margin-bottom:6px;">Complete your profile to unlock AI recommendations</div>
+                        <p class="empty-state-desc" style="color:#94A3B8; max-width:480px; margin:0 auto 16px;">Add your key skills, resume, target role, and preferred location to receive highly tailored job matches.</p>
+                        <div style="display:flex; justify-content:center; gap:10px;">
+                            <a href="/candidate/profile/edit" class="btn btn-primary btn-sm"><i class="fas fa-user-edit"></i> Edit Profile</a>
+                            <button class="btn btn-secondary btn-sm" onclick="showSection('search')"><i class="fas fa-search"></i> Browse All Jobs</button>
+                        </div>
+                    </div>
+                `;
+            }
+        } catch (e) {
+            console.error('Error loading recommendations:', e);
+            if (statText) statText.innerHTML = '<i class="fas fa-exclamation-circle" style="color:#EF4444; margin-right:6px;"></i> Error loading recommendations.';
+            area.innerHTML = `
+                <div class="empty-state card" style="grid-column: 1 / -1;">
+                    <div class="empty-state-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="empty-state-title">Unable to load recommendations</div>
+                    <p class="empty-state-desc">Please try refreshing or browse opportunities manually.</p>
+                    <button class="btn btn-primary btn-sm" onclick="loadRecommendations()"><i class="fas fa-sync-alt"></i> Retry</button>
+                </div>
+            `;
+        }
+    }
+
+    // ----------------------------------------------------
+    // 1. Load Stats & Profile Completeness
+    // ----------------------------------------------------
+    async function loadStats() {
+        try {
+            const res = await getReq('/api/user/stats');
+            if (res && res.success) {
+                globalStats.total_applications = res.total_applications || 0;
+                globalStats.total_saved = res.total_saved || 0;
+
+                // Update Top Metric counts
+                document.getElementById('stat-total-apps').textContent = res.total_applications || 0;
+                document.getElementById('stat-saved').textContent = res.total_saved || 0;
+                document.getElementById('stat-interviews').textContent = res.total_interviews || 0;
+
+                updateNavBadges();
+
+                const score = res.profile_completeness || 0;
+                document.getElementById('stat-completeness').textContent = score + '%';
+                document.getElementById('badge-completeness').textContent = score + '%';
+
+                const fillEl = document.getElementById('profile-progress-fill');
+                if (fillEl) fillEl.style.width = score + '%';
+
+                const scoreTag = document.getElementById('completeness-score-tag');
+                if (scoreTag) {
+                    scoreTag.textContent = score + '% Complete';
+                    scoreTag.className = 'job-status-badge ' + (score >= 80 ? 'status-interview' : score >= 50 ? 'status-review' : 'status-rejected');
+                }
+
+                if (res.completeness_data) {
+                    globalCompletenessData = res.completeness_data;
+                    renderCompletenessChecklist(res.completeness_data);
+                }
+            }
+        } catch (e) {
+            console.error('Error loading stats:', e);
+        }
+        checkUnreadMessages();
+    }
+
+    function renderCompletenessChecklist(data) {
+        const pillsContainer = document.getElementById('checklist-pills');
+        if (!pillsContainer) return;
+
+        const trackTag = document.getElementById('candidate-track-tag');
+        if (trackTag) {
+            trackTag.textContent = (data.candidate_type === 'experienced' ? 'Experienced Track' : 'Fresher Track');
+        }
+
+        let html = '';
+
+        // Completed items with green check
+        if (data.completed_items && data.completed_items.length > 0) {
+            data.completed_items.forEach(item => {
+                html += `
+                    <span class="checklist-pill checklist-pill-completed">
+                        <i class="fas fa-check"></i> ${escapeHtml(item.title)}
+                    </span>
+                `;
             });
-            return await res.json();
         }
 
-        // --- Search Jobs ---
-        async function searchJobs() {
-            const title = document.getElementById('search-title').value.trim();
-            const location = document.getElementById('search-location').value.trim();
-            const experience = document.getElementById('search-exp').value;
-            const category = document.getElementById('search-category').value;
-            const jobType = document.getElementById('search-job-type').value;
-            const workMode = document.getElementById('search-work-mode').value;
-            const sort = document.getElementById('search-sort').value;
-
-            if (!title && !location && !experience && !category && !jobType && !workMode) {
-                showToast('Please fill in at least one field to search', 'error');
-                return;
-            }
-
-            const res = await postReq('/api/jobs/search', {
-                title: title,
-                location: location,
-                experience: experience,
-                category: category,
-                job_type: jobType,
-                work_mode: workMode,
-                sort: sort,
-                page: 1,
-                per_page: 10
+        // Actionable missing items with warning icon and direct link
+        if (data.missing_items && data.missing_items.length > 0) {
+            data.missing_items.forEach(item => {
+                html += `
+                    <a href="${item.url}" class="checklist-pill checklist-pill-missing" title="Click to complete this section">
+                        <i class="fas fa-exclamation-triangle"></i> ${escapeHtml(item.missing_label)}
+                    </a>
+                `;
             });
-            
-            const area = document.getElementById('result-area');
-            area.innerHTML = '';
-            
-            if (res.success && res.jobs.length > 0) {
-                res.jobs.forEach(j => {
-                    const isApplied = appliedJobIds.has(String(j.id));
-                    const isSaved = savedJobIds.has(String(j.id));
-                    
-                    const btnHtml = isApplied ?
-                        `<button class="apply-btn" disabled><i class="fas fa-check"></i> Applied</button>` :
-                        `<button class="apply-btn" onclick="openApplyModal(${j.id})"><i class="fas fa-paper-plane"></i> Apply Now</button>`;
-                    
-                    const saveBtn = isSaved ?
-                        `<button class="apply-btn save-btn" onclick="unsaveJob(${j.id})"><i class="fas fa-bookmark"></i> Saved</button>` :
-                        `<button class="apply-btn save-btn" onclick="saveJob(${j.id})"><i class="fas fa-bookmark"></i> Save</button>`;
+        }
 
-                     area.innerHTML += `<div class="job-card">
-                         <h3>${j.title} <span class="match-score match-high"><i class="fas fa-briefcase"></i> ${j.job_type || ''} | <i class="fas fa-globe"></i> ${j.work_mode || ''}</span></h3>
-                         <p><i class="fas fa-building"></i> <b>${j.company_name}</b> | <i class="fas fa-map-marker-alt"></i> ${j.location || 'N/A'}</p>
-                         <p><i class="fas fa-money-bill"></i> <b>Salary:</b> ${j.salary || (j.salary_min && j.salary_max ? j.salary_min + ' - ' + j.salary_max : 'Not Disclosed')}</p>
-                         ${btnHtml}
-                         ${saveBtn}
-                     </div>`;
-                });
-                showToast(`Found ${res.jobs.length} jobs`, 'info');
-            } else {
-                area.innerHTML = '<p style="text-align:center; color:#666; padding:30px;"><i class="fas fa-search" style="font-size:40px; color:#ddd;"></i><br><br>No jobs found matching your criteria.</p>';
+        if (!html) {
+            html = '<span class="checklist-pill checklist-pill-completed"><i class="fas fa-trophy"></i> Profile 100% Complete!</span>';
+        }
+
+        pillsContainer.innerHTML = html;
+    }
+
+    function renderFullProfileHealth() {
+        const container = document.getElementById('profile-health-full-area');
+        if (!container || !globalCompletenessData) return;
+
+        const d = globalCompletenessData;
+        let html = `
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:16px;">
+        `;
+
+        d.breakdown.forEach(item => {
+            const isDone = item.completed;
+            html += `
+                <div style="background:#1E293B; border:1px solid ${isDone ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'}; border-radius:12px; padding:16px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div style="font-weight:700; font-size:0.95rem; color:#F8FAFC; margin-bottom:4px;">
+                            ${isDone ? '<i class="fas fa-check-circle" style="color:#10B981; margin-right:6px;"></i>' : '<i class="fas fa-exclamation-circle" style="color:#F59E0B; margin-right:6px;"></i>'}
+                            ${escapeHtml(item.title)}
+                        </div>
+                        <div style="font-size:0.8125rem; color:#94A3B8;">
+                            Weight: ${item.weight}% • Status: <strong style="color:${isDone ? '#34D399' : '#FBBF24'}">${isDone ? 'Completed' : 'Action Required'}</strong>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="${item.url}" class="btn btn-sm ${isDone ? 'btn-secondary' : 'btn-primary'}">
+                            ${isDone ? 'Edit' : item.action_label || 'Add'}
+                        </a>
+                    </div>
+                </div>
+            `;
+        });
+
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    // ----------------------------------------------------
+    // 2. Load Applications (Database-Driven)
+    // ----------------------------------------------------
+    async function loadApplications() {
+        const container = document.getElementById('applications-container');
+        if (!container) return;
+
+        container.innerHTML = '<div class="card skeleton" style="height:140px; margin-bottom:12px;"></div><div class="card skeleton" style="height:140px;"></div>';
+
+        const res = await getReq('/api/user/applied_jobs');
+        if (!res.success || !res.applications || res.applications.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state card" style="text-align:center; padding:48px 24px;">
+                    <div class="empty-state-icon" style="font-size:3rem; color:#64748B; margin-bottom:12px;"><i class="fas fa-paper-plane"></i></div>
+                    <div class="empty-state-title" style="font-size:1.2rem; font-weight:700; color:#F8FAFC; margin-bottom:6px;">No applications sent yet</div>
+                    <p class="empty-state-desc" style="color:#94A3B8; margin-bottom:16px;">Search and apply to open jobs to track recruiter status and interview invites here.</p>
+                    <button class="btn btn-primary" onclick="showSection('search')"><i class="fas fa-search"></i> Browse Opportunities</button>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = res.applications.map(a => {
+            const s = (a.status || 'Applied').toLowerCase();
+            let statusBg = 'rgba(56, 189, 248, 0.15)', statusColor = '#38BDF8', statusBorder = 'rgba(56, 189, 248, 0.3)';
+            if (s.includes('screen')) {
+                statusBg = 'rgba(245, 158, 11, 0.15)'; statusColor = '#FBBF24'; statusBorder = 'rgba(245, 158, 11, 0.3)';
+            } else if (s.includes('shortlist')) {
+                statusBg = 'rgba(99, 102, 241, 0.15)'; statusColor = '#818CF8'; statusBorder = 'rgba(99, 102, 241, 0.3)';
+            } else if (s.includes('assess')) {
+                statusBg = 'rgba(168, 85, 247, 0.15)'; statusColor = '#C084FC'; statusBorder = 'rgba(168, 85, 247, 0.3)';
+            } else if (s.includes('interview')) {
+                statusBg = 'rgba(20, 184, 166, 0.15)'; statusColor = '#2DD4BF'; statusBorder = 'rgba(20, 184, 166, 0.3)';
+            } else if (s.includes('offer')) {
+                statusBg = 'rgba(16, 185, 129, 0.15)'; statusColor = '#34D399'; statusBorder = 'rgba(16, 185, 129, 0.3)';
+            } else if (s.includes('hire') || s.includes('select')) {
+                statusBg = 'rgba(34, 197, 94, 0.2)'; statusColor = '#4ADE80'; statusBorder = 'rgba(34, 197, 94, 0.4)';
+            } else if (s.includes('reject')) {
+                statusBg = 'rgba(239, 68, 68, 0.15)'; statusColor = '#F87171'; statusBorder = 'rgba(239, 68, 68, 0.3)';
+            } else if (s.includes('withdraw')) {
+                statusBg = 'rgba(148, 163, 184, 0.15)'; statusColor = '#94A3B8'; statusBorder = 'rgba(148, 163, 184, 0.3)';
             }
+
+            const stages = ['Applied', 'Screening', 'Shortlisted', 'Assessment', 'Interview', 'Offer', 'Hired'];
+            const currentIdx = stages.findIndex(st => st.toLowerCase() === s);
+
+            return `
+                <div class="job-record-card" style="display:flex; flex-direction:column; gap:14px; background:#1E293B; border:1px solid #334155; border-radius:12px; padding:18px; margin-bottom:14px;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;">
+                        <div class="job-record-left" style="display:flex; gap:14px; align-items:center;">
+                            <div class="company-logo-box" style="width:48px; height:48px; border-radius:10px; background:rgba(56, 189, 248, 0.12); color:#38BDF8; font-weight:800; font-size:18px; display:flex; align-items:center; justify-content:center;">
+                                ${(a.company_name || 'C')[0].toUpperCase()}
+                            </div>
+                            <div>
+                                <a href="/job/${a.job_id}" class="job-record-title" style="font-size:1.05rem; font-weight:700; color:#F8FAFC; text-decoration:none;">
+                                    ${escapeHtml(a.title)}
+                                </a>
+                                <div class="job-record-company" style="font-size:13px; color:#94A3B8; margin-top:2px;">${escapeHtml(a.company_name)}</div>
+                                <div class="job-record-meta-row" style="display:flex; gap:12px; font-size:12px; color:#CBD5E1; margin-top:6px; flex-wrap:wrap;">
+                                    <span><i class="fas fa-map-marker-alt" style="color:#FF5E14;"></i> ${escapeHtml(a.location)}</span>
+                                    <span><i class="fas fa-briefcase" style="color:#38BDF8;"></i> ${escapeHtml(a.job_type)}</span>
+                                    <span><i class="fas fa-rupee-sign" style="color:#10B981;"></i> ${escapeHtml(a.salary)}</span>
+                                    <span><i class="fas fa-calendar-alt" style="color:#94A3B8;"></i> Applied: ${a.applied_at}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px; flex-shrink:0;">
+                            <span class="job-status-badge" style="background:${statusBg}; color:${statusColor}; border:1px solid ${statusBorder}; padding:4px 10px; border-radius:6px; font-weight:700; font-size:12px;">
+                                <i class="fas fa-circle" style="font-size:6px; margin-right:4px;"></i> ${escapeHtml(a.status)}
+                            </span>
+                            <div style="display:flex; gap:8px;">
+                                <a href="/job/${a.job_id}" class="btn btn-secondary btn-sm" style="padding:4px 10px; font-size:12px;">
+                                    <i class="fas fa-external-link-alt"></i> View Job
+                                </a>
+                                ${s !== 'withdrawn' && s !== 'hired' && s !== 'rejected' ? `
+                                <button type="button" class="btn btn-ghost btn-sm" style="color:#EF4444; padding:4px 10px; font-size:12px;" onclick="withdrawApp(${a.application_id})" title="Withdraw Application">
+                                    <i class="fas fa-times"></i> Withdraw
+                                </button>` : ''}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pipeline Visual Stepper -->
+                    ${!s.includes('reject') && !s.includes('withdraw') ? `
+                    <div style="border-top:1px solid rgba(255,255,255,0.06); padding-top:10px; margin-top:4px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; position:relative;">
+                            ${stages.map((stg, idx) => {
+                                const isPassed = currentIdx >= idx;
+                                const isCurrent = currentIdx === idx;
+                                const dotColor = isPassed ? (isCurrent ? '#38BDF8' : '#10B981') : '#475569';
+                                return `
+                                    <div style="display:flex; flex-direction:column; align-items:center; text-align:center; flex:1; position:relative; z-index:1;">
+                                        <div style="width:18px; height:18px; border-radius:50%; background:${isPassed ? dotColor : '#1E293B'}; border:2px solid ${dotColor}; display:flex; align-items:center; justify-content:center; margin-bottom:4px;">
+                                            ${isPassed ? '<i class="fas fa-check" style="font-size:8px; color:#0F172A;"></i>' : ''}
+                                        </div>
+                                        <div style="font-size:10px; font-weight:${isCurrent ? '700' : '500'}; color:${isCurrent ? '#38BDF8' : (isPassed ? '#CBD5E1' : '#64748B')};">${stg}</div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <!-- Details Accordion / Summary -->
+                    ${a.has_cover_letter || a.has_answers ? `
+                    <div style="background:rgba(15,23,42,0.6); border-radius:8px; padding:10px 14px; font-size:12px; color:#94A3B8;">
+                        ${a.has_cover_letter ? `<div style="margin-bottom:4px;"><strong style="color:#CBD5E1;">Cover Letter:</strong> ${escapeHtml(a.cover_letter)}</div>` : ''}
+                        ${a.has_answers && a.answers ? `
+                            <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:4px;">
+                                ${Object.entries(a.answers).map(([k, v]) => `
+                                    <span class="badge badge-slate" style="font-size:11px; padding:2px 6px;">
+                                        ${escapeHtml(k.replace(/_/g, ' '))}: <strong style="color:#F8FAFC;">${escapeHtml(String(v))}</strong>
+                                    </span>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+        }).join('');
+    }
+
+    async function withdrawApp(appId) {
+        if (!confirm('Are you sure you want to withdraw this application?')) return;
+        const res = await postReq('/api/withdraw_application', { app_id: appId });
+        if (res.success) {
+            showToast(res.message || 'Application withdrawn successfully.', 'success');
+            loadApplications();
+            loadStats();
+        } else {
+            showToast(res.message || 'Failed to withdraw application.', 'error');
+        }
+    }
+
+    // ----------------------------------------------------
+    // 3. Load Saved Jobs (Database-Driven with Active Check)
+    // ----------------------------------------------------
+    async function loadSavedJobs() {
+        const container = document.getElementById('saved-jobs-container');
+        if (!container) return;
+
+        container.innerHTML = '<div class="card skeleton" style="height:140px; margin-bottom:12px;"></div><div class="card skeleton" style="height:140px;"></div>';
+
+        const res = await getReq('/api/user/saved_jobs');
+        if (!res.success || !res.saved_jobs || res.saved_jobs.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state card" style="text-align:center; padding:48px 24px;">
+                    <div class="empty-state-icon" style="font-size:3rem; color:#64748B; margin-bottom:12px;"><i class="fas fa-bookmark"></i></div>
+                    <div class="empty-state-title" style="font-size:1.2rem; font-weight:700; color:#F8FAFC; margin-bottom:6px;">No saved jobs yet</div>
+                    <p class="empty-state-desc" style="color:#94A3B8; margin-bottom:16px;">Bookmark high-match jobs while searching to review or apply to them later.</p>
+                    <button class="btn btn-primary" onclick="showSection('search')"><i class="fas fa-search"></i> Search Opportunities</button>
+                </div>
+            `;
+            return;
         }
 
-        // --- Save/Unsave Jobs ---
-        async function saveJob(jobId) {
-            const res = await postReq('/api/save_job', { job_id: jobId });
-            if (res.success) {
-                savedJobIds.add(String(jobId));
-                showToast('Job Saved!', 'success');
-                searchJobs();
-            } else showToast(res.message || 'Error', 'error');
+        container.innerHTML = res.saved_jobs.map(j => {
+            const isAvailable = j.is_available && j.is_active;
+
+            return `
+                <div class="job-record-card">
+                    <div class="job-record-left">
+                        <div class="company-logo-box">
+                            ${(j.company_name || 'C')[0].toUpperCase()}
+                        </div>
+                        <div>
+                            <a href="/job/${j.job_id}" class="job-record-title">
+                                ${escapeHtml(j.title)}
+                            </a>
+                            <div class="job-record-company">${escapeHtml(j.company_name)}</div>
+                            <div class="job-record-meta-row">
+                                <span class="job-record-meta-item"><i class="fas fa-map-marker-alt" style="color:#FF5E14;"></i> ${escapeHtml(j.location)}</span>
+                                <span class="job-record-meta-item"><i class="fas fa-briefcase" style="color:#38BDF8;"></i> ${escapeHtml(j.job_type)}</span>
+                                <span class="job-record-meta-item"><i class="fas fa-rupee-sign" style="color:#10B981;"></i> ${escapeHtml(j.salary)}</span>
+                                <span class="job-record-meta-item"><i class="fas fa-clock" style="color:#94A3B8;"></i> Saved: ${j.saved_at}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px; flex-shrink:0;">
+                        ${isAvailable ? `
+                            <span class="job-status-badge status-active">
+                                <i class="fas fa-check-circle"></i> Active Opportunity
+                            </span>
+                            <div style="display:flex; gap:8px;">
+                                <a href="/job/${j.job_id}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-paper-plane"></i> Apply Now
+                                </a>
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="unsaveJob(${j.job_id})" title="Remove Bookmark">
+                                    <i class="fas fa-trash-alt"></i> Remove
+                                </button>
+                            </div>
+                        ` : `
+                            <span class="job-status-badge status-expired">
+                                <i class="fas fa-ban"></i> Job no longer available
+                            </span>
+                            <div style="display:flex; gap:8px;">
+                                <button type="button" class="btn btn-secondary btn-sm" disabled style="opacity:0.5; cursor:not-allowed;">
+                                    Unavailable
+                                </button>
+                                <button type="button" class="btn btn-ghost btn-sm" style="color:#EF4444;" onclick="unsaveJob(${j.job_id})" title="Remove from bookmarks">
+                                    <i class="fas fa-trash-alt"></i> Remove
+                                </button>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    async function unsaveJob(jobId) {
+        const res = await postReq('/api/unsave_job', { job_id: jobId });
+        if (res.success) {
+            showToast(res.message || 'Bookmark removed.', 'success');
+            loadSavedJobs();
+            loadStats();
+        } else {
+            showToast(res.message || 'Failed to remove bookmark.', 'error');
+        }
+    }
+
+    // ----------------------------------------------------
+    // 4. Job Search & Application Flow
+    // ----------------------------------------------------
+    let userSearchPage = 1;
+    async function searchJobs(page = 1) {
+        userSearchPage = page;
+        const title = (document.getElementById('search-title').value || '').trim();
+        const location = (document.getElementById('search-location').value || '').trim();
+        const category = document.getElementById('search-category').value;
+        const experience = document.getElementById('search-exp').value;
+        const work_mode = document.getElementById('search-work-mode') ? document.getElementById('search-work-mode').value : '';
+        const job_type = document.getElementById('search-job-type') ? document.getElementById('search-job-type').value : '';
+        const salary_bracket = document.getElementById('search-salary') ? document.getElementById('search-salary').value : '';
+        const sort = document.getElementById('search-sort') ? document.getElementById('search-sort').value : 'newest';
+
+        const area = document.getElementById('result-area');
+        area.innerHTML = `
+            <div class="card skeleton" style="height:160px;"></div>
+            <div class="card skeleton" style="height:160px;"></div>
+        `;
+
+        const res = await postReq('/api/jobs/search', {
+            title, location, category, experience, work_mode, job_type, salary_bracket, sort,
+            page: userSearchPage, per_page: 20
+        });
+
+        if (!res.success || !res.jobs || res.jobs.length === 0) {
+            area.innerHTML = `
+                <div class="empty-state card" style="grid-column: 1 / -1;">
+                    <div class="empty-state-icon"><i class="fas fa-search"></i></div>
+                    <div class="empty-state-title">No matching jobs found</div>
+                    <p class="empty-state-desc">Try modifying your title, category, work mode, or location criteria.</p>
+                </div>
+            `;
+            return;
         }
 
-        async function unsaveJob(jobId) {
-            const res = await postReq('/api/unsave_job', { job_id: jobId });
-            if (res.success) {
-                savedJobIds.delete(String(jobId));
-                showToast('Job Removed from Saved', 'success');
-                loadSavedJobs();
-            } else showToast(res.message || 'Error', 'error');
-        }
+        area.innerHTML = res.jobs.map(j => `
+            <div class="job-card">
+                <div>
+                    <div class="job-card-header">
+                        <div class="job-card-company">
+                            <div class="company-logo-avatar">${(j.company_name || 'D')[0].toUpperCase()}</div>
+                            <div>
+                                <div style="font-size:var(--font-size-xs); font-weight:600; color:var(--color-text-muted);">${escapeHtml(j.company_name || 'Verified Employer')}</div>
+                                <div class="job-card-title"><a href="/job/${j.id}" style="color:inherit; text-decoration:none;">${escapeHtml(j.title)}</a></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="job-meta-row">
+                        <span class="job-meta-item"><i class="fas fa-map-marker-alt" style="color:var(--color-primary);"></i> ${escapeHtml(j.location || 'Remote')}</span>
+                        <span class="job-meta-item"><i class="fas fa-clock" style="color:var(--color-primary);"></i> ${escapeHtml(j.job_type || 'Full-time')}</span>
+                        ${j.work_mode ? `<span class="job-meta-item"><i class="fas fa-globe" style="color:var(--color-primary);"></i> ${escapeHtml(j.work_mode)}</span>` : ''}
+                    </div>
+                </div>
+                <div class="job-card-footer">
+                    <span class="job-salary-text">${escapeHtml(j.salary_display || j.salary || 'Competitive')}</span>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn btn-secondary btn-sm" onclick="saveJob(${j.id})" title="Save Job"><i class="far fa-bookmark"></i></button>
+                        <a href="/job/${j.id}" class="btn btn-primary btn-sm">View & Apply</a>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
 
-        // --- Load Saved Jobs ---
-        async function loadSavedJobs() {
-            const res = await fetch('/api/get_saved_jobs');
-            const data = await res.json();
-            const area = document.getElementById('saved-jobs-area');
-            area.innerHTML = '';
-            
-            if (data.success && data.jobs.length > 0) {
-                data.jobs.forEach(j => {
-                    area.innerHTML += `<div class="job-card">
-                        <h3>${j.title} <span class="match-score" style="background:#6c757d;"><i class="fas fa-briefcase"></i> ${j.job_type || ''} | <i class="fas fa-globe"></i> ${j.work_mode || ''}</span></h3>
-                        <p><i class="fas fa-building"></i> <b>${j.company_name}</b> | <i class="fas fa-map-marker-alt"></i> ${j.location || 'N/A'}</p>
-                        <p><i class="fas fa-money-bill"></i> <b>Salary:</b> ${j.salary || (j.salary_min && j.salary_max ? j.salary_min + ' - ' + j.salary_max : 'Not Disclosed')}</p>
-                        <button class="apply-btn" onclick="openApplyModal(${j.id})"><i class="fas fa-paper-plane"></i> Apply</button>
-                        <button class="apply-btn save-btn" onclick="unsaveJob(${j.id})"><i class="fas fa-trash"></i> Remove</button>
-                    </div>`;
-                });
-            } else {
-                area.innerHTML = '<p style="text-align:center; color:#666; padding:30px;"><i class="fas fa-bookmark" style="font-size:40px; color:#ddd;"></i><br><br>No saved jobs yet.</p>';
-            }
+    async function saveJob(jobId) {
+        const res = await postReq('/api/save_job', { job_id: jobId });
+        if (res.success) {
+            showToast(res.message || 'Job saved to bookmarks!', 'success');
+            loadStats();
+        } else {
+            showToast(res.message || 'Failed to save job.', 'error');
         }
+    }
 
-        // --- Load Application Status ---
-        async function loadApplicationStatus() {
-            const res = await fetch('/api/user/application_status');
-            const data = await res.json();
-            const area = document.getElementById('applications-area');
-            area.innerHTML = '';
-            
-            if (data.success && data.applications.length > 0) {
-                data.applications.forEach(a => {
-                    let statusColor = '#0f9b8e', statusIcon = 'clock';
-                    if (a.status === 'Selected') { statusColor = '#28a745'; statusIcon = 'trophy'; }
-                    else if (a.status === 'Rejected') { statusColor = '#dc3545'; statusIcon = 'times-circle'; }
-                    
-                    area.innerHTML += `<div class="job-card">
-                        <h3>${a.title}</h3>
-                        <p><i class="fas fa-building"></i> <b>${a.company_name}</b> | <i class="fas fa-map-marker-alt"></i> ${a.location || 'N/A'}</p>
-                        <p><i class="fas fa-${statusIcon}"></i> <b>Status:</b> <span style="color:${statusColor}; font-weight:bold;">${a.status}</span> | <i class="fas fa-calendar"></i> Applied: ${a.created_at}</p>
-                    <button class="apply-btn save-btn" style="background:#dc3545;" onclick="withdrawApplication(${a.id}, ${a.job_id})"><i class="fas fa-times"></i> Withdraw</button>
-                    </div>`;
-                });
-            } else {
-                area.innerHTML = '<p style="text-align:center; color:#666; padding:30px;"><i class="fas fa-file-alt" style="font-size:40px; color:#ddd;"></i><br><br>No applications yet. Start applying to jobs!</p>';
-            }
-        }
-
-        async function loadUserCategories() {
-            try {
-                const res = await fetch('/api/get_categories');
-                const data = await res.json();
-                if (!data.success) return;
+    async function loadCategories() {
+        try {
+            const res = await getReq('/api/get_categories');
+            if (res && res.success && res.categories) {
                 const sel = document.getElementById('search-category');
-                while (sel.options.length > 1) sel.remove(1);
-                data.categories.forEach(c => {
-                    const o = document.createElement('option');
-                    o.value = c.name; o.textContent = c.name;
-                    sel.appendChild(o);
-                });
-            } catch(e) {}
-        }
-
-        async function withdrawApplication(appId, jobId) {
-            if (!confirm('Withdraw this application?')) return;
-            const res = await postReq('/api/withdraw_application', { app_id: appId });
-            if (res.success) {
-                showToast('Application withdrawn', 'success');
-                if (jobId) appliedJobIds.delete(String(jobId));
-                loadApplicationStatus();
-            } else showToast(res.message || 'Error', 'error');
-        }
-
-        // --- Apply Job Modal ---
-        function openApplyModal(jobId) {
-            currentJobId = jobId;
-            document.getElementById('applicationForm').reset();
-            document.getElementById('exp-fields').style.display = 'none';
-            loadUserProfile();
-            document.getElementById('applyModal').classList.add('active');
-        }
-
-        function closeApplyModal() {
-            document.getElementById('applyModal').classList.remove('active');
-        }
-
-        function toggleExpFields(val) {
-            document.getElementById('exp-fields').style.display = (val === 'Experienced') ? 'grid' : 'none';
-        }
-
-        // --- Submit Application ---
-        async function submitApplication(e) {
-            e.preventDefault();
-            let formData = new FormData();
-            formData.append('job_id', currentJobId);
-            formData.append('name', document.getElementById('mod-name').value);
-            formData.append('email', document.getElementById('mod-email').value);
-            formData.append('mobile', document.getElementById('mod-mobile').value);
-            formData.append('qualification', document.getElementById('mod-qual').value);
-            formData.append('college', document.getElementById('mod-college').value);
-            formData.append('yop', document.getElementById('mod-yop').value);
-            formData.append('exp_level', document.getElementById('mod-exp-level').value);
-            formData.append('yoe', document.getElementById('mod-yoe').value);
-            formData.append('prev_company', document.getElementById('mod-prev-company').value);
-            formData.append('skills', document.getElementById('mod-skills').value);
-            formData.append('curr_loc', document.getElementById('mod-curr-loc').value);
-            formData.append('pref_loc', document.getElementById('mod-pref-loc').value);
-            formData.append('salary', document.getElementById('mod-salary').value);
-            formData.append('cover', document.getElementById('mod-cover').value);
-            
-            let resumeFile = document.getElementById('mod-resume').files[0];
-            if (resumeFile) formData.append('resume', resumeFile);
-
-            const response = await fetch('/api/apply_job', { method: 'POST', body: formData });
-            const res = await response.json();
-            
-            if (res.success) {
-                showToast('Application Submitted Successfully!', 'success');
-                appliedJobIds.add(String(currentJobId));
-                closeApplyModal();
-                searchJobs();
-            } else {
-                showToast(res.message || 'Error submitting application', 'error');
-            }
-        }
-
-        // --- Resume Upload & Smart Matching ---
-        document.getElementById('resumeInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            document.getElementById('fileName').innerHTML = file ? `<i class="fas fa-file"></i> ${file.name}` : 'Click to upload your resume';
-        });
-
-        async function matchResume() {
-            let fileInput = document.getElementById('resumeInput');
-            if (fileInput.files.length === 0) {
-                showToast('Please select a resume file first', 'warning');
-                return;
-            }
-            
-            let formData = new FormData();
-            formData.append("resume", fileInput.files[0]);
-            
-            const area = document.getElementById('match-area');
-            area.innerHTML = '<p style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin" style="font-size:30px;"></i><br><br>Analyzing your resume and matching with jobs...</p>';
-            
-            try {
-                const response = await fetch('/api/upload_resume', { method: 'POST', body: formData });
-                const res = await response.json();
-                
-                if (res.success) {
-                    // Show extracted skills
-                    const skillsDiv = document.getElementById('extracted-skills');
-                    const skillsTags = document.getElementById('skills-tags');
-                    skillsDiv.style.display = 'block';
-                    skillsTags.innerHTML = res.skills.map(s => `<span class="match-score">${s}</span>`).join(' ');
-                    
-                    showToast(`Found ${res.jobs.length} matching jobs based on your skills!`, 'success');
-                    displayMatches(res.jobs);
-                } else {
-                    area.innerHTML = `<p style="text-align:center; color:#dc3545;">${res.message || 'Error analyzing resume'}</p>`;
+                if (sel) {
+                    res.categories.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.name;
+                        opt.textContent = c.name;
+                        sel.appendChild(opt);
+                    });
                 }
-            } catch(e) {
-                area.innerHTML = '<p style="text-align:center; color:#dc3545;">Error connecting to server</p>';
             }
+        } catch(e) {}
+    }
+
+    async function loadCareerPerformance() {
+        const viewsEl = document.getElementById('stat-resume-views');
+        const rateEl = document.getElementById('stat-interview-rate');
+        if (!viewsEl || !rateEl) return;
+
+        try {
+            const res = await getReq('/api/user/profile_views');
+            if (res && res.success) {
+                // 1. Resume Visibility
+                if (res.distinct_views > 0) {
+                    viewsEl.textContent = res.view_count_display || `${res.distinct_views} Compan${res.distinct_views === 1 ? 'y' : 'ies'}`;
+                    document.getElementById('stat-resume-views-sub').textContent = 
+                        `${res.total_views} total profile view${res.total_views === 1 ? '' : 's'} across ${res.distinct_views} distinct employer${res.distinct_views === 1 ? '' : 's'}.`;
+                    
+                    const toggleBtn = document.getElementById('btn-toggle-viewers');
+                    const badgeCount = document.getElementById('viewer-count-badge');
+                    if (toggleBtn && badgeCount) {
+                        toggleBtn.style.display = 'flex';
+                        badgeCount.textContent = res.views.length;
+                    }
+                    renderViewersList(res.views);
+                } else {
+                    viewsEl.textContent = 'No views yet';
+                    document.getElementById('stat-resume-views-sub').textContent = 'Recruiters have not viewed your profile yet. Apply to more jobs to increase visibility.';
+                    const toggleBtn = document.getElementById('btn-toggle-viewers');
+                    if (toggleBtn) toggleBtn.style.display = 'none';
+                    const container = document.getElementById('viewers-list-container');
+                    if (container) container.style.display = 'none';
+                }
+
+                // 2. Interview Invite Rate
+                if (res.has_enough_application_data) {
+                    rateEl.textContent = res.interview_invite_rate_display || `${res.interview_invite_rate}%`;
+                    rateEl.style.fontSize = '2rem';
+                    document.getElementById('stat-interview-rate-sub').textContent = 
+                        `${res.interview_count} of ${res.total_applications} submitted applications resulted in interview or selection.`;
+                    document.getElementById('stat-interview-rate-meta').textContent = 
+                        'Calculated from your verified application lifecycle.';
+                } else {
+                    rateEl.textContent = 'Not enough data yet';
+                    rateEl.style.fontSize = '1.35rem';
+                    document.getElementById('stat-interview-rate-sub').textContent = 
+                        `You have submitted ${res.total_applications || 0} application${res.total_applications === 1 ? '' : 's'}.`;
+                    document.getElementById('stat-interview-rate-meta').textContent = 
+                        'Requires 3+ job applications to calculate meaningful interview conversion rate.';
+                }
+            }
+        } catch (e) {
+            console.error('Error loading career performance metrics:', e);
+            if (viewsEl) viewsEl.textContent = 'No views yet';
+            if (rateEl) rateEl.textContent = 'Not enough data yet';
+        }
+    }
+
+    function renderViewersList(views) {
+        const container = document.getElementById('viewers-list-container');
+        if (!container) return;
+        if (!views || views.length === 0) {
+            container.innerHTML = '<div style="font-size:0.8125rem; color:var(--color-text-muted); padding:8px 0;">No viewer details available.</div>';
+            return;
         }
 
-        function displayMatches(jobs) {
-            const area = document.getElementById('match-area');
-            if (jobs.length === 0) {
-                area.innerHTML = '<p style="text-align:center; color:#666;">No matching jobs found. Try updating your resume with more skills.</p>';
-                return;
-            }
-            
-            area.innerHTML = `<h3 style="margin-bottom:15px;"><i class="fas fa-lightbulb"></i> Recommended Jobs (${jobs.length})</h3>`;
-            jobs.forEach(j => {
-                let scoreClass = 'match-low';
-                if (j.score >= 70) scoreClass = 'match-high';
-                else if (j.score >= 40) scoreClass = 'match-medium';
-                
-                area.innerHTML += `<div class="job-card">
-                    <h3>${j.title} <span class="match-score ${scoreClass}"><i class="fas fa-percentage"></i> ${j.score}% Match</span></h3>
-                    <p><i class="fas fa-building"></i> <b>${j.company_name}</b> | <i class="fas fa-map-marker-alt"></i> ${j.location || 'N/A'} | <i class="fas fa-briefcase"></i> ${j.job_type || ''} | <i class="fas fa-globe"></i> ${j.work_mode || ''}</p>
-                    <p><i class="fas fa-money-bill"></i> <b>Salary:</b> ${j.salary || (j.salary_min && j.salary_max ? j.salary_min + ' - ' + j.salary_max : 'Not Disclosed')}</p>
-                    <button class="apply-btn" onclick="openApplyModal(${j.id})"><i class="fas fa-paper-plane"></i> Apply Now</button>
-                </div>`;
-            });
-        }
-    </script>
-</body>
+        container.innerHTML = views.map(v => `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:8px; border-radius:var(--radius-xs); background:rgba(255,255,255,0.02); margin-bottom:4px; border:1px solid var(--color-border-subtle);">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <i class="fas fa-building" style="color:var(--color-primary); font-size:0.85rem;"></i>
+                    <span style="font-weight:600; font-size:0.8125rem; color:var(--color-text);">${escapeHtml(v.company_name)}</span>
+                </div>
+                <span style="font-size:0.75rem; color:var(--color-text-muted);">${escapeHtml(v.viewed_at)}</span>
+            </div>
+        `).join('');
+    }
 
-</html>
+    function toggleViewersList() {
+        const container = document.getElementById('viewers-list-container');
+        const icon = document.getElementById('viewer-toggle-icon');
+        if (!container) return;
+        const isHidden = container.style.display === 'none';
+        container.style.display = isHidden ? 'block' : 'none';
+        if (icon) {
+            icon.className = isHidden ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+        }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadStats();
+        loadCategories();
+        loadRecommendations();
+        searchJobs();
+        loadCareerPerformance();
+    });
+</script>
+{% endblock %}

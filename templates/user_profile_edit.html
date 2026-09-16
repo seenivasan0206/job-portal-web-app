@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Profile Settings & Editor — HireVolt{% endblock %}
+
+{% block body %}
+<div class="app-container" style="padding-top:var(--space-6); padding-bottom:var(--space-12);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-5);">
+        <a href="/user_dashboard" class="btn btn-ghost btn-sm" style="padding-left:0;">
+            <i class="fas fa-arrow-left"></i> Return to Dashboard
+        </a>
+        <button type="button" class="btn btn-primary btn-sm" onclick="saveUserProfile()">
+            <i class="fas fa-save"></i> Save Profile
+        </button>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h1 class="card-title"><i class="fas fa-user-circle" style="color:var(--color-primary); margin-right:8px;"></i> Edit Candidate Profile</h1>
+        </div>
+
+        <form id="user-profile-form" onsubmit="event.preventDefault(); saveUserProfile();">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:var(--space-5);">
+                <div class="form-group">
+                    <label class="form-label form-label-required">Full Name</label>
+                    <input type="text" id="up-name" class="form-control" placeholder="John Doe" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label form-label-required">Headline</label>
+                    <input type="text" id="up-headline" class="form-control" placeholder="e.g. Senior Frontend Engineer" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email (Account Primary)</label>
+                    <input type="email" id="up-email" class="form-control" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Mobile</label>
+                    <input type="tel" id="up-mobile" class="form-control" placeholder="9876543210">
+                </div>
+
+                <div class="form-group" style="grid-column:1/-1;">
+                    <label class="form-label">Key Technical Skills</label>
+                    <input type="text" id="up-skills" class="form-control" placeholder="JavaScript, TypeScript, React, Next.js, Node.js">
+                </div>
+
+                <div class="form-group" style="grid-column:1/-1;">
+                    <label class="form-label">About / Bio</label>
+                    <textarea id="up-summary" class="form-control" rows="4" placeholder="Share your accomplishments and domain focus..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">LinkedIn URL</label>
+                    <input type="url" id="up-linkedin" class="form-control" placeholder="https://linkedin.com/in/username">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">GitHub URL</label>
+                    <input type="url" id="up-github" class="form-control" placeholder="https://github.com/username">
+                </div>
+
+                <div class="form-group" style="grid-column:1/-1;">
+                    <label class="form-label">Portfolio URL</label>
+                    <input type="url" id="up-portfolio" class="form-control" placeholder="https://portfolio.dev">
+                </div>
+            </div>
+
+            <div style="margin-top:var(--space-6); display:flex; justify-content:flex-end; gap:10px;">
+                <a href="/user_dashboard" class="btn btn-secondary">Cancel</a>
+                <button type="submit" id="btn-up-save" class="btn btn-primary btn-lg">Save Profile</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function initUserProfile() {
+        try {
+            const res = await getReq('/api/user/profile');
+            if (res && res.success && res.user) {
+                const u = res.user;
+                const p = res.profile || {};
+                document.getElementById('up-name').value = u.name || '';
+                document.getElementById('up-email').value = u.email || '';
+                document.getElementById('up-mobile').value = u.mobile || '';
+                document.getElementById('up-headline').value = p.headline || '';
+                document.getElementById('up-skills').value = p.skills || '';
+                document.getElementById('up-summary').value = p.summary || '';
+                document.getElementById('up-linkedin').value = p.linkedin_url || '';
+                document.getElementById('up-github').value = p.github_url || '';
+                document.getElementById('up-portfolio').value = p.portfolio_url || '';
+            }
+        } catch (e) { console.error('initUserProfile error:', e); }
+    }
+
+    async function saveUserProfile() {
+        const name = document.getElementById('up-name').value.trim();
+        const headline = document.getElementById('up-headline').value.trim();
+        const mobile = document.getElementById('up-mobile').value.trim();
+        const skills = document.getElementById('up-skills').value.trim();
+        const summary = document.getElementById('up-summary').value.trim();
+        const linkedin_url = document.getElementById('up-linkedin').value.trim();
+        const github_url = document.getElementById('up-github').value.trim();
+        const portfolio_url = document.getElementById('up-portfolio').value.trim();
+
+        if (!name) { showToast('Name is required.', 'error'); return; }
+
+        const btn = document.getElementById('btn-up-save');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+        const res = await postReq('/api/user/profile', {
+            name, headline, mobile, skills, summary,
+            linkedin_url, github_url, portfolio_url
+        });
+
+        btn.disabled = false;
+        btn.innerHTML = 'Save Profile';
+
+        if (res.success) {
+            showToast('Profile saved successfully!', 'success');
+            setTimeout(() => window.location.href = '/user_dashboard', 1000);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', initUserProfile);
+</script>
+{% endblock %}

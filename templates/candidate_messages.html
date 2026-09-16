@@ -1,0 +1,711 @@
+{% extends "base.html" %}
+
+{% block title %}Messages & Recruiter Inbox — HireVolt{% endblock %}
+
+{% block extra_head %}
+<style>
+    .messaging-layout {
+        display: grid;
+        grid-template-columns: 340px 1fr;
+        min-height: calc(100vh - var(--navbar-height) - 120px);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-card);
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+    }
+    .conversations-sidebar {
+        border-right: 1px solid var(--color-border);
+        background: var(--color-surface-alt);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        max-height: calc(100vh - var(--navbar-height) - 120px);
+    }
+    .conversations-search-box {
+        padding: var(--space-4);
+        border-bottom: 1px solid var(--color-border);
+    }
+    .conversations-scroll {
+        overflow-y: auto;
+        flex: 1;
+    }
+    .conversation-card {
+        padding: var(--space-3) var(--space-4);
+        border-bottom: 1px solid var(--color-border-subtle);
+        cursor: pointer;
+        transition: background 0.15s ease;
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+    }
+    .conversation-card:hover {
+        background: rgba(255, 255, 255, 0.04);
+    }
+    .conversation-card.active {
+        background: rgba(6, 182, 212, 0.1);
+        border-left: 3px solid #06B6D4;
+    }
+    .conversation-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: var(--radius-md);
+        background: linear-gradient(135deg, rgba(6,182,212,0.2), rgba(37,99,235,0.2));
+        border: 1px solid rgba(6,182,212,0.3);
+        color: #38BDF8;
+        font-weight: 700;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .conversation-meta {
+        flex: 1;
+        min-width: 0;
+    }
+    .conversation-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 3px;
+    }
+    .conversation-name {
+        font-size: var(--font-size-sm);
+        font-weight: 700;
+        color: var(--color-text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .conversation-time {
+        font-size: 11px;
+        color: var(--color-text-muted);
+        flex-shrink: 0;
+    }
+    .conversation-snippet-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 6px;
+    }
+    .conversation-snippet {
+        font-size: var(--font-size-xs);
+        color: var(--color-text-secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
+        flex: 1;
+    }
+    .conversation-badge {
+        background: #06B6D4;
+        color: #0F172A;
+        font-weight: 800;
+        font-size: 10px;
+        min-width: 18px;
+        height: 18px;
+        border-radius: 9px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 5px;
+    }
+    .chat-thread-pane {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        max-height: calc(100vh - var(--navbar-height) - 120px);
+        background: var(--color-surface);
+    }
+    .chat-thread-header {
+        padding: var(--space-4) var(--space-6);
+        border-bottom: 1px solid var(--color-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--color-surface-alt);
+        flex-shrink: 0;
+    }
+    .chat-thread-body {
+        flex: 1;
+        padding: var(--space-6);
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+    }
+    .chat-bubble {
+        max-width: 72%;
+        padding: 10px 14px;
+        border-radius: 12px;
+        font-size: var(--font-size-sm);
+        line-height: 1.45;
+        position: relative;
+        word-break: break-word;
+    }
+    .chat-bubble-out {
+        align-self: flex-end;
+        background: linear-gradient(135deg, #0284C7, #2563EB);
+        color: #FFFFFF;
+        border-bottom-right-radius: 2px;
+    }
+    .chat-bubble-in {
+        align-self: flex-start;
+        background: var(--color-surface-alt);
+        color: var(--color-text);
+        border: 1px solid var(--color-border);
+        border-bottom-left-radius: 2px;
+    }
+    .chat-bubble-meta {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 4px;
+        font-size: 10px;
+        margin-top: 4px;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    .chat-bubble-in .chat-bubble-meta {
+        color: var(--color-text-muted);
+    }
+    .chat-date-divider {
+        align-self: center;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--color-text-muted);
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--color-border-subtle);
+        padding: 3px 12px;
+        border-radius: 10px;
+        margin: var(--space-2) 0;
+    }
+    .chat-thread-footer {
+        padding: var(--space-3) var(--space-5);
+        border-top: 1px solid var(--color-border);
+        background: var(--color-surface-alt);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+    .chat-input-row {
+        display: flex;
+        align-items: flex-end;
+        gap: var(--space-3);
+    }
+    .chat-textarea {
+        flex: 1;
+        resize: none;
+        max-height: 120px;
+        min-height: 44px;
+        padding: 10px 14px;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        color: var(--color-text);
+        font-family: inherit;
+        font-size: var(--font-size-sm);
+        line-height: 1.4;
+    }
+    .chat-textarea:focus {
+        outline: none;
+        border-color: #06B6D4;
+        box-shadow: 0 0 0 2px rgba(6,182,212,0.2);
+    }
+    .chat-empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: var(--color-text-muted);
+        text-align: center;
+        padding: var(--space-8);
+    }
+    @media (max-width: 768px) {
+        .messaging-layout {
+            grid-template-columns: 1fr;
+        }
+        .conversations-sidebar.hidden-mobile {
+            display: none;
+        }
+        .chat-thread-pane.hidden-mobile {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="app-container" style="padding-top:var(--space-6); padding-bottom:var(--space-10);">
+    <!-- Header -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-5);">
+        <div>
+            <h1 style="font-size:var(--font-size-2xl); font-weight:800; margin-bottom:2px; display:flex; align-items:center; gap:8px;">
+                <i class="fas fa-comments" style="color:#06B6D4;"></i> Messages & Recruiter Inbox
+            </h1>
+            <p style="font-size:var(--font-size-sm); color:var(--color-text-secondary); margin:0;">
+                Direct, confidential messaging with employers and talent partners.
+            </p>
+        </div>
+        <div style="display:flex; gap:var(--space-2);">
+            <a href="/user_dashboard" class="btn btn-ghost btn-sm">
+                <i class="fas fa-arrow-left"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- 2-Pane Messaging UI -->
+    <div class="messaging-layout">
+        <!-- Left Conversations Sidebar -->
+        <div class="conversations-sidebar" id="conversations-sidebar">
+            <div class="conversations-search-box">
+                <div class="search-input-wrapper" style="position:relative;">
+                    <i class="fas fa-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--color-text-muted); font-size:12px;"></i>
+                    <input type="text" id="conv-search" class="form-control" placeholder="Search conversations..." style="padding-left:34px; font-size:var(--font-size-xs);" oninput="filterConversations()">
+                </div>
+            </div>
+
+            <div class="conversations-scroll" id="conversations-list">
+                <div style="padding:var(--space-8); text-align:center; color:var(--color-text-muted);">
+                    <i class="fas fa-circle-notch fa-spin fa-2x"></i>
+                    <p style="margin-top:8px; font-size:var(--font-size-xs);">Loading conversations...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Active Chat Thread -->
+        <div class="chat-thread-pane" id="chat-thread-pane">
+            <!-- Header (populated dynamically) -->
+            <div class="chat-thread-header" id="thread-header" style="display:none;">
+                <div style="display:flex; align-items:center; gap:var(--space-3);">
+                    <button class="btn btn-ghost btn-sm d-md-none" onclick="showConversationsListMobile()" style="padding:4px 8px; margin-right:4px;">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <div class="conversation-avatar" id="active-participant-avatar">TC</div>
+                    <div>
+                        <div style="font-weight:700; font-size:var(--font-size-sm); color:var(--color-text);" id="active-participant-name">Employer Name</div>
+                        <div style="display:flex; align-items:center; gap:6px; font-size:var(--font-size-xs); color:var(--color-text-muted);">
+                            <span id="active-job-tag" class="badge" style="background:rgba(6,182,212,0.15); color:#38BDF8; font-size:10px; display:none;">Job</span>
+                            <span id="active-status-dot" style="display:inline-flex; align-items:center; gap:3px; color:#22C55E; font-size:10px;">
+                                <i class="fas fa-circle" style="font-size:6px;"></i> Connected
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div style="display:flex; gap:6px;">
+                    <button type="button" class="btn btn-ghost btn-sm btn-icon" title="Refresh Thread" onclick="refreshActiveThread()">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Thread Messages Scroll Body -->
+            <div class="chat-thread-body" id="chat-thread-body">
+                <div class="chat-empty-state" id="thread-empty-state">
+                    <div style="width:56px; height:56px; border-radius:50%; background:rgba(6,182,212,0.1); display:flex; align-items:center; justify-content:center; margin-bottom:12px; color:#06B6D4; font-size:24px;">
+                        <i class="fas fa-envelope-open-text"></i>
+                    </div>
+                    <h3 style="font-size:var(--font-size-base); font-weight:700; margin-bottom:4px; color:var(--color-text);">Select a Conversation</h3>
+                    <p style="font-size:var(--font-size-xs); max-width:280px; margin:0;">
+                        Choose a conversation from the sidebar to view message history and reply in real time.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Thread Compose Footer -->
+            <div class="chat-thread-footer" id="thread-footer" style="display:none;">
+                <div class="chat-input-row">
+                    <textarea id="chat-msg-input" class="chat-textarea" placeholder="Type your message here... (Press Enter to send, Shift+Enter for new line)" rows="1" maxlength="2000" onkeydown="handleInputKeydown(event)" oninput="handleInputResize(this)"></textarea>
+                    <button type="button" class="btn btn-primary" id="btn-send-message" style="height:44px; padding:0 18px;" onclick="sendActiveMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:10px; color:var(--color-text-muted); padding:0 2px;">
+                    <span><i class="fas fa-shield-alt" style="color:#06B6D4;"></i> End-to-end authorized and moderated</span>
+                    <span id="char-counter">0 / 2000</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let allConversations = [];
+    let activeConversationId = {{ initial_conversation_id or 'null' }};
+    let lastFetchedMessageId = 0;
+    let pollInterval = null;
+    let isPolling = false;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const convParam = urlParams.get('conversation_id');
+        const empParam = urlParams.get('employer_id');
+        const jobParam = urlParams.get('job_id');
+
+        if (convParam) {
+            activeConversationId = parseInt(convParam, 10);
+        }
+
+        if (empParam && !activeConversationId) {
+            startOrOpenWithEmployer(parseInt(empParam, 10), jobParam ? parseInt(jobParam, 10) : null);
+        } else {
+            loadConversations(activeConversationId);
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                stopPolling();
+            } else if (activeConversationId) {
+                startPolling();
+                pollNewMessages();
+            }
+        });
+    });
+
+    async function loadConversations(autoSelectId = null) {
+        try {
+            const res = await fetch('/api/conversations', { credentials: 'same-origin' });
+            if (!res.ok) throw new Error('Failed to load');
+            const data = await res.json();
+            if (data.success) {
+                allConversations = data.conversations || [];
+                renderConversationsList(allConversations);
+
+                if (autoSelectId) {
+                    selectConversation(autoSelectId);
+                } else if (allConversations.length > 0 && window.innerWidth > 768) {
+                    selectConversation(allConversations[0].id);
+                }
+            }
+        } catch (err) {
+            document.getElementById('conversations-list').innerHTML = `
+                <div style="padding:var(--space-6); text-align:center; color:var(--color-text-muted);">
+                    <i class="fas fa-exclamation-triangle" style="color:var(--color-warning);"></i>
+                    <p style="margin-top:6px; font-size:var(--font-size-xs);">Unable to load conversations</p>
+                    <button class="btn btn-ghost btn-sm" onclick="loadConversations()">Retry</button>
+                </div>
+            `;
+        }
+    }
+
+    function renderConversationsList(convs) {
+        const container = document.getElementById('conversations-list');
+        if (!convs || convs.length === 0) {
+            container.innerHTML = `
+                <div style="padding:var(--space-8); text-align:center; color:var(--color-text-muted);">
+                    <i class="fas fa-inbox fa-2x" style="opacity:0.4;"></i>
+                    <p style="margin-top:8px; font-size:var(--font-size-xs);">No conversations yet.<br>Apply to jobs or message hiring teams to connect.</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        convs.forEach(c => {
+            const isActive = c.id === activeConversationId ? 'active' : '';
+            const unreadBadge = c.unread_count > 0 ? `<span class="conversation-badge">${c.unread_count}</span>` : '';
+            const jobBadge = c.job_title ? `<span style="font-size:10px; color:#38BDF8; margin-right:4px;">[${escapeHtml(c.job_title)}]</span>` : '';
+
+            html += `
+                <div class="conversation-card ${isActive}" id="conv-item-${c.id}" onclick="selectConversation(${c.id})">
+                    <div class="conversation-avatar">${escapeHtml(c.participant_initial || 'E')}</div>
+                    <div class="conversation-meta">
+                        <div class="conversation-title-row">
+                            <span class="conversation-name">${escapeHtml(c.participant_name)}</span>
+                            <span class="conversation-time">${escapeHtml(c.last_message_time || '')}</span>
+                        </div>
+                        <div class="conversation-snippet-row">
+                            <p class="conversation-snippet">${jobBadge}${escapeHtml(c.last_message || '')}</p>
+                            ${unreadBadge}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    function filterConversations() {
+        const q = (document.getElementById('conv-search').value || '').toLowerCase().trim();
+        if (!q) {
+            renderConversationsList(allConversations);
+            return;
+        }
+        const filtered = allConversations.filter(c => 
+            (c.participant_name && c.participant_name.toLowerCase().includes(q)) ||
+            (c.job_title && c.job_title.toLowerCase().includes(q)) ||
+            (c.last_message && c.last_message.toLowerCase().includes(q))
+        );
+        renderConversationsList(filtered);
+    }
+
+    async function startOrOpenWithEmployer(employerId, jobId = null) {
+        try {
+            const res = await fetch('/api/conversations/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify({ recipient_id: employerId, job_id: jobId })
+            });
+            const data = await res.json();
+            if (data.success && data.conversation_id) {
+                activeConversationId = data.conversation_id;
+                await loadConversations(activeConversationId);
+            } else {
+                loadConversations();
+            }
+        } catch (e) {
+            loadConversations();
+        }
+    }
+
+    async function selectConversation(convId) {
+        activeConversationId = convId;
+        lastFetchedMessageId = 0;
+
+        document.querySelectorAll('.conversation-card').forEach(el => el.classList.remove('active'));
+        const activeCard = document.getElementById(`conv-item-${convId}`);
+        if (activeCard) {
+            activeCard.classList.add('active');
+            const badge = activeCard.querySelector('.conversation-badge');
+            if (badge) badge.remove();
+        }
+
+        document.getElementById('thread-header').style.display = 'flex';
+        document.getElementById('thread-footer').style.display = 'flex';
+        const body = document.getElementById('chat-thread-body');
+        body.innerHTML = `
+            <div style="padding:var(--space-8); text-align:center; color:var(--color-text-muted);">
+                <i class="fas fa-circle-notch fa-spin fa-2x"></i>
+                <p style="margin-top:8px; font-size:var(--font-size-xs);">Loading message history...</p>
+            </div>
+        `;
+
+        if (window.innerWidth <= 768) {
+            document.getElementById('conversations-sidebar').classList.add('hidden-mobile');
+            document.getElementById('chat-thread-pane').classList.remove('hidden-mobile');
+        }
+
+        try {
+            const res = await fetch(`/api/conversations/${convId}`, { credentials: 'same-origin' });
+            if (!res.ok) throw new Error('Failed to load thread');
+            const data = await res.json();
+            if (data.success) {
+                renderThreadHeader(data.conversation);
+                renderThreadMessages(data.messages, false);
+                startPolling();
+                updateGlobalUnreadCount();
+            }
+        } catch (err) {
+            body.innerHTML = `
+                <div style="padding:var(--space-6); text-align:center; color:var(--color-error);">
+                    <i class="fas fa-exclamation-circle fa-2x"></i>
+                    <p style="margin-top:6px; font-size:var(--font-size-sm);">Failed to load conversation.</p>
+                </div>
+            `;
+        }
+    }
+
+    function renderThreadHeader(conv) {
+        document.getElementById('active-participant-name').textContent = conv.participant_name || 'Employer';
+        document.getElementById('active-participant-avatar').textContent = conv.participant_initial || 'E';
+        const jobTag = document.getElementById('active-job-tag');
+        if (conv.job_title) {
+            jobTag.textContent = `Job: ${conv.job_title}`;
+            jobTag.style.display = 'inline-block';
+        } else {
+            jobTag.style.display = 'none';
+        }
+    }
+
+    function renderThreadMessages(messages, appendOnly = false) {
+        const body = document.getElementById('chat-thread-body');
+        if (!appendOnly) {
+            body.innerHTML = '';
+        }
+
+        if (!messages || messages.length === 0) {
+            if (!appendOnly) {
+                body.innerHTML = `
+                    <div style="padding:var(--space-8); text-align:center; color:var(--color-text-muted);">
+                        <i class="fas fa-comments fa-2x" style="opacity:0.3; margin-bottom:8px;"></i>
+                        <p style="font-size:var(--font-size-xs);">This is the beginning of your conversation.<br>Send a message below to connect!</p>
+                    </div>
+                `;
+            }
+            return;
+        }
+
+        let lastDate = '';
+        const frag = document.createDocumentFragment();
+
+        messages.forEach(m => {
+            if (m.id > lastFetchedMessageId) {
+                lastFetchedMessageId = m.id;
+            }
+
+            if (m.date_str && m.date_str !== lastDate) {
+                lastDate = m.date_str;
+                const divDate = document.createElement('div');
+                divDate.className = 'chat-date-divider';
+                divDate.textContent = m.date_str;
+                frag.appendChild(divDate);
+            }
+
+            const bubble = document.createElement('div');
+            const isMe = m.is_me || m.sender_role === 'candidate';
+            bubble.className = `chat-bubble ${isMe ? 'chat-bubble-out' : 'chat-bubble-in'}`;
+            
+            const checkmark = isMe ? (m.is_read ? '<i class="fas fa-check-double" style="color:#38BDF8;" title="Read"></i>' : '<i class="fas fa-check" title="Sent"></i>') : '';
+            
+            bubble.innerHTML = `
+                <div>${escapeHtml(m.content)}</div>
+                <div class="chat-bubble-meta">
+                    <span>${escapeHtml(m.time_str || '')}</span>
+                    ${checkmark}
+                </div>
+            `;
+            frag.appendChild(bubble);
+        });
+
+        body.appendChild(frag);
+        body.scrollTop = body.scrollHeight;
+    }
+
+    async function sendActiveMessage() {
+        if (!activeConversationId) return;
+        const input = document.getElementById('chat-msg-input');
+        const text = input.value.trim();
+        if (!text) return;
+
+        const btn = document.getElementById('btn-send-message');
+        btn.disabled = true;
+
+        try {
+            const res = await fetch(`/api/conversations/${activeConversationId}/messages`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify({ content: text })
+            });
+            const data = await res.json();
+            if (data.success && data.message_data) {
+                input.value = '';
+                document.getElementById('char-counter').textContent = '0 / 2000';
+                input.style.height = '44px';
+                renderThreadMessages([data.message_data], true);
+                
+                const card = document.getElementById(`conv-item-${activeConversationId}`);
+                if (card) {
+                    const snippet = card.querySelector('.conversation-snippet');
+                    if (snippet) snippet.textContent = text;
+                    const timeEl = card.querySelector('.conversation-time');
+                    if (timeEl) timeEl.textContent = 'Just now';
+                }
+            } else {
+                alert(data.message || 'Failed to send message');
+            }
+        } catch (e) {
+            alert('Network error sending message.');
+        } finally {
+            btn.disabled = false;
+            input.focus();
+        }
+    }
+
+    async function pollNewMessages() {
+        if (!activeConversationId || isPolling || document.hidden) return;
+        isPolling = true;
+        try {
+            const url = `/api/conversations/${activeConversationId}?since_id=${lastFetchedMessageId}`;
+            const res = await fetch(url, { credentials: 'same-origin' });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success && data.messages && data.messages.length > 0) {
+                    renderThreadMessages(data.messages, true);
+                    updateGlobalUnreadCount();
+                }
+            }
+        } catch (e) {
+        } finally {
+            isPolling = false;
+        }
+    }
+
+    function startPolling() {
+        stopPolling();
+        pollInterval = setInterval(pollNewMessages, 4000);
+    }
+
+    function stopPolling() {
+        if (pollInterval) {
+            clearInterval(pollInterval);
+            pollInterval = null;
+        }
+    }
+
+    async function refreshActiveThread() {
+        if (activeConversationId) {
+            await selectConversation(activeConversationId);
+        }
+    }
+
+    function handleInputKeydown(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendActiveMessage();
+        }
+    }
+
+    function handleInputResize(el) {
+        el.style.height = 'auto';
+        el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+        document.getElementById('char-counter').textContent = `${el.value.length} / 2000`;
+    }
+
+    function showConversationsListMobile() {
+        document.getElementById('conversations-sidebar').classList.remove('hidden-mobile');
+        document.getElementById('chat-thread-pane').classList.add('hidden-mobile');
+    }
+
+    async function updateGlobalUnreadCount() {
+        try {
+            const res = await fetch('/api/messages/unread_count');
+            const data = await res.json();
+            if (data.success) {
+                const badge = document.getElementById('badge-messages');
+                if (badge) {
+                    if (data.unread_count > 0) {
+                        badge.textContent = data.unread_count;
+                        badge.style.display = 'inline-flex';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            }
+        } catch (e) {}
+    }
+
+    function getCsrfToken() {
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        return meta ? meta.getAttribute('content') : '';
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>"']/g, m => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[m]);
+    }
+</script>
+{% endblock %}

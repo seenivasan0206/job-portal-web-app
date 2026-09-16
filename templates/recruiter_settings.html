@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Recruiter Settings — HireVolt{% endblock %}
+
+{% block body %}
+<div class="app-container" style="padding-top:var(--space-6); padding-bottom:var(--space-12); max-width:880px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-6);">
+        <div>
+            <h1 style="font-size:var(--font-size-2xl); font-weight:800; margin-bottom:2px;">Recruiter Preferences & Settings</h1>
+            <p style="font-size:var(--font-size-sm); color:var(--color-text-secondary); margin:0;">Configure recruitment notifications, interview links, and password settings.</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+            <a href="/recruiter/notifications" class="btn btn-secondary btn-sm">
+                <i class="fas fa-bell"></i> Notifications
+            </a>
+            <a href="/employer_dashboard" class="btn btn-ghost btn-sm">
+                <i class="fas fa-arrow-left"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Recruiter Notification Preferences Card -->
+    <div class="card" style="margin-bottom:var(--space-6);">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 class="card-title" style="margin:0;"><i class="fas fa-bell" style="color:var(--color-primary); margin-right:8px;"></i> Recruitment Alerts & Triggers</h2>
+            <span class="badge" style="background:rgba(2, 132, 199, 0.1); color:#0284C7; font-size:0.75rem; font-weight:700;">Hiring Ops</span>
+        </div>
+        <p style="font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:var(--space-5);">
+            Manage real-time alerts for applicants, candidate direct messages, and interview schedule tracking.
+        </p>
+
+        <form id="rec-notif-prefs-form" onsubmit="event.preventDefault(); saveRecNotificationPreferences();">
+            <div style="display:flex; flex-direction:column; gap:var(--space-4); margin-bottom:var(--space-6);">
+                <label style="display:flex; align-items:flex-start; gap:12px; padding:14px; background:var(--color-surface, #F8FAFC); border:1px solid var(--color-border, #E2E8F0); border-radius:10px; cursor:pointer;">
+                    <input type="checkbox" id="rec-pref-application_updates" name="application_updates" checked style="width:18px; height:18px; margin-top:2px;">
+                    <div>
+                        <div style="font-weight:700; font-size:var(--font-size-sm);">New Applicant Notifications 📄</div>
+                        <div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">Real-time alerts whenever a candidate submits an application for your postings.</div>
+                    </div>
+                </label>
+
+                <label style="display:flex; align-items:flex-start; gap:12px; padding:14px; background:var(--color-surface, #F8FAFC); border:1px solid var(--color-border, #E2E8F0); border-radius:10px; cursor:pointer;">
+                    <input type="checkbox" id="rec-pref-interview_reminders" name="interview_reminders" checked style="width:18px; height:18px; margin-top:2px;">
+                    <div>
+                        <div style="font-weight:700; font-size:var(--font-size-sm);">Interview Reminders & Status Changes ⏰</div>
+                        <div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">Automated schedule notifications, candidate acceptances, and 1-hour pre-call reminders.</div>
+                    </div>
+                </label>
+
+                <label style="display:flex; align-items:flex-start; gap:12px; padding:14px; background:var(--color-surface, #F8FAFC); border:1px solid var(--color-border, #E2E8F0); border-radius:10px; cursor:pointer;">
+                    <input type="checkbox" id="rec-pref-messages" name="messages" checked style="width:18px; height:18px; margin-top:2px;">
+                    <div>
+                        <div style="font-weight:700; font-size:var(--font-size-sm);">Candidate Direct Messages 💬</div>
+                        <div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">Instant notifications when candidates reply to your talent search or interview outreach.</div>
+                    </div>
+                </label>
+
+                <label style="display:flex; align-items:flex-start; gap:12px; padding:14px; background:var(--color-surface, #F8FAFC); border:1px solid var(--color-border, #E2E8F0); border-radius:10px; cursor:pointer;">
+                    <input type="checkbox" id="rec-pref-email_notifications" name="email_notifications" checked style="width:18px; height:18px; margin-top:2px;">
+                    <div>
+                        <div style="font-weight:700; font-size:var(--font-size-sm);">Email Notification Forwarding 📧</div>
+                        <div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">Receive summary copies at your registered company email address.</div>
+                    </div>
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-save me-1"></i> Save Recruiter Preferences</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function loadRecNotificationPreferences() {
+        try {
+            const res = await fetch('/api/notifications/preferences');
+            const data = await res.json();
+            if (data && data.success && data.preferences) {
+                const p = data.preferences;
+                const fields = ['application_updates', 'interview_reminders', 'messages', 'email_notifications'];
+                fields.forEach(f => {
+                    const el = document.getElementById(`rec-pref-${f}`);
+                    if (el && p[f] !== undefined) {
+                        el.checked = Boolean(p[f]);
+                    }
+                });
+            }
+        } catch (e) {
+            console.error('Error loading preferences:', e);
+        }
+    }
+
+    async function saveRecNotificationPreferences() {
+        const payload = {};
+        const fields = ['application_updates', 'interview_reminders', 'messages', 'email_notifications'];
+        fields.forEach(f => {
+            const el = document.getElementById(`rec-pref-${f}`);
+            if (el) payload[f] = el.checked;
+        });
+
+        try {
+            const csrfToken = document.querySelector('input[name="csrf_token"]')?.value || '';
+            const res = await fetch('/api/notifications/preferences', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.success) {
+                if (typeof showToast === 'function') showToast('Recruiter preferences saved successfully!', 'success');
+            } else {
+                if (typeof showToast === 'function') showToast(data.message || 'Failed to save preferences', 'error');
+            }
+        } catch (e) {
+            console.error('Error saving preferences:', e);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadRecNotificationPreferences();
+    });
+</script>
+{% endblock %}
