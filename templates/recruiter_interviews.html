@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Recruiter Interview Coordinator — HireVolt{% endblock %}
+{% block title %}Recruiter Interview Coordinator — HireVoltz{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -379,7 +379,7 @@
             </button>
         </div>
 
-        <div style="overflow-x:auto;">
+        <div class="d-none d-lg-block" style="overflow-x:auto;">
             <table class="interview-table">
                 <thead>
                     <tr>
@@ -400,6 +400,12 @@
                     </tr>
                 </tbody>
             </table>
+        </div>
+
+        <div id="recruiter-cards-body" class="d-lg-none" style="display:flex; flex-direction:column; gap:12px; margin-top:8px;">
+            <div style="text-align:center; padding:30px; color:var(--color-text-secondary);">
+                <i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i> Loading scheduled interviews...
+            </div>
         </div>
     </div>
 
@@ -637,6 +643,7 @@
 
     function renderRecruiterTable() {
         const tbody = document.getElementById('recruiter-table-body');
+        const cardsBody = document.getElementById('recruiter-cards-body');
         const todayStr = new Date().toISOString().split('T')[0];
 
         let filtered = recruiterInterviews;
@@ -651,74 +658,149 @@
         }
 
         if (!filtered.length) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="7" style="text-align:center; padding:45px; color:var(--color-text-secondary);">
-                        <i class="fas fa-calendar-alt" style="font-size:24px; opacity:0.4; margin-bottom:8px; display:block;"></i>
-                        No scheduled interviews found in this view. Click "Schedule Interview" above to propose a session.
-                    </td>
-                </tr>
+            const emptyHtml = `
+                <div style="text-align:center; padding:35px; color:var(--color-text-secondary); background:var(--color-surface-alt); border-radius:var(--radius-md); border:1px solid var(--color-border);">
+                    <i class="fas fa-calendar-alt" style="font-size:24px; opacity:0.4; margin-bottom:8px; display:block;"></i>
+                    No scheduled interviews found in this view. Click "Schedule Interview" above to propose a session.
+                </div>
             `;
+            if (tbody) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align:center; padding:45px; color:var(--color-text-secondary);">
+                            <i class="fas fa-calendar-alt" style="font-size:24px; opacity:0.4; margin-bottom:8px; display:block;"></i>
+                            No scheduled interviews found in this view. Click "Schedule Interview" above to propose a session.
+                        </td>
+                    </tr>
+                `;
+            }
+            if (cardsBody) cardsBody.innerHTML = emptyHtml;
             return;
         }
 
-        tbody.innerHTML = filtered.map(iv => {
-            const st = (iv.status || 'Scheduled').toLowerCase();
-            let badgeClass = 'status-badge-pending';
-            if (st === 'accepted' || st === 'scheduled') badgeClass = 'status-badge-accepted';
-            else if (st === 'completed') badgeClass = 'status-badge-completed';
-            else if (st === 'cancelled' || st === 'declined') badgeClass = 'status-badge-cancelled';
+        if (tbody) {
+            tbody.innerHTML = filtered.map(iv => {
+                const st = (iv.status || 'Scheduled').toLowerCase();
+                let badgeClass = 'status-badge-pending';
+                if (st === 'accepted' || st === 'scheduled') badgeClass = 'status-badge-accepted';
+                else if (st === 'completed') badgeClass = 'status-badge-completed';
+                else if (st === 'cancelled' || st === 'declined') badgeClass = 'status-badge-cancelled';
 
-            return `
-                <tr>
-                    <td>
-                        <div style="font-weight:700; color:var(--color-text);">${escapeHtml(iv.candidate_name)}</div>
-                        <div style="font-size:11px; color:var(--color-text-muted);">${escapeHtml(iv.candidate_email)}</div>
-                    </td>
-                    <td>
-                        <div style="font-weight:600; color:var(--color-text);">${escapeHtml(iv.job_title)}</div>
-                        <div style="font-size:11px; color:var(--color-primary);">${escapeHtml(iv.interview_title)}</div>
-                    </td>
-                    <td>
-                        <div style="font-weight:600; color:var(--color-text);">
-                            <i class="fas fa-calendar-alt" style="color:#06B6D4; margin-right:4px;"></i> ${escapeHtml(iv.scheduled_date_display)}
+                return `
+                    <tr>
+                        <td>
+                            <div style="font-weight:700; color:var(--color-text);">${escapeHtml(iv.candidate_name)}</div>
+                            <div style="font-size:11px; color:var(--color-text-muted);">${escapeHtml(iv.candidate_email)}</div>
+                        </td>
+                        <td>
+                            <div style="font-weight:600; color:var(--color-text);">${escapeHtml(iv.job_title)}</div>
+                            <div style="font-size:11px; color:var(--color-primary);">${escapeHtml(iv.interview_title)}</div>
+                        </td>
+                        <td>
+                            <div style="font-weight:600; color:var(--color-text);">
+                                <i class="fas fa-calendar-alt" style="color:#06B6D4; margin-right:4px;"></i> ${escapeHtml(iv.scheduled_date_display)}
+                            </div>
+                            <div style="font-size:11px; color:var(--color-text-muted);">${escapeHtml(iv.scheduled_time_display)} IST</div>
+                        </td>
+                        <td>${iv.duration_minutes}m</td>
+                        <td>
+                            ${iv.meeting_link ? `
+                                <a href="${escapeHtml(iv.meeting_link)}" target="_blank" rel="noopener noreferrer" class="badge badge-primary" style="font-size:11px; display:inline-flex; align-items:center; gap:4px;">
+                                    <i class="fas fa-video"></i> Open Meeting
+                                </a>
+                            ` : `<span style="color:var(--color-text-muted); font-size:11px;">Not Added</span>`}
+                        </td>
+                        <td>
+                            <span class="badge ${badgeClass}" style="text-transform:capitalize; padding:2px 8px; font-size:11px;">
+                                ${escapeHtml(iv.status)}
+                            </span>
+                        </td>
+                        <td style="text-align:right;">
+                            <div style="display:inline-flex; gap:6px;">
+                                <a href="/interview/${iv.id}/calendar.ics" class="btn btn-ghost btn-sm" title="Download Calendar Invite (.ics)" style="padding:4px 8px;">
+                                    <i class="fas fa-calendar-plus" style="color:#06B6D4;"></i>
+                                </a>
+                                ${(st !== 'completed' && st !== 'cancelled' && st !== 'declined') ? `
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="openRescheduleModal(${iv.id}, '${escapeHtml(iv.candidate_name)}', '${escapeHtml(iv.scheduled_date)}', '${escapeHtml(iv.scheduled_time)}', ${iv.duration_minutes}, '${escapeHtml(iv.meeting_link)}')" title="Reschedule" style="padding:4px 8px;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="openCompleteModal(${iv.id})" title="Mark Completed" style="padding:4px 8px; background:#10B981; border-color:#10B981;">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="cancelRecruiterInterview(${iv.id})" title="Cancel Interview" style="padding:4px 8px; color:#EF4444;">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        if (cardsBody) {
+            cardsBody.innerHTML = filtered.map(iv => {
+                const st = (iv.status || 'Scheduled').toLowerCase();
+                let badgeClass = 'status-badge-pending';
+                if (st === 'accepted' || st === 'scheduled') badgeClass = 'status-badge-accepted';
+                else if (st === 'completed') badgeClass = 'status-badge-completed';
+                else if (st === 'cancelled' || st === 'declined') badgeClass = 'status-badge-cancelled';
+
+                return `
+                    <div style="background:var(--color-surface-alt); border:1px solid var(--color-border); border-radius:var(--radius-card); padding:16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                            <div>
+                                <div style="font-weight:700; font-size:15px; color:var(--color-text);">${escapeHtml(iv.candidate_name)}</div>
+                                <div style="font-size:12px; color:var(--color-text-muted);">${escapeHtml(iv.candidate_email)}</div>
+                            </div>
+                            <span class="badge ${badgeClass}" style="text-transform:capitalize; padding:3px 8px; font-size:11px;">
+                                ${escapeHtml(iv.status)}
+                            </span>
                         </div>
-                        <div style="font-size:11px; color:var(--color-text-muted);">${escapeHtml(iv.scheduled_time_display)} IST</div>
-                    </td>
-                    <td>${iv.duration_minutes}m</td>
-                    <td>
-                        ${iv.meeting_link ? `
-                            <a href="${escapeHtml(iv.meeting_link)}" target="_blank" rel="noopener noreferrer" class="badge badge-primary" style="font-size:11px; display:inline-flex; align-items:center; gap:4px;">
-                                <i class="fas fa-video"></i> Open Meeting
-                            </a>
-                        ` : `<span style="color:var(--color-text-muted); font-size:11px;">Not Added</span>`}
-                    </td>
-                    <td>
-                        <span class="badge ${badgeClass}" style="text-transform:capitalize; padding:2px 8px; font-size:11px;">
-                            ${escapeHtml(iv.status)}
-                        </span>
-                    </td>
-                    <td style="text-align:right;">
-                        <div style="display:inline-flex; gap:6px;">
-                            <a href="/interview/${iv.id}/calendar.ics" class="btn btn-ghost btn-sm" title="Download Calendar Invite (.ics)" style="padding:4px 8px;">
-                                <i class="fas fa-calendar-plus" style="color:#06B6D4;"></i>
-                            </a>
-                            ${(st !== 'completed' && st !== 'cancelled' && st !== 'declined') ? `
-                                <button type="button" class="btn btn-secondary btn-sm" onclick="openRescheduleModal(${iv.id}, '${escapeHtml(iv.candidate_name)}', '${escapeHtml(iv.scheduled_date)}', '${escapeHtml(iv.scheduled_time)}', ${iv.duration_minutes}, '${escapeHtml(iv.meeting_link)}')" title="Reschedule" style="padding:4px 8px;">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button type="button" class="btn btn-primary btn-sm" onclick="openCompleteModal(${iv.id})" title="Mark Completed" style="padding:4px 8px; background:#10B981; border-color:#10B981;">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                                <button type="button" class="btn btn-secondary btn-sm" onclick="cancelRecruiterInterview(${iv.id})" title="Cancel Interview" style="padding:4px 8px; color:#EF4444;">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            ` : ''}
+
+                        <div style="background:var(--color-surface); border:1px solid var(--color-border-subtle); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:12px;">
+                            <div style="font-weight:600; font-size:13px; color:var(--color-primary);">${escapeHtml(iv.job_title)}</div>
+                            <div style="font-size:12px; color:var(--color-text-secondary); margin-top:2px;">${escapeHtml(iv.interview_title)}</div>
                         </div>
-                    </td>
-                </tr>
-            `;
-        }).join('');
+
+                        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; font-size:12px;">
+                            <span class="emp-job-chip">
+                                <i class="fas fa-calendar-alt" style="color:#06B6D4;"></i> ${escapeHtml(iv.scheduled_date_display)}
+                            </span>
+                            <span class="emp-job-chip">
+                                <i class="fas fa-clock" style="color:#F59E0B;"></i> ${escapeHtml(iv.scheduled_time_display)} IST (${iv.duration_minutes}m)
+                            </span>
+                        </div>
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-top:1px solid var(--color-border); padding-top:12px;">
+                            <div>
+                                ${iv.meeting_link ? `
+                                    <a href="${escapeHtml(iv.meeting_link)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" style="font-size:12px; padding:6px 12px;">
+                                        <i class="fas fa-video"></i> Join
+                                    </a>
+                                ` : `<span style="font-size:11px; color:var(--color-text-muted);">No link</span>`}
+                            </div>
+                            <div style="display:flex; gap:6px;">
+                                <a href="/interview/${iv.id}/calendar.ics" class="btn btn-secondary btn-sm" title="Calendar (.ics)" style="font-size:12px; padding:6px 10px;">
+                                    <i class="fas fa-calendar-plus" style="color:#06B6D4;"></i>
+                                </a>
+                                ${(st !== 'completed' && st !== 'cancelled' && st !== 'declined') ? `
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="openRescheduleModal(${iv.id}, '${escapeHtml(iv.candidate_name)}', '${escapeHtml(iv.scheduled_date)}', '${escapeHtml(iv.scheduled_time)}', ${iv.duration_minutes}, '${escapeHtml(iv.meeting_link)}')" title="Reschedule" style="font-size:12px; padding:6px 10px;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="openCompleteModal(${iv.id})" title="Mark Completed" style="font-size:12px; padding:6px 10px; background:#10B981; border-color:#10B981;">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="cancelRecruiterInterview(${iv.id})" title="Cancel" style="font-size:12px; padding:6px 10px; color:#EF4444;">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
     }
 
     async function openScheduleModal() {

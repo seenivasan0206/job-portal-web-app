@@ -52,7 +52,7 @@ def check_port_connectivity(host, port, timeout=5):
 
 def test_smtp_send():
     print("=" * 70)
-    print("HireVolt SMTP Diagnostic Tool")
+    print("HireVoltz SMTP Diagnostic Tool")
     print("=" * 70)
     print(f"SMTP Host:         {SMTP_HOST}")
     print(f"STARTTLS Port:     {SMTP_PORT_STARTTLS}")
@@ -73,12 +73,12 @@ def test_smtp_send():
 
     msg = EmailMessage()
     msg.set_content(
-        f"This is a diagnostic test email from HireVolt Job Portal.\n\n"
+        f"This is a diagnostic test email from HireVoltz Job Portal.\n\n"
         f"Timestamp: {os.times()}\n"
         f"Sender: {EMAIL_ADDRESS}\n\n"
         f"If you received this, your email configuration is working correctly."
     )
-    msg['Subject'] = "HireVolt SMTP Diagnostic Test"
+    msg['Subject'] = "HireVoltz SMTP Diagnostic Test"
     msg['From'] = EMAIL_ADDRESS
     msg['To'] = recipient
 
@@ -159,7 +159,7 @@ def test_smtp_send():
             print("  1. Go to https://myaccount.google.com/security")
             print("  2. Ensure 2-Step Verification is ON.")
             print("  3. Search for 'App passwords'.")
-            print("  4. Generate a new App Password named 'HireVolt'.")
+            print("  4. Generate a new App Password named 'HireVoltz'.")
             print("  5. Copy the 16-character code into EMAIL_PASSWORD in .env (without spaces).")
         elif has_conn_err:
             print("\n* DIAGNOSIS: Outbound SMTP Ports Blocked / Network Timeout")

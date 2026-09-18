@@ -1,5 +1,5 @@
 """
-HireVolt - Comprehensive Skill Assessment Tests Data & Question Bank
+HireVoltz - Comprehensive Skill Assessment Tests Data & Question Bank
 Contains 121 standardized skill assessments across 9 technical and business domains.
 """
 

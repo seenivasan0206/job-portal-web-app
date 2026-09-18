@@ -24,9 +24,9 @@ def test_export_data_authenticated_candidate_success(client):
         cur.execute(
             "INSERT INTO user (name, email, password) VALUES (%s, %s, %s) "
             "ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id)",
-            ('GDPR Test User', 'gdpr_test@hirevolt.com', 'hashedpassword')
+            ('GDPR Test User', 'gdpr_test@hirevoltz.com', 'hashedpassword')
         )
-        cur.execute("SELECT id FROM user WHERE email = 'gdpr_test@hirevolt.com'")
+        cur.execute("SELECT id FROM user WHERE email = 'gdpr_test@hirevoltz.com'")
         user_id = cur.fetchone()['id']
 
     with client.session_transaction() as sess:
@@ -52,7 +52,7 @@ def test_export_data_authenticated_candidate_success(client):
 def test_export_data_resilience_on_table_query_failure(client, caplog):
     """Verify that if individual table queries fail, export degrades gracefully with empty list and logs warning."""
     with db_cursor() as cur:
-        cur.execute("SELECT id FROM user WHERE email = 'gdpr_test@hirevolt.com'")
+        cur.execute("SELECT id FROM user WHERE email = 'gdpr_test@hirevoltz.com'")
         row = cur.fetchone()
         user_id = row['id'] if row else 1
 

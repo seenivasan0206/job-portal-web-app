@@ -1,8 +1,8 @@
-# job-portal-web-app
+# HireVoltz — Next-Gen AI Career & Job Portal Platform
 
 ## Project Overview
 
-SecureHire is a web-based job portal application designed to connect job seekers and employers through a simple and efficient platform. The system includes user authentication with OTP-based email verification to enhance security during registration and login.
+HireVoltz is an enterprise-grade web-based job portal application designed to connect job seekers and employers through a fast, modern, and highly secure platform.
 
 The application allows users to create accounts, explore job opportunities, and manage their profiles, while employers can manage job-related functionalities through a dedicated dashboard.
 

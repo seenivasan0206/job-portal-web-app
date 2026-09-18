@@ -1,10 +1,83 @@
 {% extends "base.html" %}
 
-{% block title %}Employer Settings — HireVolt{% endblock %}
+{% block extra_head %}
+<style>
+    .emp-settings-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-6);
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .emp-settings-layout {
+        display: grid;
+        grid-template-columns: 240px 1fr;
+        gap: var(--space-6);
+        align-items: flex-start;
+    }
+    .emp-settings-layout > * {
+        min-width: 0;
+        max-width: 100%;
+    }
+    @media (max-width: 991px) {
+        .emp-settings-layout {
+            grid-template-columns: 1fr;
+            gap: var(--space-4);
+        }
+        .emp-settings-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+        .emp-settings-header h1 {
+            font-size: clamp(1.35rem, 5vw, 1.75rem);
+        }
+        .emp-settings-header .btn {
+            align-self: flex-start;
+            min-height: 44px;
+        }
+        .emp-settings-nav-card {
+            padding: 8px !important;
+            overflow: hidden;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .emp-settings-nav-card .sidebar-nav {
+            display: flex;
+            flex-direction: row;
+            overflow-x: auto;
+            gap: 8px;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        .emp-settings-nav-card .sidebar-nav::-webkit-scrollbar {
+            display: none;
+        }
+        .emp-settings-nav-card .sidebar-link {
+            white-space: nowrap;
+            padding: 10px 16px;
+            border-radius: 8px;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.875rem;
+        }
+        .emp-settings-layout input.form-control {
+            font-size: 16px !important;
+            min-height: 44px;
+        }
+        .emp-settings-layout button[type="submit"] {
+            width: 100%;
+            min-height: 48px;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block body %}
 <div class="app-container" style="padding-top:var(--space-6); padding-bottom:var(--space-12);">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-6);">
+    <div class="emp-settings-header">
         <div>
             <h1 style="font-size:var(--font-size-2xl); font-weight:800; margin-bottom:2px;">Employer Account Settings</h1>
             <p style="font-size:var(--font-size-sm); color:var(--color-text-secondary); margin:0;">Manage company profile, notification preferences, and team credentials.</p>
@@ -14,8 +87,8 @@
         </a>
     </div>
 
-    <div style="display:grid; grid-template-columns:240px 1fr; gap:var(--space-6); align-items:flex-start;">
-        <div class="card" style="padding:var(--space-3);">
+    <div class="emp-settings-layout">
+        <div class="card emp-settings-nav-card" style="padding:var(--space-3);">
             <nav class="sidebar-nav">
                 <a href="#company" onclick="openEmpTab('company'); return false;" id="etab-company" class="sidebar-link active">
                     <i class="fas fa-building"></i> Company Info

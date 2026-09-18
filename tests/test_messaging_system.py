@@ -1,7 +1,7 @@
 """
 test_messaging_system.py
 ========================
-Comprehensive automated test suite for HireVolt Candidate <-> Employer Messaging System:
+Comprehensive automated test suite for HireVoltz Candidate <-> Employer Messaging System:
 1. Schema & conversation initialization.
 2. Bidirectional messaging round-trip.
 3. Conversation history & timestamps.

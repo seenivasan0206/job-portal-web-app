@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Skill Assessment Marketplace & Verified Badges (90+ Skills) — HireVolt{% endblock %}
+{% block title %}Skill Assessment Marketplace & Verified Badges (90+ Skills) — HireVoltz{% endblock %}
 
 {% block body %}
 <div class="app-container" style="padding-top:var(--space-8); padding-bottom:var(--space-16);">
@@ -174,7 +174,7 @@
     </div>
 
     <!-- Assessment Cards Grid -->
-    <div id="assessments-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:var(--space-6);">
+    <div id="assessments-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap:var(--space-6);">
         {% for test in assessments %}
         {% set att = user_attempts.get(test.id) %}
         <div class="card assessment-card" 
@@ -381,6 +381,29 @@
     @media (max-width: 768px) {
         #domain-scroll-hint {
             display: inline-flex !important;
+        }
+
+        #assessments-grid,
+        #assessment-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 14px !important;
+        }
+
+        .assessment-card {
+            padding: 16px !important;
+            border-radius: 14px !important;
+        }
+
+        .assessment-card .btn {
+            min-height: 44px;
+            font-size: 13px !important;
+        }
+    }
+
+    @media (max-width: 575px) {
+        #assessments-grid,
+        #assessment-grid {
+            grid-template-columns: 1fr !important;
         }
     }
 </style>

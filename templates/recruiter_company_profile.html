@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Recruiter Company Profile — HireVolt{% endblock %}
+{% block title %}Recruiter Company Profile — HireVoltz{% endblock %}
 
 {% block body %}
 <div class="app-container" style="padding-top:var(--space-6); padding-bottom:var(--space-12);">
@@ -109,7 +109,7 @@
             <div class="modal-body" style="padding:0;">
                 <h3 id="verif-modal-title" style="font-size:1.25rem; font-weight:700; color:#FFFFFF; margin-bottom:6px;">Request Employer Verification</h3>
                 <p style="font-size:0.85rem; color:#94A3B8; margin-bottom:20px; line-height:1.5;">
-                    Submit your company details for review by HireVolt moderators. You can optionally attach proof of registration (GST, Certificate of Incorporation, etc.).
+                    Submit your company details for review by HireVoltz moderators. You can optionally attach proof of registration (GST, Certificate of Incorporation, etc.).
                 </p>
 
                 <form id="verif-form" onsubmit="event.preventDefault(); submitVerificationRequest();">
@@ -161,7 +161,7 @@
                 badge.innerHTML = '<i class="fas fa-check-circle"></i> Verified Employer';
                 icon.style.background = 'rgba(16, 185, 129, 0.15)';
                 icon.style.color = '#10B981';
-                desc.textContent = e.verified_at_formatted ? `Your organization was verified on ${e.verified_at_formatted}.` : 'Your organization has been reviewed and verified by HireVolt.';
+                desc.textContent = e.verified_at_formatted ? `Your organization was verified on ${e.verified_at_formatted}.` : 'Your organization has been reviewed and verified by HireVoltz.';
                 if (btn) btn.style.display = 'none';
             } else if (e.verification_status === 'pending') {
                 badge.className = 'badge badge-warning';

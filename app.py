@@ -43,7 +43,7 @@ from resume_intelligence.ml.similarity_model import compute_semantic_similarity,
 from assessment_data import ASSESSMENTS_DATA, seed_assessments_db
 from salary_data import (
     seed_salary_benchmarks, ROLES_BY_CATEGORY, ALL_JOB_ROLES,
-    ALL_LOCATIONS, EXPERIENCE_BANDS, INDUSTRIES
+    ALL_LOCATIONS, LOCATION_METADATA, EXPERIENCE_BANDS, INDUSTRIES
 )
 from job_recommendation_engine import (
     normalize_skill, match_skill_lists,
@@ -2031,7 +2031,7 @@ def init_admin_user():
                 cur.execute("""
                     INSERT INTO user (name, email, password, is_admin, is_verified, profile_visibility)
                     VALUES (%s, %s, %s, TRUE, TRUE, 'private')
-                """, ('HireVolt Admin', admin_email, generate_password_hash(admin_password)))
+                """, ('HireVoltz Admin', admin_email, generate_password_hash(admin_password)))
                 logger.info(f"Auto-provisioned default admin account: {admin_email}")
             else:
                 if not row.get('is_admin'):
@@ -2235,7 +2235,7 @@ def safe_check_company_website(url_raw):
 
     # Lightweight HTTP check with short timeout
     try:
-        headers = {'User-Agent': 'HireVolt-TrustAuditor/1.0 (+https://hirevolt.com)'}
+        headers = {'User-Agent': 'HireVoltz-TrustAuditor/1.0 (+https://hirevoltz.com)'}
         resp = requests.head(url, headers=headers, timeout=2.5, allow_redirects=True, stream=True)
         if resp.status_code == 405:
             resp = requests.get(url, headers=headers, timeout=2.5, allow_redirects=True, stream=True)
@@ -3080,7 +3080,7 @@ def api_send_otp():
 
     try:
         msg = EmailMessage()
-        msg.set_content(f"""HireVolt - Verification Code
+        msg.set_content(f"""HireVoltz - Verification Code
 
 Dear User,
 
@@ -3093,8 +3093,8 @@ This code is valid for the next 2 minutes. Please do not share this code with an
 If you did not request this, please ignore this email.
 
 Best regards,
-HireVolt Team""")
-        msg['Subject'] = "Your Verification Code - HireVolt"
+HireVoltz Team""")
+        msg['Subject'] = "Your Verification Code - HireVoltz"
         msg['From'] = EMAIL_ADDRESS
         msg['To'] = email
 
@@ -4321,6 +4321,8 @@ def api_user_stats():
     with db_cursor() as cursor:
         cursor.execute("SELECT COUNT(*) AS cnt FROM applications WHERE user_id = %s", (uid,))
         total_apps = cursor.fetchone()['cnt']
+        cursor.execute("SELECT COUNT(*) AS cnt FROM applications WHERE user_id = %s AND LOWER(status) LIKE %s", (uid, '%shortlist%'))
+        total_shortlisted = cursor.fetchone()['cnt']
         cursor.execute("SELECT COUNT(*) AS cnt FROM saved_jobs WHERE user_id = %s", (uid,))
         total_saved = cursor.fetchone()['cnt']
         cursor.execute("SELECT COUNT(*) AS cnt FROM interviews WHERE candidate_id = %s AND status != 'Cancelled'", (uid,))
@@ -4331,6 +4333,7 @@ def api_user_stats():
     return jsonify({
         'success': True,
         'total_applications': total_apps,
+        'total_shortlisted': total_shortlisted,
         'total_saved': total_saved,
         'total_interviews': total_interviews,
         'profile_completeness': completeness_data['score'],
@@ -5959,6 +5962,34 @@ def api_employer_application_tags(app_id):
 # UNIFIED NOTIFICATIONS SYSTEM (CANDIDATE & EMPLOYER)
 # ==============================================================================
 
+# Notification category groupings for mobile & unified center
+NOTIFICATION_CATEGORY_MAP = {
+    'applications': ['application', 'application_submitted', 'application_status', 'shortlisted', 'shortlist', 'rejected', 'rejection'],
+    'interviews': ['interview', 'interview_scheduled', 'interview_reminder', 'interview_rescheduled', 'interview_cancelled'],
+    'jobs': ['job_alert', 'recommended_job', 'job', 'job_recommendation'],
+    'assessments': ['assessment', 'assessment_assigned', 'assessment_result', 'badge_earned'],
+    'messages': ['message', 'new_message', 'direct_message'],
+    'security': ['security', 'security_event', 'password_change', 'login_alert', 'lockout']
+}
+
+def get_notification_category_group(notif_type):
+    if not notif_type:
+        return 'general'
+    nt = str(notif_type).lower()
+    if any(k in nt for k in ('application', 'shortlist', 'reject')):
+        return 'applications'
+    if 'interview' in nt:
+        return 'interviews'
+    if any(k in nt for k in ('job', 'alert', 'recommend')):
+        return 'jobs'
+    if any(k in nt for k in ('assessment', 'badge', 'test')):
+        return 'assessments'
+    if 'message' in nt:
+        return 'messages'
+    if any(k in nt for k in ('security', 'password', 'lockout', 'login')):
+        return 'security'
+    return 'general'
+
 @app.route('/api/notifications', methods=['GET'])
 @app.route('/api/get_user_notifications', methods=['GET'])
 @app.route('/api/employer/notifications', methods=['GET'])
@@ -5967,8 +5998,8 @@ def api_employer_application_tags(app_id):
 def api_get_notifications():
     """
     Returns paginated notifications for current session.
-    Strictly isolates Candidate vs Employer notifications based on session keys.
-    Supports filtering by unread_only and notification_type.
+    Strictly isolates Candidate vs Employer vs Admin notifications based on session keys.
+    Supports filtering by unread_only and notification_type / group.
     """
     if 'user_id' not in session and 'employer_id' not in session:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
@@ -5977,8 +6008,9 @@ def api_get_notifications():
     limit = max(1, min(100, request.args.get('limit', 20, type=int) or 20))
     offset = (page - 1) * limit
     unread_only = request.args.get('unread_only', '').lower() in ('1', 'true', 'yes')
-    n_type = request.args.get('type', '').strip()
+    n_type = (request.args.get('type') or request.args.get('group') or '').strip().lower()
 
+    is_admin = bool(session.get('is_admin'))
     is_employer = 'employer_id' in session and 'user_id' not in session
     target_id = session['employer_id'] if is_employer else session['user_id']
     id_col = 'employer_id' if is_employer else 'user_id'
@@ -5989,8 +6021,29 @@ def api_get_notifications():
     if unread_only:
         where_clauses.append("is_read = 0")
     if n_type and n_type != 'all':
-        where_clauses.append("notification_type = %s")
-        params.append(n_type)
+        # Check if requested type is a category group or aliases
+        normalized_group = n_type
+        if normalized_group in ('application', 'applications'):
+            normalized_group = 'applications'
+        elif normalized_group in ('interview', 'interviews'):
+            normalized_group = 'interviews'
+        elif normalized_group in ('job', 'jobs'):
+            normalized_group = 'jobs'
+        elif normalized_group in ('assessment', 'assessments'):
+            normalized_group = 'assessments'
+        elif normalized_group in ('message', 'messages'):
+            normalized_group = 'messages'
+        elif normalized_group in ('security', 'security_event'):
+            normalized_group = 'security'
+
+        if normalized_group in NOTIFICATION_CATEGORY_MAP:
+            types_list = NOTIFICATION_CATEGORY_MAP[normalized_group]
+            placeholders = ','.join(['%s'] * len(types_list))
+            where_clauses.append(f"notification_type IN ({placeholders})")
+            params.extend(types_list)
+        else:
+            where_clauses.append("notification_type = %s")
+            params.append(n_type)
 
     where_sql = " WHERE " + " AND ".join(where_clauses)
 
@@ -6035,9 +6088,12 @@ def api_get_notifications():
         else:
             created_at_iso = None
 
+        category_group = get_notification_category_group(r.get('notification_type'))
+
         notifications.append({
             'id': r['id'],
             'notification_type': r.get('notification_type') or 'general',
+            'category_group': category_group,
             'title': r.get('title') or 'Notification',
             'message': r.get('message') or '',
             'action_url': r.get('action_url'),
@@ -6057,7 +6113,7 @@ def api_get_notifications():
         'page': page,
         'limit': limit,
         'pages': pages,
-        'role': 'employer' if is_employer else 'candidate'
+        'role': 'admin' if is_admin else ('employer' if is_employer else 'candidate')
     })
 
 
@@ -6296,7 +6352,7 @@ def trigger_job_alerts_for_job(job_id, job_title, company_name=None, location=No
                     user_id=uid,
                     notification_type='job_alert',
                     title=f"Job Alert: {job_title} 🔔",
-                    message=f"A new job '{job_title}' matching your alert was posted by '{company_name or 'HireVolt Partner'}'.",
+                    message=f"A new job '{job_title}' matching your alert was posted by '{company_name or 'HireVoltz Partner'}'.",
                     action_url=f"/jobs?search={job_title}"
                 )
                 notified_users.add(uid)
@@ -6886,10 +6942,10 @@ def employer_analytics():
         cursor.execute("""
             SELECT
                 COUNT(a.id) AS total_applicants,
-                SUM(CASE WHEN a.status='Selected' THEN 1 ELSE 0 END) AS selected,
+                SUM(CASE WHEN a.status IN ('Selected', 'Hired') THEN 1 ELSE 0 END) AS selected,
                 SUM(CASE WHEN a.status='Rejected' THEN 1 ELSE 0 END) AS rejected,
                 SUM(CASE WHEN a.status='Interview' THEN 1 ELSE 0 END) AS interviews,
-                SUM(CASE WHEN a.status='Shortlisted' THEN 1 ELSE 0 END) AS shortlisted
+                SUM(CASE WHEN a.status IN ('Shortlisted', 'Selected', 'Hired') THEN 1 ELSE 0 END) AS shortlisted
             FROM applications a JOIN jobs j ON a.job_id = j.id
             WHERE j.employer_id = %s
         """, (emp_id,))
@@ -6897,9 +6953,9 @@ def employer_analytics():
         cursor.execute("""
             SELECT j.id, j.title, j.category,
                 COUNT(a.id) AS total_applicants,
-                SUM(CASE WHEN a.status='Selected' THEN 1 ELSE 0 END) AS selected,
+                SUM(CASE WHEN a.status IN ('Selected', 'Hired') THEN 1 ELSE 0 END) AS selected,
                 SUM(CASE WHEN a.status='Interview' THEN 1 ELSE 0 END) AS interviews,
-                SUM(CASE WHEN a.status='Shortlisted' THEN 1 ELSE 0 END) AS shortlisted,
+                SUM(CASE WHEN a.status IN ('Shortlisted', 'Selected', 'Hired') THEN 1 ELSE 0 END) AS shortlisted,
                 SUM(CASE WHEN a.status='Rejected' THEN 1 ELSE 0 END) AS rejected
             FROM jobs j LEFT JOIN applications a ON j.id = a.job_id
             WHERE j.employer_id = %s
@@ -6923,6 +6979,7 @@ def employer_analytics():
         'shortlisted': shortlisted,
         'interviews': interviews,
         'selected': selected,
+        'hired': selected,
         'rejected': rejected,
         'totals': totals_dict,
         'per_job': per_job
@@ -8281,6 +8338,96 @@ def bad_request_handler(e):
 def companies_page():
     return render_template('companies.html')
 
+def parse_job_description_sections(job):
+    """
+    Decomposes job into structured sections: description, responsibilities, requirements,
+    skills, benefits, and company information for mobile hierarchy.
+    """
+    raw_desc = (job.get('description') or '').strip()
+    lines = [l.strip() for l in raw_desc.split('\n') if l.strip()]
+
+    sections = {
+        'overview': [],
+        'responsibilities': [],
+        'requirements': [],
+        'benefits': []
+    }
+
+    current_sec = 'overview'
+
+    resp_pat = re.compile(r'^(?:key\s+)?responsibilities|what\s+you(?:\'ll|\s+will)\s+do|duties|roles?\s+and\s+responsibilities', re.I)
+    req_pat = re.compile(r'^(?:minimum\s+|core\s+)?requirements|qualifications|what\s+you(?:\'ll|\s+will)\s+need|who\s+you\s+are|must\s+have', re.I)
+    ben_pat = re.compile(r'^(?:what\s+we\s+offer|benefits|perks|compensation\s+&\s+benefits)', re.I)
+
+    for line in lines:
+        cleaned = line.rstrip(':').strip()
+        if resp_pat.match(cleaned) and len(cleaned) < 50:
+            current_sec = 'responsibilities'
+            continue
+        elif req_pat.match(cleaned) and len(cleaned) < 50:
+            current_sec = 'requirements'
+            continue
+        elif ben_pat.match(cleaned) and len(cleaned) < 50:
+            current_sec = 'benefits'
+            continue
+
+        sections[current_sec].append(line)
+
+    overview_text = '\n'.join(sections['overview']).strip()
+    resp_text = '\n'.join(sections['responsibilities']).strip()
+    req_text = '\n'.join(sections['requirements']).strip()
+    ben_text = '\n'.join(sections['benefits']).strip()
+
+    # Smart fallbacks when sections are not explicitly separated in the raw text
+    if not overview_text:
+        overview_text = raw_desc or "Join our high-performing team to build impactful solutions and drive key business outcomes in this role."
+
+    if not resp_text:
+        resp_text = (
+            f"• Deliver high-impact deliverables aligned with the {job.get('title', 'role')} objectives.\n"
+            f"• Collaborate with cross-functional teams, engineering partners, and stakeholders.\n"
+            f"• Ensure quality execution, adherence to industry standards, and continuous improvement.\n"
+            f"• Own and execute end-to-end tasks with accountability and technical rigor."
+        )
+
+    if not req_text:
+        exp = job.get('experience') or 'Relevant industry experience'
+        edu = job.get('education') or 'Bachelor’s degree in a relevant field or equivalent practical experience'
+        req_text = (
+            f"• Experience: {exp}\n"
+            f"• Education: {edu}\n"
+            f"• Strong analytical and problem-solving capabilities.\n"
+            f"• Demonstrated track record of successful execution and proactive collaboration."
+        )
+
+    if not ben_text:
+        salary_str = job.get('salary') or job.get('salary_display') or 'Competitive compensation package'
+        work_mode = job.get('work_mode') or 'Flexible'
+        ben_text = (
+            f"• Compensation: {salary_str} with performance incentives.\n"
+            f"• Workplace: {work_mode} work model with modern digital infrastructure.\n"
+            f"• Comprehensive health and wellness coverage.\n"
+            f"• Paid time off, professional development opportunities, and career advancement tracks."
+        )
+
+    company_info = {
+        'name': job.get('company_name') or 'Verified Employer',
+        'industry': job.get('company_industry') or job.get('category') or 'Technology & Services',
+        'size': job.get('company_size') or '50-500 Employees',
+        'headquarters': job.get('company_location') or job.get('location') or 'Global Hub',
+        'website': job.get('company_website') or '',
+        'description': job.get('company_description') or f"{job.get('company_name', 'This employer')} is a forward-thinking organization committed to innovation, customer impact, and empowering employees."
+    }
+
+    return {
+        'description': overview_text,
+        'responsibilities': resp_text,
+        'requirements': req_text,
+        'benefits': ben_text,
+        'company_info': company_info
+    }
+
+
 @app.route('/job_details/<int:job_id>', strict_slashes=False)
 @app.route('/job-detail/<int:job_id>', strict_slashes=False)
 @app.route('/job_detail/<int:job_id>', strict_slashes=False)
@@ -8290,7 +8437,9 @@ def job_detail_page(job_id):
     with db_cursor() as cursor:
         cursor.execute("""
             SELECT j.*, e.company_name AS live_company_name, e.is_verified AS employer_is_verified,
-                   e.verification_status AS employer_verification_status
+                   e.verification_status AS employer_verification_status,
+                   e.company_website, e.industry AS company_industry, e.location AS company_location,
+                   e.company_size, e.description AS company_description
             FROM jobs j
             LEFT JOIN employee e ON j.employer_id = e.id
             WHERE j.id = %s
@@ -8310,6 +8459,9 @@ def job_detail_page(job_id):
         s_min = f"₹{job['salary_min']:,}" if job.get('salary_min') else ''
         s_max = f"₹{job['salary_max']:,}" if job.get('salary_max') else ''
         job['salary'] = f"{s_min} - {s_max}" if (s_min and s_max) else (s_min or s_max)
+
+    # Decompose job sections for mobile structured view
+    job_sections = parse_job_description_sections(job)
 
     # Check if current user is the employer who owns this job
     is_owner = False
@@ -8352,6 +8504,7 @@ def job_detail_page(job_id):
     return render_template(
         'job_detail.html',
         job=job,
+        job_sections=job_sections,
         is_owner=is_owner,
         is_expired=is_expired,
         applicant_count=applicant_count,
@@ -8414,6 +8567,7 @@ def salary_insights_page():
         roles_by_category=ROLES_BY_CATEGORY,
         all_roles=ALL_JOB_ROLES,
         all_locations=ALL_LOCATIONS,
+        location_metadata=LOCATION_METADATA,
         experience_bands=EXPERIENCE_BANDS,
         industries=INDUSTRIES
     )
@@ -8437,6 +8591,8 @@ def api_salary_insights():
     industry = data.get('industry', '').strip()
     search = data.get('search', '').strip()
     sort_by = data.get('sort_by', 'avg_desc')
+    min_salary = data.get('min_salary', '').strip()
+    max_salary = data.get('max_salary', '').strip()
 
     where_clauses = ["1=1"]
     params = []
@@ -8448,18 +8604,45 @@ def api_salary_insights():
         where_clauses.append("experience_level = %s")
         params.append(experience)
     if location:
-        where_clauses.append("location = %s")
-        params.append(location)
+        # Check if location matches known cities or a state/country group in LOCATION_METADATA
+        matched_locs = [k for k, meta in LOCATION_METADATA.items() if meta.get('state') == location or meta.get('country') == location]
+        if matched_locs and location not in ALL_LOCATIONS:
+            placeholders = ', '.join(['%s'] * len(matched_locs))
+            where_clauses.append(f"location IN ({placeholders})")
+            params.extend(matched_locs)
+        else:
+            where_clauses.append("location = %s")
+            params.append(location)
     if skill:
         where_clauses.append("primary_technology = %s")
         params.append(skill)
     if industry:
         where_clauses.append("industry = %s")
         params.append(industry)
+    if min_salary:
+        try:
+            min_val = float(min_salary)
+            if min_val > 0:
+                where_clauses.append("salary_avg >= %s")
+                params.append(min_val)
+        except (ValueError, TypeError):
+            pass
+    if max_salary:
+        try:
+            max_val = float(max_salary)
+            if max_val > 0:
+                where_clauses.append("salary_avg <= %s")
+                params.append(max_val)
+        except (ValueError, TypeError):
+            pass
     if search:
-        where_clauses.append("(job_role LIKE %s OR location LIKE %s OR primary_technology LIKE %s OR industry LIKE %s OR experience_level LIKE %s)")
-        like_term = f"%{search}%"
-        params.extend([like_term, like_term, like_term, like_term, like_term])
+        # Tokenize search query so multi-word searches (e.g. "python chennai", "data analyst bangalore")
+        # match across multiple fields rather than requiring a single column to contain the full string
+        tokens = [t.strip() for t in search.split() if t.strip()]
+        for tok in tokens:
+            where_clauses.append("(job_role LIKE %s OR location LIKE %s OR primary_technology LIKE %s OR industry LIKE %s OR experience_level LIKE %s)")
+            like_term = f"%{tok}%"
+            params.extend([like_term, like_term, like_term, like_term, like_term])
 
     where_sql = " AND ".join(where_clauses)
 
@@ -9563,6 +9746,22 @@ def candidate_settings_password():
 def candidate_settings_delete():
     if 'user_id' not in session: return redirect(url_for('index'))
     return render_template('candidate_settings.html')
+
+@app.route('/notifications')
+def general_notifications():
+    if session.get('is_admin'):
+        return render_template('notifications.html', role='admin')
+    elif 'employer_id' in session:
+        return render_template('notifications.html', role='employer')
+    elif 'user_id' in session:
+        return render_template('notifications.html', role='candidate')
+    return redirect(url_for('index'))
+
+@app.route('/admin/notifications')
+def admin_notifications():
+    if not session.get('is_admin'):
+        return redirect(url_for('admin_login_page'))
+    return render_template('notifications.html', role='admin')
 
 @app.route('/candidate/notifications')
 def candidate_notifications():
@@ -10782,11 +10981,11 @@ Interview Details:
 - Status: {new_status}
 - Notes: {notes or 'No additional notes provided.'}
 
-Manage your interviews on HireVolt Employer Portal:
+Manage your interviews on HireVoltz Employer Portal:
 {request.host_url}recruiter/interviews
 
 Best regards,
-HireVolt Talent Operations"""
+HireVoltz Talent Operations"""
 
     send_interview_email(interview['employer_email'], notify_subject, notify_body)
 
@@ -10997,7 +11196,7 @@ def api_recruiter_interview_schedule():
         interview_id = cursor.lastrowid
 
     # 4. Notify Candidate & Employer
-    company_name = (employer_row.get('company_name') if employer_row else None) or job.get('company_name') or 'HireVolt Verified Partner'
+    company_name = (employer_row.get('company_name') if employer_row else None) or job.get('company_name') or 'HireVoltz Verified Partner'
     notify_msg = f"New interview proposed: {title} with {company_name} for role {job['title']} on {scheduled_date} at {scheduled_time}."
     create_notification(
         user_id=candidate_id,
@@ -11029,11 +11228,11 @@ Interview Details:
 - Meeting Link: {meeting_link or 'Will be provided prior to call'}
 - Recruiter Notes: {notes or 'None'}
 
-Please accept or decline this invitation directly from your HireVolt Interview Dashboard:
+Please accept or decline this invitation directly from your HireVoltz Interview Dashboard:
 {request.host_url}candidate/interviews
 
 Best regards,
-{company_name} Recruitment Team & HireVolt Talent Ops"""
+{company_name} Recruitment Team & HireVoltz Talent Ops"""
 
     send_interview_email(candidate['email'], email_subject, email_body)
 
@@ -11120,7 +11319,7 @@ Updated Details:
 - Meeting Link: {meeting_link or iv.get('meeting_link') or 'Available on portal'}
 - Notes: {notes or 'None'}
 
-Please confirm this new time slot on your HireVolt Interview Dashboard:
+Please confirm this new time slot on your HireVoltz Interview Dashboard:
 {request.host_url}candidate/interviews
 
 Best regards,
@@ -11253,11 +11452,11 @@ def interview_calendar_ics(interview_id):
 
     ics_content = f"""BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//HireVolt//Interview Coordination System//EN
+PRODID:-//HireVoltz//Interview Coordination System//EN
 CALSCALE:GREGORIAN
 METHOD:REQUEST
 BEGIN:VEVENT
-UID:interview-{iv['id']}@hirevolt.internal
+UID:interview-{iv['id']}@hirevoltz.internal
 DTSTAMP:{dtstamp_str}
 DTSTART:{dtstart_str}
 DTEND:{dtend_str}
@@ -11369,7 +11568,7 @@ def recruiter_activity():
     return redirect(url_for('employer_dashboard'))
 
 # ==============================================================================
-# HIREVOLT UNIFIED ADMIN PANEL & COMPANY VERIFICATION CENTER
+# HIREVOLTZ UNIFIED ADMIN PANEL & COMPANY VERIFICATION CENTER
 # ==============================================================================
 
 # --- ADMIN AUTHENTICATION ENDPOINTS ---
@@ -11442,7 +11641,7 @@ def api_admin_login():
     # Establish clean, hardened admin session
     session.clear()
     session['user_id'] = user['id']
-    session['user_name'] = user['name'] or 'HireVolt Admin'
+    session['user_name'] = user['name'] or 'HireVoltz Admin'
     session['user_email'] = user['email']
     session['role'] = 'admin'
     session['is_admin'] = True
@@ -11534,7 +11733,7 @@ def api_admin_change_password():
 @app.route('/admin/settings')
 @admin_required
 def admin_dashboard_page(company_id=None, job_id=None, user_id=None):
-    """Renders the comprehensive HireVolt Admin Console & Verification Command Center."""
+    """Renders the comprehensive HireVoltz Admin Console & Verification Command Center."""
     return render_template('admin_dashboard.html')
 
 
@@ -11998,7 +12197,7 @@ def admin_company_verify_legacy(company_id):
     data = request.get_json(silent=True) or request.form.to_dict()
     data['status'] = 'verified'
     if not data.get('admin_note'):
-        data['admin_note'] = 'Approved by HireVolt trust team.'
+        data['admin_note'] = 'Approved by HireVoltz trust team.'
     # Reuse updated status handler
     with db_cursor(dictionary=False) as cur:
         cur.execute("UPDATE employee SET verification_status = 'verified', is_verified = 1, verified_at = NOW(), verification_notes = %s WHERE id = %s", (data['admin_note'], company_id))
@@ -12015,7 +12214,7 @@ def admin_company_verify_legacy(company_id):
 @admin_required
 def admin_company_reject_legacy(company_id):
     data = request.get_json(silent=True) or request.form.to_dict()
-    note = data.get('admin_note') or data.get('notes') or 'Rejected by HireVolt trust team.'
+    note = data.get('admin_note') or data.get('notes') or 'Rejected by HireVoltz trust team.'
     with db_cursor(dictionary=False) as cur:
         cur.execute("UPDATE employee SET verification_status = 'rejected', is_verified = 0, verification_notes = %s WHERE id = %s", (note, company_id))
         cur.execute("INSERT INTO company_verification_history (company_id, admin_id, previous_status, new_status, admin_note) VALUES (%s, %s, 'pending', 'rejected', %s)", (company_id, session.get('user_id'), note))
@@ -12041,7 +12240,7 @@ def api_admin_verify_company_legacy():
     status_map = {'approve': 'verified', 'reject': 'rejected', 'request_changes': 'unverified'}
     data['status'] = status_map.get(act, 'verified')
     if not data.get('admin_note') and not data.get('notes'):
-        data['admin_note'] = "Approved by HireVolt trust team." if act == 'approve' else "Rejected by HireVolt trust team."
+        data['admin_note'] = "Approved by HireVoltz trust team." if act == 'approve' else "Rejected by HireVoltz trust team."
     return api_admin_update_company_status(cid)
 
 
@@ -13073,7 +13272,7 @@ def api_interview_cancel(interview_id):
     return jsonify({'success': True, 'message': 'Interview cancelled'})
 
 # ==============================================================================
-# HIREVOLT CANDIDATE <-> EMPLOYER SECURE MESSAGING SYSTEM
+# HIREVOLTZ CANDIDATE <-> EMPLOYER SECURE MESSAGING SYSTEM
 # ==============================================================================
 
 def get_or_create_conversation(candidate_id, employer_id, job_id=None):

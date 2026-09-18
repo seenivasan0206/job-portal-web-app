@@ -503,6 +503,65 @@ def test_timing_telemetry_meta():
     print(f"[PASS] Timing telemetry meta verified: {meta}")
 
 
+def test_resume_intelligence_mobile_ui(client):
+    """
+    Verifies that the mobile UI elements for Resume Intelligence & ATS Benchmarking
+    are properly rendered, isolating mobile from desktop.
+    """
+    res = client.get('/resume_intelligence')
+    assert res.status_code == 200
+    html = res.get_data(as_text=True)
+
+    # 1. Desktop & Mobile containers
+    assert 'resume-desktop-view' in html
+    assert 'resume-mobile-view' in html
+
+    # 2. Large mobile-friendly upload dropzone & file status elements
+    assert 'id="mobile-dropzone"' in html
+    assert 'id="mobile-resume-file-input"' in html
+    assert 'id="mobile-file-badge"' in html
+    assert 'id="mobile-file-name"' in html
+    assert 'id="mobile-file-size"' in html
+    assert 'id="mobile-file-status"' in html
+    assert 'id="mobile-btn-remove-file"' in html
+
+    # 3. Optional Job Description textarea
+    assert 'Job Description (Optional)' in html
+    assert 'id="mobile-target-jd-input"' in html
+
+    # 4. Real 7-stage vertical progress interface
+    assert 'id="mobile-progress-card"' in html
+    assert 'Parsing your resume' in html
+    assert 'Analyzing your experience' in html
+    assert 'Extracting your skills' in html
+    assert 'Analyzing job description' in html
+    assert 'Matching skills' in html
+    assert 'Calculating ATS compatibility' in html
+    assert 'Generating recommendations' in html
+
+    # 5. Stacked score cards with expandable details
+    assert 'id="mscore-ats-val"' in html
+    assert 'id="mscore-jobmatch-card"' in html
+    assert 'id="mscore-jobmatch-val"' in html
+    assert 'id="mscore-quality-val"' in html
+    assert 'id="mscore-overall-val"' in html
+    assert 'mobile-score-accordion' in html
+
+    # 6. Issue cards container and Solution styling
+    assert 'id="mobile-issues-container"' in html
+    assert 'mobile-solution-box' in html
+
+    # 7. 6 Expandable Accordion sections
+    assert 'id="mobile-drawer-skills"' in html
+    assert 'id="mobile-drawer-experience"' in html
+    assert 'id="mobile-drawer-formatting"' in html
+    assert 'id="mobile-drawer-achievements"' in html
+    assert 'id="mobile-drawer-keywords"' in html
+    assert 'id="mobile-drawer-summary"' in html
+
+    print("\n[PASS] Resume Intelligence mobile UI elements verified successfully.")
+
+
 if __name__ == '__main__':
     pytest.main(['-s', __file__])
 

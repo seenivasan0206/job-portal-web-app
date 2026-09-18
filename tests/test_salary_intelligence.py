@@ -129,5 +129,74 @@ def test_api_salary_insights_sorting(client):
 
     print("[PASS] Server-side table sorting verified for avg_desc and avg_asc.")
 
+def test_api_multi_word_keyword_search(client):
+    """Verifies that multi-token keyword searches across columns return relevant results."""
+    test_queries = ['python chennai', 'data analyst bangalore', 'react remote', 'senior data']
+    for q in test_queries:
+        res = client.get(f'/api/salary_insights?search={q.replace(" ", "+")}')
+        assert res.status_code == 200
+        data = res.get_json()
+        assert data.get('success') is True
+        assert len(data['table_data']) > 0, f"Expected matches for multi-token query '{q}'"
+        print(f"  - Multi-word search '{q}' returned {len(data['table_data'])} matching records.")
+    print("[PASS] Multi-token keyword search successfully matches across multiple columns.")
+
+def test_api_min_max_salary_filter(client):
+    """Verifies minimum and maximum salary range filtering."""
+    # Min 15, Max 30
+    res = client.get('/api/salary_insights?min_salary=15&max_salary=30')
+    assert res.status_code == 200
+    data = res.get_json()
+    assert data.get('success') is True
+    assert len(data['table_data']) > 0
+    for item in data['table_data']:
+        assert 15.0 <= item['salary_avg'] <= 30.0, f"Record {item['job_role']} salary_avg {item['salary_avg']} out of bounds [15, 30]"
+
+    # Min 25 only
+    res2 = client.get('/api/salary_insights?min_salary=25')
+    assert res2.status_code == 200
+    data2 = res2.get_json()
+    assert data2.get('success') is True
+    for item in data2['table_data']:
+        assert item['salary_avg'] >= 25.0
+    print("[PASS] Min and Max salary range filtering successfully enforced.")
+
+def test_api_location_state_filtering(client):
+    """Verifies that selecting a state (e.g. Tamil Nadu, Karnataka) matches all cities in that state."""
+    res = client.get('/api/salary_insights?location=Tamil+Nadu')
+    assert res.status_code == 200
+    data = res.get_json()
+    assert data.get('success') is True
+    assert len(data['table_data']) > 0
+    locations = {x['location'] for x in data['table_data']}
+    assert 'Chennai' in locations or 'Coimbatore' in locations
+    print(f"[PASS] State-level location filtering returned records from: {locations}")
+
+def test_mobile_salary_ui_elements_in_html(client):
+    """Verifies the presence of mobile-specific search, autocomplete, and card elements in the template."""
+    res = client.get('/salary-insights')
+    assert res.status_code == 200
+    html = res.get_data(as_text=True)
+
+    # Mobile search controls
+    assert 'id="mobile-role-input"' in html
+    assert 'id="mobile-role-suggestions"' in html
+    assert 'id="mobile-location-input"' in html
+    assert 'id="mobile-location-suggestions"' in html
+    assert 'id="mobile-filter-experience"' in html
+    assert 'id="mobile-min-salary"' in html
+    assert 'id="mobile-max-salary"' in html
+    assert 'id="mobile-filter-skill"' in html
+    assert 'id="mobile-filter-search"' in html
+    assert 'id="salary-mobile-cards-list"' in html
+
+    # Responsive wrapper classes
+    assert 'salary-desktop-only' in html
+    assert 'salary-mobile-only' in html
+    assert 'salary-desktop-table-wrap' in html
+
+    print("[PASS] Mobile-friendly search interface and benchmark card stream confirmed in HTML.")
+
 if __name__ == '__main__':
     pytest.main(['-s', __file__])
+

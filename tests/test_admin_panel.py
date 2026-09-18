@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Comprehensive Integration Tests for HireVolt Unified Admin Panel & Company Verification Center.
+Comprehensive Integration Tests for HireVoltz Unified Admin Panel & Company Verification Center.
 
 Covers:
 1. Admin Provisioning & Authentication (Login, Logout, Access Control, Change Password)

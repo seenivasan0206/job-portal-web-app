@@ -14,24 +14,24 @@ def client():
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-def test_hirevolt_logo_exists():
-    large_logo = BASE_DIR / 'static' / 'images' / 'HireVolt_logo.png'
+def test_hirevoltz_logo_exists():
+    large_logo = BASE_DIR / 'static' / 'images' / 'HireVoltz_logo.png'
     assert large_logo.exists(), f"Logo file missing at {large_logo}"
     assert large_logo.stat().st_size > 0, "Logo file is empty"
 
 def test_base_template_branding():
     base_html = (BASE_DIR / 'templates' / 'base.html').read_text(encoding='utf-8')
-    assert "HireVolt" in base_html
-    assert "HireVolt_logo.png" in base_html
-    assert "2026 HireVolt Inc. All rights reserved." in base_html
+    assert "HireVoltz" in base_html
+    assert "HireVoltz_logo.png" in base_html
+    assert "2026 HireVoltz Inc. All rights reserved." in base_html
     assert "NexRole" not in base_html
     assert "DreamJobs" not in base_html
     assert "Dream Jobs" not in base_html
 
 def test_index_template_branding(client):
     index_html = (BASE_DIR / 'templates' / 'index.html').read_text(encoding='utf-8')
-    assert "HireVolt — Career Platform Built for Job Seekers" in index_html
-    assert "HireVolt uses AI to surface low-competition" in index_html
+    assert "HireVoltz — Career Platform Built for Job Seekers" in index_html
+    assert "HireVoltz uses AI to surface low-competition" in index_html
     assert "NexRole" not in index_html
     assert "DreamJobs" not in index_html
     assert "Dream Jobs" not in index_html
@@ -40,8 +40,8 @@ def test_index_template_branding(client):
     res = client.get('/')
     assert res.status_code == 200
     rendered = res.get_data(as_text=True)
-    assert "HireVolt_logo.png" in rendered
-    assert "2026 HireVolt Inc. All rights reserved." in rendered
+    assert "HireVoltz_logo.png" in rendered
+    assert "2026 HireVoltz Inc. All rights reserved." in rendered
     assert "NexRole" not in rendered
     assert "DreamJobs" not in rendered
     assert "Dream Jobs" not in rendered
@@ -59,11 +59,11 @@ def test_all_templates_free_of_old_branding():
 
 def test_app_email_and_system_notifications():
     app_py = (BASE_DIR / 'app.py').read_text(encoding='utf-8')
-    assert "Your Verification Code - HireVolt" in app_py
-    assert "HireVolt Team" in app_py
-    assert "HireVolt Talent Operations" in app_py
-    assert "HireVolt Verified Partner" in app_py
-    assert "HireVolt Interview Dashboard" in app_py
-    assert "PRODID:-//HireVolt//Interview Coordination System//EN" in app_py
-    assert "@hirevolt.internal" in app_py
-    assert "Approved by HireVolt trust team." in app_py
+    assert "Your Verification Code - HireVoltz" in app_py
+    assert "HireVoltz Team" in app_py
+    assert "HireVoltz Talent Operations" in app_py
+    assert "HireVoltz Verified Partner" in app_py
+    assert "HireVoltz Interview Dashboard" in app_py
+    assert "PRODID:-//HireVoltz//Interview Coordination System//EN" in app_py
+    assert "@hirevoltz.internal" in app_py
+    assert "Approved by HireVoltz trust team." in app_py

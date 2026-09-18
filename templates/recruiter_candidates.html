@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Talent Search & Candidate Matching — HireVolt{% endblock %}
+{% block title %}Talent Search & Candidate Matching — HireVoltz{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -48,9 +48,44 @@
             grid-template-columns: 1fr;
         }
     }
+    .recruiter-header-actions {
+        display: flex;
+        gap: var(--space-2);
+        flex-wrap: wrap;
+    }
     @media (max-width: 640px) {
         .filter-bar-grid {
             grid-template-columns: 1fr;
+        }
+        .recruiter-header-actions {
+            width: 100%;
+        }
+        .recruiter-header-actions .btn {
+            flex: 1 1 auto;
+            text-align: center;
+            justify-content: center;
+            font-size: 12px;
+            padding: 8px 10px;
+        }
+    }
+    @media (max-width: 767px) {
+        #candidates-list {
+            grid-template-columns: 1fr !important;
+            gap: var(--space-4) !important;
+        }
+        .candidate-card {
+            padding: var(--space-4) !important;
+        }
+        .score-metric-grid {
+            grid-template-columns: repeat(5, 1fr) !important;
+            padding: 6px 2px !important;
+            gap: 2px !important;
+        }
+        .score-metric-val {
+            font-size: 11px !important;
+        }
+        .score-metric-lbl {
+            font-size: 8px !important;
         }
     }
     .candidate-card {
@@ -63,6 +98,9 @@
         justify-content: space-between;
         transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
         box-shadow: var(--shadow-sm);
+        min-width: 0;
+        box-sizing: border-box;
+        max-width: 100%;
     }
     .candidate-card:hover {
         transform: translateY(-2px);
@@ -162,7 +200,7 @@
                 Select an active job opening to dynamically rank candidates with transparent multi-signal match scoring.
             </p>
         </div>
-        <div style="display:flex; gap:var(--space-2);">
+        <div class="recruiter-header-actions" style="display:flex; gap:var(--space-2); flex-wrap:wrap;">
             <a href="/recruiter_interviews" class="btn btn-secondary btn-sm">
                 <i class="fas fa-calendar-alt"></i> Interview Coordinator
             </a>
@@ -248,7 +286,7 @@
     </div>
 
     <!-- Candidates Grid Container -->
-    <div id="candidates-list" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(360px, 1fr)); gap:var(--space-5);">
+    <div id="candidates-list" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap:var(--space-5);">
         <div class="empty-state card" style="grid-column: 1 / -1; padding:var(--space-10); text-align:center;">
             <div class="empty-state-icon" style="font-size:2.5rem; color:var(--color-primary); margin-bottom:var(--space-3);"><i class="fas fa-briefcase"></i></div>
             <div class="empty-state-title" style="font-size:var(--font-size-lg); font-weight:700; margin-bottom:var(--space-2);">Select an active job opening to rank candidates</div>

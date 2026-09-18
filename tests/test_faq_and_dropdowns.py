@@ -8,9 +8,9 @@ def test_faq_accordion_markup_and_semantics():
     index_html = (BASE_DIR / 'templates' / 'index.html').read_text(encoding='utf-8')
 
     expected_questions = [
-        "How is HireVolt different from other platforms like Naukri or LinkedIn?",
-        "Is HireVolt free for job seekers?",
-        "Where do HireVolt job postings come from?",
+        "How is HireVoltz different from other platforms like Naukri or LinkedIn?",
+        "Is HireVoltz free for job seekers?",
+        "Where do HireVoltz job postings come from?",
         "How does CV match scoring help me get shortlisted?"
     ]
 

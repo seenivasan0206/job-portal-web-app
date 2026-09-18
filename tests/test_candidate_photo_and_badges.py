@@ -198,12 +198,12 @@ def test_project_with_url_crud(client, test_users):
     create_res = client.post('/api/candidate/profile/items', json={
         'section': 'projects',
         'title': 'AI Recruitment Engine',
-        'client_name': 'HireVolt Open Source',
+        'client_name': 'HireVoltz Open Source',
         'status': 'Completed',
         'role': 'Lead Fullstack Architect',
         'team_size': 3,
         'technology_tags': 'Python, Flask, MySQL, Redis',
-        'project_url': 'https://github.com/test/hirevolt-ai',
+        'project_url': 'https://github.com/test/hirevoltz-ai',
         'project_details': 'End-to-end recruitment matching intelligence system.'
     })
     assert create_res.status_code == 200
@@ -215,7 +215,7 @@ def test_project_with_url_crud(client, test_users):
         proj = cursor.fetchone()
         assert proj is not None
         assert proj['title'] == 'AI Recruitment Engine'
-        assert proj['project_url'] == 'https://github.com/test/hirevolt-ai'
+        assert proj['project_url'] == 'https://github.com/test/hirevoltz-ai'
 
     # 3. Retrieve via /api/candidate/profile/all
     all_res = client.get('/api/candidate/profile/all')
@@ -223,18 +223,18 @@ def test_project_with_url_crud(client, test_users):
     proj_list = all_res.get_json()['projects']
     found = [p for p in proj_list if p['id'] == item_id]
     assert len(found) == 1
-    assert found[0]['project_url'] == 'https://github.com/test/hirevolt-ai'
+    assert found[0]['project_url'] == 'https://github.com/test/hirevoltz-ai'
 
     # 4. Update project with modified URL
     update_res = client.post(f'/api/candidate/profile/items/{item_id}', json={
         'section': 'projects',
         'title': 'AI Recruitment Engine v2',
-        'client_name': 'HireVolt Open Source',
+        'client_name': 'HireVoltz Open Source',
         'status': 'Completed',
         'role': 'Lead Fullstack Architect',
         'team_size': 5,
         'technology_tags': 'Python, Flask, MySQL, Redis',
-        'project_url': 'https://hirevolt.example.com/demo',
+        'project_url': 'https://hirevoltz.example.com/demo',
         'project_details': 'Updated production deployment.'
     })
     assert update_res.status_code == 200
@@ -244,7 +244,7 @@ def test_project_with_url_crud(client, test_users):
         cursor.execute("SELECT project_url, title FROM projects WHERE id = %s", (item_id,))
         updated_proj = cursor.fetchone()
         assert updated_proj['title'] == 'AI Recruitment Engine v2'
-        assert updated_proj['project_url'] == 'https://hirevolt.example.com/demo'
+        assert updated_proj['project_url'] == 'https://hirevoltz.example.com/demo'
 
 
 def test_employer_candidate_inspection_includes_photo_and_project_url(client, test_users):

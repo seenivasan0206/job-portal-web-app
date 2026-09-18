@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ job.title or 'Job Details' }} — {{ job.company_name or 'HireVolt' }}{% endblock %}
+{% block title %}{{ job.title or 'Job Details' }} — {{ job.company_name or 'HireVoltz' }}{% endblock %}
 
 {% block extra_head %}
 {% if json_ld %}{{ json_ld|safe }}{% endif %}
@@ -19,6 +19,37 @@
             grid-template-columns: 1fr;
             gap: var(--space-6);
         }
+    }
+
+    @media (max-width: 767px) {
+        .job-detail-header-card {
+            padding: var(--space-4) !important;
+            border-radius: var(--radius-lg);
+        }
+        .job-detail-sidebar {
+            position: static;
+        }
+        .job-detail-mobile-sticky-bar {
+            display: flex !important;
+            position: fixed;
+            bottom: calc(62px + env(safe-area-inset-bottom, 0px));
+            left: 0;
+            right: 0;
+            background: rgba(11, 17, 32, 0.95);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 10px 16px;
+            z-index: 999;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
+        }
+    }
+
+    .job-detail-mobile-sticky-bar {
+        display: none;
     }
 
     .job-detail-header-card {
@@ -50,6 +81,236 @@
     .sidebar-info-row:last-child {
         border-bottom: none;
     }
+    /* MOBILE JOB DETAILS STYLES */
+    .job-detail-desktop-view {
+        display: block;
+    }
+    .job-detail-mobile-view {
+        display: none;
+    }
+
+    @media (max-width: 991px) {
+        .job-detail-desktop-view {
+            display: none !important;
+        }
+        .job-detail-mobile-view {
+            display: block !important;
+        }
+        .app-container {
+            /* Safe bottom padding so sticky bar never covers important content */
+            padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px)) !important;
+        }
+
+        /* Mobile Hero Card */
+        .mobile-job-hero-card {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 18px;
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+        .mobile-job-hero-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #f8fafc;
+            margin: 0 0 12px 0;
+            line-height: 1.3;
+            letter-spacing: -0.02em;
+        }
+        .mobile-job-hero-company {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #1e293b;
+        }
+        .mobile-job-hero-salary {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-bottom: 16px;
+        }
+        .mobile-salary-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #86efac;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .mobile-salary-number {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #34d399;
+        }
+        .mobile-job-hero-actions {
+            display: grid;
+            grid-template-columns: 1fr 48px;
+            gap: 10px;
+        }
+        .mobile-btn-apply-main {
+            height: 48px; /* High-touch ergonomic target */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #FF5E14, #FF7B1C);
+            color: #ffffff;
+            border: none;
+            box-shadow: 0 4px 14px rgba(255, 94, 20, 0.35);
+            cursor: pointer;
+        }
+        .mobile-btn-save-main {
+            width: 48px;
+            height: 48px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-size: 17px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #cbd5e1;
+            cursor: pointer;
+        }
+
+        /* Mobile Sections */
+        .mobile-job-sections-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .mobile-section-card {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+        }
+        .mobile-section-header {
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #1e293b;
+        }
+        .mobile-section-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #f8fafc;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .mobile-section-body {
+            font-size: 13.5px;
+            line-height: 1.65;
+            color: #cbd5e1;
+        }
+        .mobile-section-body p {
+            margin-bottom: 10px;
+        }
+        .mobile-section-body p:last-child {
+            margin-bottom: 0;
+        }
+        .mobile-bullet-list {
+            margin: 0;
+            padding-left: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .mobile-bullet-list li {
+            line-height: 1.5;
+        }
+        .mobile-company-meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #1e293b;
+        }
+        .mobile-comp-meta-item {
+            background: #090d16;
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 8px 10px;
+        }
+        .meta-lbl {
+            font-size: 11px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .meta-val {
+            font-size: 12.5px;
+            color: #f8fafc;
+            font-weight: 700;
+        }
+
+        /* Collapsible Long Content Box */
+        .mobile-collapsible-box {
+            max-height: 140px;
+            overflow: hidden;
+            position: relative;
+            transition: max-height 0.35s ease;
+        }
+        .mobile-collapsible-box.expanded {
+            max-height: none !important;
+        }
+        .mobile-collapsible-box:not(.expanded)::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: linear-gradient(to bottom, transparent, #0f172a);
+            pointer-events: none;
+        }
+        .mobile-toggle-expand-btn {
+            background: transparent;
+            border: none;
+            color: #FF7B1C;
+            font-size: 12.5px;
+            font-weight: 700;
+            padding: 8px 0 0 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        /* Sticky Apply Bar (Above Mobile Bottom Nav) */
+        .job-detail-mobile-sticky-bar {
+            display: flex !important;
+            position: fixed;
+            bottom: calc(62px + env(safe-area-inset-bottom, 0px));
+            left: 0;
+            right: 0;
+            background: rgba(15, 23, 42, 0.96);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid #334155;
+            padding: 10px 16px;
+            z-index: 998;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.6);
+        }
+    }
+
 </style>
 {% endblock %}
 
@@ -75,6 +336,7 @@
     </div>
     {% endif %}
 
+    <div class="job-detail-desktop-view">
     <div class="job-detail-layout">
         <!-- Main Column -->
         <main class="job-detail-main">
@@ -274,6 +536,264 @@
             </div>
         </aside>
     </div>
+
+    </div><!-- /.job-detail-desktop-view -->
+
+
+    <!-- =====================================================================
+         MOBILE JOB DETAILS EXPERIENCE (Strictly <= 991px)
+         ===================================================================== -->
+    <div class="job-detail-mobile-view">
+        <!-- 1. Top Section: Job Title, Company, Location, Salary, Apply Button -->
+        <div class="mobile-job-hero-card">
+            <span class="badge badge-primary" style="font-size:11px; margin-bottom:8px; display:inline-block;">{{ job.category or 'Verified Role' }}</span>
+            <h1 class="mobile-job-hero-title">{{ job.title }}</h1>
+            
+            <div class="mobile-job-hero-company">
+                <div class="company-badge-sq" style="width:38px; height:38px; font-size:1rem;">
+                    {{ (job.company_name or 'E')[0]|upper }}
+                </div>
+                <div>
+                    <div style="font-size:14px; font-weight:700; color:#f8fafc;">
+                        {{ job.company_name or 'Verified Employer' }}
+                        {% if job.is_company_verified %}
+                        <span class="badge badge-success" style="font-size:9.5px; padding:1px 5px; margin-left:4px;"><i class="fas fa-check-circle"></i> Verified</span>
+                        {% endif %}
+                    </div>
+                    <div style="font-size:12px; color:#94a3b8; display:flex; align-items:center; gap:6px; margin-top:2px;">
+                        <span><i class="fas fa-map-marker-alt"></i> {{ job.location or 'Remote' }}</span>
+                        {% if job.work_mode %}• <span>{{ job.work_mode }}</span>{% endif %}
+                        {% if job.job_type %}• <span>{{ job.job_type }}</span>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="mobile-job-hero-salary">
+                <span class="mobile-salary-label">Offered Compensation</span>
+                <div class="mobile-salary-number">
+                    {{ job.salary_display or job.salary or (job.salary_min and job.salary_max and '₹' + job.salary_min|string + ' - ₹' + job.salary_max|string or 'Competitive Compensation') }}
+                </div>
+            </div>
+
+            <div class="mobile-job-hero-actions">
+                {% if is_owner %}
+                    <a href="/employer_dashboard?tab=applicants&job_id={{ job.id }}" class="btn btn-primary mobile-btn-apply-main">
+                        <i class="fas fa-users"></i> View Applicants ({{ applicant_count }})
+                    </a>
+                {% elif not job.is_active or is_expired %}
+                    <button type="button" class="btn btn-secondary mobile-btn-apply-main" disabled>
+                        <i class="fas fa-ban"></i> Closed
+                    </button>
+                {% elif user_has_applied %}
+                    <button type="button" class="btn btn-secondary mobile-btn-apply-main" disabled>
+                        <i class="fas fa-check-circle text-success"></i> Applied
+                    </button>
+                {% else %}
+                    <button type="button" class="btn btn-primary mobile-btn-apply-main" id="mobile-top-btn-apply" onclick="handleDetailApply({{ job.id }})">
+                        <i class="fas fa-paper-plane"></i> Apply for this Role
+                    </button>
+                {% endif %}
+                <button type="button" class="btn btn-secondary mobile-btn-save-main" id="mobile-top-btn-save" onclick="handleDetailSave({{ job.id }})" aria-label="Save Job">
+                    <i class="{% if user_has_saved %}fas text-primary{% else %}far{% endif %} fa-bookmark"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. Structured Content Sections (Collapsible where long) -->
+        <div class="mobile-job-sections-list">
+
+            <!-- Section 1: Description -->
+            <div class="mobile-section-card" id="msec-description">
+                <div class="mobile-section-header">
+                    <h3 class="mobile-section-title"><i class="fas fa-file-alt" style="color:#6366f1;"></i> Description</h3>
+                </div>
+                <div class="mobile-collapsible-box" id="mbox-desc">
+                    <div class="mobile-section-body">
+                        {% if job_sections and job_sections.description %}
+                            {% for p in job_sections.description.split('
+') %}
+                                {% if p.strip() %}<p>{{ p.strip() }}</p>{% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <p>{{ job.description or 'No detailed description provided.' }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <button type="button" class="mobile-toggle-expand-btn" id="mtoggle-desc" onclick="toggleMobileSection('mbox-desc', this)">
+                    <span>Show more</span> <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+
+            <!-- Section 2: Responsibilities -->
+            <div class="mobile-section-card" id="msec-responsibilities">
+                <div class="mobile-section-header">
+                    <h3 class="mobile-section-title"><i class="fas fa-list-check" style="color:#10b981;"></i> Responsibilities</h3>
+                </div>
+                <div class="mobile-collapsible-box" id="mbox-resp">
+                    <div class="mobile-section-body">
+                        {% if job_sections and job_sections.responsibilities %}
+                            <ul class="mobile-bullet-list">
+                            {% for line in job_sections.responsibilities.split('
+') %}
+                                {% if line.strip() %}
+                                    <li>{{ line.strip().lstrip('•-*	 ') }}</li>
+                                {% endif %}
+                            {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>Core day-to-day deliverables and responsibilities aligned with project objectives.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <button type="button" class="mobile-toggle-expand-btn" id="mtoggle-resp" onclick="toggleMobileSection('mbox-resp', this)">
+                    <span>Show more</span> <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+
+            <!-- Section 3: Requirements -->
+            <div class="mobile-section-card" id="msec-requirements">
+                <div class="mobile-section-header">
+                    <h3 class="mobile-section-title"><i class="fas fa-user-check" style="color:#3b82f6;"></i> Requirements</h3>
+                </div>
+                <div class="mobile-collapsible-box" id="mbox-req">
+                    <div class="mobile-section-body">
+                        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+                            {% if job.experience %}<span class="badge badge-slate"><i class="fas fa-briefcase"></i> {{ job.experience }}</span>{% endif %}
+                            {% if job.education %}<span class="badge badge-slate"><i class="fas fa-graduation-cap"></i> {{ job.education }}</span>{% endif %}
+                            {% if job.openings %}<span class="badge badge-slate"><i class="fas fa-users"></i> {{ job.openings }} Openings</span>{% endif %}
+                        </div>
+                        {% if job_sections and job_sections.requirements %}
+                            <ul class="mobile-bullet-list">
+                            {% for line in job_sections.requirements.split('
+') %}
+                                {% if line.strip() %}
+                                    <li>{{ line.strip().lstrip('•-*	 ') }}</li>
+                                {% endif %}
+                            {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>{{ job.experience or 'Minimum qualifications required for this role.' }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <button type="button" class="mobile-toggle-expand-btn" id="mtoggle-req" onclick="toggleMobileSection('mbox-req', this)">
+                    <span>Show more</span> <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+
+            <!-- Section 4: Skills -->
+            <div class="mobile-section-card" id="msec-skills">
+                <div class="mobile-section-header">
+                    <h3 class="mobile-section-title"><i class="fas fa-tools" style="color:#f59e0b;"></i> Skills</h3>
+                </div>
+                <div class="mobile-section-body">
+                    {% set skills_str = job.skills or '' %}
+                    {% set skills_list = skills_str.split(',') if skills_str else [] %}
+                    {% if skills_list %}
+                        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                            {% for s in skills_list %}
+                                {% if s.strip() %}
+                                <span class="badge badge-slate" style="font-size:12px; padding:6px 12px; border-radius:8px;">{{ s.strip() }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p style="color:#94a3b8; font-size:13px; margin:0;">Relevant technical tools and domain skills required.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Section 5: Benefits -->
+            <div class="mobile-section-card" id="msec-benefits">
+                <div class="mobile-section-header">
+                    <h3 class="mobile-section-title"><i class="fas fa-gift" style="color:#ec4899;"></i> Benefits & Perks</h3>
+                </div>
+                <div class="mobile-collapsible-box" id="mbox-ben">
+                    <div class="mobile-section-body">
+                        {% if job_sections and job_sections.benefits %}
+                            <ul class="mobile-bullet-list">
+                            {% for line in job_sections.benefits.split('
+') %}
+                                {% if line.strip() %}
+                                    <li>{{ line.strip().lstrip('•-*	 ') }}</li>
+                                {% endif %}
+                            {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>Comprehensive benefits package including medical coverage, flexible leave, and career development.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <button type="button" class="mobile-toggle-expand-btn" id="mtoggle-ben" onclick="toggleMobileSection('mbox-ben', this)">
+                    <span>Show more</span> <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+
+            <!-- Section 6: Company Information -->
+            <div class="mobile-section-card" id="msec-company">
+                <div class="mobile-section-header">
+                    <h3 class="mobile-section-title"><i class="fas fa-building" style="color:#818cf8;"></i> Company Information</h3>
+                </div>
+                <div class="mobile-collapsible-box" id="mbox-comp">
+                    <div class="mobile-section-body">
+                        <p style="margin-bottom:12px;">{{ (job_sections and job_sections.company_info and job_sections.company_info.description) or (job.company_name ~ ' is a forward-thinking organization committed to innovation.') }}</p>
+                        <div class="mobile-company-meta-grid">
+                            <div class="mobile-comp-meta-item">
+                                <span class="meta-lbl">Industry</span>
+                                <span class="meta-val">{{ (job_sections and job_sections.company_info and job_sections.company_info.industry) or job.category or 'Technology' }}</span>
+                            </div>
+                            <div class="mobile-comp-meta-item">
+                                <span class="meta-lbl">Company Size</span>
+                                <span class="meta-val">{{ (job_sections and job_sections.company_info and job_sections.company_info.size) or '50-500 Employees' }}</span>
+                            </div>
+                            <div class="mobile-comp-meta-item">
+                                <span class="meta-lbl">Headquarters</span>
+                                <span class="meta-val">{{ (job_sections and job_sections.company_info and job_sections.company_info.headquarters) or job.location or 'Global Hub' }}</span>
+                            </div>
+                            {% if job_sections and job_sections.company_info and job_sections.company_info.website %}
+                            <div class="mobile-comp-meta-item">
+                                <span class="meta-lbl">Website</span>
+                                <a href="{{ job_sections.company_info.website }}" target="_blank" rel="noopener noreferrer" class="meta-val" style="color:#818cf8; text-decoration:underline;">Visit Site <i class="fas fa-external-link-alt" style="font-size:10px;"></i></a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="mobile-toggle-expand-btn" id="mtoggle-comp" onclick="toggleMobileSection('mbox-comp', this)">
+                    <span>Show more</span> <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Mobile Sticky Apply Bar (Screens <= 767px) -->
+    <div class="job-detail-mobile-sticky-bar">
+        <div>
+            <div style="font-size:0.75rem; color:#94A3B8; line-height:1.1;">{{ job.job_type or 'Full-time' }} • {{ job.location or 'Remote' }}</div>
+            <div style="font-size:0.95rem; font-weight:800; color:#34D399;">{{ job.salary or 'Competitive' }}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <button class="btn btn-secondary btn-sm" onclick="handleDetailSave({{ job.id }})" style="width:40px; height:40px; padding:0; display:flex; align-items:center; justify-content:center; border-radius:10px;" aria-label="Save Job">
+                <i class="{% if user_has_saved %}fas text-primary{% else %}far{% endif %} fa-bookmark"></i>
+            </button>
+            {% if not is_owner %}
+                {% if user_has_applied %}
+                    <button class="btn btn-secondary btn-sm" disabled style="height:40px; font-weight:700; padding:0 16px; border-radius:10px;">
+                        <i class="fas fa-check"></i> Applied
+                    </button>
+                {% elif not job.is_active or is_expired %}
+                    <button class="btn btn-secondary btn-sm" disabled style="height:40px; font-weight:700; padding:0 16px; border-radius:10px;">
+                        Closed
+                    </button>
+                {% else %}
+                    <button class="btn btn-primary btn-sm" onclick="handleDetailApply({{ job.id }})" style="height:40px; font-weight:700; padding:0 18px; border-radius:10px; box-shadow:0 0 14px rgba(255,94,20,0.4);">
+                        Apply Now
+                    </button>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -427,5 +947,31 @@
             loadJobRecommendationMatch({{ job.id }});
         }
     });
+
+    function toggleMobileSection(boxId, btn) {
+        const box = document.getElementById(boxId);
+        if (!box) return;
+        const isExpanded = box.classList.toggle('expanded');
+        if (btn) {
+            btn.innerHTML = isExpanded 
+                ? '<span>Show less</span> <i class="fas fa-chevron-up"></i>' 
+                : '<span>Show more</span> <i class="fas fa-chevron-down"></i>';
+        }
+    }
+
+    // Auto-detect short sections and expand them without toggle button
+    document.addEventListener('DOMContentLoaded', () => {
+        ['mbox-desc', 'mbox-resp', 'mbox-req', 'mbox-ben', 'mbox-comp'].forEach(id => {
+            const el = document.getElementById(id);
+            const toggle = document.getElementById(id.replace('mbox-', 'mtoggle-'));
+            if (el && toggle) {
+                if (el.scrollHeight <= 145) {
+                    el.classList.add('expanded');
+                    toggle.style.display = 'none';
+                }
+            }
+        });
+    });
+
 </script>
 {% endblock %}

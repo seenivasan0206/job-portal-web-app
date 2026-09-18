@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Messages & Recruiter Inbox — HireVolt{% endblock %}
+{% block title %}Messages & Recruiter Inbox — HireVoltz{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -225,15 +225,79 @@
         text-align: center;
         padding: var(--space-8);
     }
+    .btn-back-conversations {
+        display: none;
+    }
     @media (max-width: 768px) {
         .messaging-layout {
             grid-template-columns: 1fr;
+            min-height: calc(100vh - 160px);
+        }
+        .conversations-sidebar {
+            max-height: calc(100vh - 160px);
+        }
+        .chat-thread-pane {
+            max-height: calc(100vh - 160px);
         }
         .conversations-sidebar.hidden-mobile {
-            display: none;
+            display: none !important;
         }
         .chat-thread-pane.hidden-mobile {
-            display: none;
+            display: none !important;
+        }
+        .btn-back-conversations {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-md);
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            color: var(--color-text);
+            margin-right: 6px;
+            cursor: pointer;
+        }
+        .chat-bubble {
+            max-width: 88%;
+        }
+        .chat-thread-header {
+            padding: var(--space-3) var(--space-4);
+        }
+        .messages-header-wrap {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-5);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .messages-header-actions {
+            display: flex;
+            gap: var(--space-2);
+            flex-wrap: wrap;
+        }
+        @media (max-width: 768px) {
+            .messages-header-wrap {
+                flex-direction: column;
+                align-items: stretch;
+                margin-bottom: var(--space-4);
+            }
+            .messages-header-wrap h1 {
+                font-size: clamp(1.25rem, 5vw, 1.5rem) !important;
+            }
+            .messages-header-actions {
+                width: 100%;
+            }
+            .messages-header-actions .btn {
+                flex: 1 1 auto;
+                min-height: 44px;
+                justify-content: center;
+            }
+            #conv-search {
+                font-size: 16px !important;
+                height: 44px !important;
+            }
         }
     }
 </style>
@@ -242,7 +306,7 @@
 {% block body %}
 <div class="app-container" style="padding-top:var(--space-6); padding-bottom:var(--space-10);">
     <!-- Header -->
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-5);">
+    <div class="messages-header-wrap">
         <div>
             <h1 style="font-size:var(--font-size-2xl); font-weight:800; margin-bottom:2px; display:flex; align-items:center; gap:8px;">
                 <i class="fas fa-comments" style="color:#06B6D4;"></i> Messages & Recruiter Inbox
@@ -251,7 +315,7 @@
                 Direct, confidential messaging with employers and talent partners.
             </p>
         </div>
-        <div style="display:flex; gap:var(--space-2);">
+        <div class="messages-header-actions">
             <a href="/user_dashboard" class="btn btn-ghost btn-sm">
                 <i class="fas fa-arrow-left"></i> Dashboard
             </a>
@@ -282,7 +346,7 @@
             <!-- Header (populated dynamically) -->
             <div class="chat-thread-header" id="thread-header" style="display:none;">
                 <div style="display:flex; align-items:center; gap:var(--space-3);">
-                    <button class="btn btn-ghost btn-sm d-md-none" onclick="showConversationsListMobile()" style="padding:4px 8px; margin-right:4px;">
+                    <button type="button" class="btn-back-conversations" onclick="showConversationsListMobile()" title="Back to conversations" aria-label="Back to conversations">
                         <i class="fas fa-arrow-left"></i>
                     </button>
                     <div class="conversation-avatar" id="active-participant-avatar">TC</div>

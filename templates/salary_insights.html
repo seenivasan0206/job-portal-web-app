@@ -6,59 +6,38 @@
 <!-- Chart.js CDN for High-Performance Compensation Visualizations -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
+    /* Global Container Adjustments */
+    .salary-insights-page {
+        padding-top: var(--space-8);
+        padding-bottom: var(--space-16);
+        max-width: 1320px;
+        margin: 0 auto;
+        padding-left: var(--space-4);
+        padding-right: var(--space-4);
+        box-sizing: border-box;
+    }
     .salary-hero-header {
         text-align: center;
-        max-width: 820px;
+        max-width: 840px;
         margin: 0 auto var(--space-8);
     }
-    .kpi-stat-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-        gap: var(--space-5);
-        margin-bottom: var(--space-8);
+
+    /* =========================================================================
+       DESKTOP FILTER TOOLBAR (Preserved Exactly on >= 992px)
+       ========================================================================= */
+    .salary-desktop-only {
+        display: block;
     }
-    .kpi-card {
-        background: #0f172a;
-        border: 1px solid #1e293b;
-        border-radius: 16px;
-        padding: var(--space-6);
-        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        position: relative;
-        overflow: hidden;
+    .salary-mobile-only {
+        display: none;
     }
-    .kpi-card:hover {
-        transform: translateY(-2px);
-        border-color: #6366f1;
-        box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.5);
+    .salary-desktop-table-wrap {
+        display: block;
     }
-    .kpi-title {
-        font-size: var(--font-size-xs);
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: #94a3b8;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: var(--space-2);
+    .salary-mobile-cards-list {
+        display: none;
     }
-    .kpi-value {
-        font-size: 2.1rem;
-        font-weight: 800;
-        color: #f8fafc;
-        letter-spacing: -0.02em;
-        margin-bottom: var(--space-2);
-    }
-    .kpi-sub {
-        font-size: var(--font-size-xs);
-        color: #64748b;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
+
     .filter-card {
         background: #0f172a;
         border: 1px solid #1e293b;
@@ -74,7 +53,7 @@
         align-items: flex-end;
     }
 
-    /* Custom Searchable Combobox Component */
+    /* Desktop Combobox Component */
     .custom-combobox {
         position: relative;
         width: 100%;
@@ -214,9 +193,6 @@
         background: #334155;
         border-radius: 4px;
     }
-    .combobox-options-list::-webkit-scrollbar-thumb:hover {
-        background: #475569;
-    }
     .combobox-group-header {
         font-size: 10.5px;
         font-weight: 800;
@@ -252,7 +228,7 @@
         color: #64748b;
     }
 
-    /* Keyword Search Wrapper */
+    /* Desktop Keyword Search Wrapper */
     .keyword-search-container {
         position: relative;
         width: 100%;
@@ -327,6 +303,76 @@
         color: #818cf8;
     }
 
+    /* =========================================================================
+       KPI METRICS (Shared Container Styled Responsively)
+       ========================================================================= */
+    .kpi-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: var(--space-5);
+        margin-bottom: var(--space-8);
+    }
+    .kpi-card {
+        background: #0f172a;
+        border: 1px solid #1e293b;
+        border-radius: 16px;
+        padding: var(--space-6);
+        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+    }
+    .kpi-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.5);
+    }
+    .kpi-card.card-indigo {
+        border-color: rgba(99, 102, 241, 0.25);
+        background: linear-gradient(180deg, rgba(99, 102, 241, 0.05) 0%, #0f172a 100%);
+    }
+    .kpi-card.card-cyan {
+        border-color: rgba(6, 182, 212, 0.25);
+        background: linear-gradient(180deg, rgba(6, 182, 212, 0.05) 0%, #0f172a 100%);
+    }
+    .kpi-card.card-emerald {
+        border-color: rgba(16, 185, 129, 0.25);
+        background: linear-gradient(180deg, rgba(16, 185, 129, 0.05) 0%, #0f172a 100%);
+    }
+    .kpi-card.card-purple {
+        border-color: rgba(168, 85, 247, 0.25);
+        background: linear-gradient(180deg, rgba(168, 85, 247, 0.05) 0%, #0f172a 100%);
+    }
+    .kpi-title {
+        font-size: var(--font-size-xs);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--space-2);
+    }
+    .kpi-value {
+        font-size: 2.1rem;
+        font-weight: 800;
+        color: #f8fafc;
+        letter-spacing: -0.02em;
+        margin-bottom: var(--space-2);
+    }
+    .kpi-sub {
+        font-size: var(--font-size-xs);
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* =========================================================================
+       CHARTS GRID
+       ========================================================================= */
     .chart-grid {
         display: grid;
         grid-template-columns: repeat(12, 1fr);
@@ -340,6 +386,8 @@
         border-radius: 16px;
         padding: var(--space-6);
         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        box-sizing: border-box;
+        overflow: hidden;
     }
     .chart-card-full {
         grid-column: span 12;
@@ -348,12 +396,16 @@
         border-radius: 16px;
         padding: var(--space-6);
         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        box-sizing: border-box;
+        overflow: hidden;
     }
     .chart-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: var(--space-4);
+        flex-wrap: wrap;
+        gap: 6px;
     }
     .chart-title {
         font-size: var(--font-size-base);
@@ -368,7 +420,12 @@
         position: relative;
         width: 100%;
         height: 290px;
+        overflow: hidden;
     }
+
+    /* =========================================================================
+       DESKTOP BENCHMARK DATA TABLE
+       ========================================================================= */
     .table-container-card {
         background: #0f172a;
         border: 1px solid #1e293b;
@@ -412,21 +469,411 @@
         font-size: 11px;
         font-weight: 600;
     }
-    @media (max-width: 992px) {
-        .chart-card-lg {
-            grid-column: span 12;
+
+    /* =========================================================================
+       MOBILE-FIRST DESIGN SYSTEM (STRICTLY ON <= 991px)
+       ========================================================================= */
+    @media (max-width: 991px) {
+        .salary-desktop-only {
+            display: none !important;
         }
-    }
-    @media (max-width: 768px) {
-        .filter-grid {
-            grid-template-columns: 1fr;
+        .salary-mobile-only {
+            display: block !important;
+        }
+        .salary-desktop-table-wrap {
+            display: none !important;
+        }
+        .salary-mobile-cards-list {
+            display: flex !important;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .salary-hero-header {
+            margin-bottom: var(--space-5);
+            text-align: left;
+        }
+        .salary-hero-header h1 {
+            font-size: 1.75rem !important;
+            line-height: 1.25 !important;
+        }
+        .salary-hero-header p {
+            font-size: 13.5px !important;
+        }
+
+        /* Mobile KPI Cards: Sleek 2x2 Grid */
+        .kpi-stat-grid {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 10px !important;
+            margin-bottom: var(--space-6) !important;
+        }
+        .kpi-card {
+            padding: 14px !important;
+            border-radius: 14px !important;
+        }
+        .kpi-title {
+            font-size: 11px !important;
+            margin-bottom: 4px !important;
+        }
+        .kpi-title i {
+            font-size: 14px !important;
+        }
+        .kpi-value {
+            font-size: 1.45rem !important;
+            margin-bottom: 4px !important;
+        }
+        .kpi-sub {
+            font-size: 10.5px !important;
+            flex-wrap: wrap;
+            gap: 4px !important;
+        }
+
+        /* Mobile Charts Optimization */
+        .chart-grid {
+            grid-template-columns: 1fr !important;
+            gap: 16px !important;
+            margin-bottom: var(--space-6) !important;
+        }
+        .chart-card-lg, .chart-card-full {
+            grid-column: span 1 !important;
+            padding: 14px !important;
+            border-radius: 14px !important;
+        }
+        .chart-title {
+            font-size: 14px !important;
+        }
+        .chart-canvas-wrapper {
+            height: 250px !important;
+            max-width: 100% !important;
+        }
+
+        /* Mobile Search Form Container */
+        .salary-mobile-search-card {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+        .mobile-search-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #1e293b;
+        }
+        .mobile-search-section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #f8fafc;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .mobile-search-fields-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .mobile-form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .mobile-field-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        /* Mobile Input & Select Elements - >= 16px font to prevent iOS zoom */
+        .salary-mobile-input, .salary-mobile-select {
+            width: 100%;
+            height: 46px;
+            background: #090d16;
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 0 14px;
+            color: #f8fafc;
+            font-size: 16px; /* Prevents iOS auto-zoom */
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+        .salary-mobile-input:focus, .salary-mobile-select:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+        }
+
+        /* Mobile Autocomplete Search Containers */
+        .mobile-autocomplete-wrap {
+            position: relative;
+            width: 100%;
+        }
+        .mobile-autocomplete-input-row {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .mobile-autocomplete-icon {
+            position: absolute;
+            left: 14px;
+            color: #64748b;
+            font-size: 13px;
+            pointer-events: none;
+        }
+        .salary-mobile-input.with-icon {
+            padding-left: 38px;
+            padding-right: 38px;
+        }
+        .mobile-input-clear-btn {
+            position: absolute;
+            right: 8px;
+            width: 32px;
+            height: 32px;
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 18px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        .mobile-input-clear-btn:active {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Selected Item Chip (Active Selection) */
+        .mobile-selected-chip {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px solid rgba(99, 102, 241, 0.35);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-top: 6px;
+            font-size: 13px;
+            color: #818cf8;
+            font-weight: 600;
+        }
+        .mobile-chip-clear {
+            background: none;
+            border: none;
+            color: #818cf8;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 0 4px;
+            display: flex;
+            align-items: center;
+        }
+        .mobile-chip-clear:active {
+            color: #ef4444;
+        }
+
+        /* Compact Autocomplete Suggestion Tray (Not a giant screen-covering dropdown) */
+        .mobile-suggestions-tray {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: #0f172a;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 12px;
+            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.7);
+            z-index: 1080;
+            max-height: 190px;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            display: none;
+            padding: 4px;
+        }
+        .mobile-suggestion-item {
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            color: #cbd5e1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 44px; /* Touch target minimum */
+            box-sizing: border-box;
+            transition: background 0.15s ease;
+        }
+        .mobile-suggestion-item:active {
+            background: rgba(99, 102, 241, 0.2);
+            color: #ffffff;
+        }
+        .mobile-suggestion-item-sub {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        /* Mobile Salary Range 2-Column Fields */
+        .mobile-salary-range-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        /* Quick Salary Range Pills */
+        .mobile-range-pills-row {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding: 4px 0 2px;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        .mobile-range-pills-row::-webkit-scrollbar {
+            display: none;
+        }
+        .mobile-salary-pill {
+            background: #090d16;
+            border: 1px solid #1e293b;
+            color: #94a3b8;
+            font-size: 11.5px;
+            font-weight: 600;
+            padding: 6px 10px;
+            border-radius: 20px;
+            white-space: nowrap;
+            cursor: pointer;
+            min-height: 32px;
+            display: inline-flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .mobile-salary-pill.active {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: #6366f1;
+            color: #818cf8;
+        }
+
+        /* Mobile Action Buttons */
+        .mobile-search-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 6px;
+        }
+        .btn-mobile-search-primary {
+            width: 100%;
+            height: 48px;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            border: none;
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
+        }
+        .btn-mobile-search-primary:active {
+            transform: scale(0.98);
+        }
+        .btn-mobile-reset {
+            width: 100%;
+            height: 44px;
+            background: #090d16;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            color: #94a3b8;
+            font-size: 13.5px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+        .btn-mobile-reset:active {
+            color: #f8fafc;
+            border-color: #64748b;
+        }
+
+        /* Mobile Benchmark Cards Stream */
+        .salary-benchmark-card-mobile {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 14px;
+            padding: 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .benchmark-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .benchmark-role-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #f8fafc;
+            margin: 0 0 4px 0;
+            line-height: 1.3;
+        }
+        .benchmark-meta-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .benchmark-comp-meter {
+            background: #090d16;
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 10px 12px;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr 1fr;
+            text-align: center;
+            gap: 4px;
+        }
+        .comp-meter-col {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .comp-meter-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #64748b;
+            letter-spacing: 0.05em;
+        }
+        .comp-meter-val {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #cbd5e1;
+        }
+        .comp-meter-val.highlight {
+            font-size: 15px;
+            font-weight: 800;
+            color: #818cf8;
         }
     }
 </style>
 {% endblock %}
 
 {% block body %}
-<div class="app-container" style="padding-top:var(--space-8); padding-bottom:var(--space-16);">
+<div class="salary-insights-page">
 
     <!-- Header Section -->
     <div class="salary-hero-header">
@@ -446,169 +893,335 @@
         </p>
     </div>
 
-    <!-- Filter Toolbar -->
-    <div class="filter-card">
-        <div class="filter-grid">
+    <!-- =====================================================================
+         DESKTOP FILTER TOOLBAR (Preserved Exactly on >= 992px)
+         ===================================================================== -->
+    <div class="salary-desktop-only">
+        <div class="filter-card">
+            <div class="filter-grid">
 
-            <!-- 1. Searchable Role Combobox -->
-            <div class="form-group" style="margin-bottom:0;">
-                <label class="form-label" style="font-size:var(--font-size-xs); font-weight:600; color:#94a3b8; margin-bottom:6px; display:block;">
-                    <i class="fas fa-user-tie" style="color:#6366f1; margin-right:4px;"></i> Job Role (125+ Roles)
-                </label>
-                <div class="custom-combobox" id="role-combobox">
-                    <button type="button" class="combobox-trigger" onclick="toggleCombobox('role')" aria-expanded="false" id="role-combobox-trigger">
-                        <span class="combobox-trigger-text" id="role-selected-text">
-                            <i class="fas fa-briefcase" style="color:#818cf8; font-size:12px;"></i> All Roles
-                        </span>
-                        <i class="fas fa-chevron-down combobox-chevron"></i>
-                    </button>
-                    <div class="combobox-dropdown" id="role-combobox-dropdown" data-lenis-prevent>
-                        <div class="combobox-search-box">
-                            <i class="fas fa-search combobox-search-icon"></i>
-                            <input type="text" class="combobox-search-input" id="role-search-input" placeholder="Search 125+ roles (e.g. data, react, devops)..." oninput="filterComboboxOptions('role')">
-                            <button type="button" class="combobox-search-clear" id="role-search-clear" onclick="clearComboboxSearch('role')">&times;</button>
-                        </div>
-                        <div class="combobox-options-list" id="role-options-list" data-lenis-prevent>
-                            <div class="combobox-option selected" data-value="" onclick="selectComboboxOption('role', '', 'All Roles')">
-                                <span><i class="fas fa-layer-group" style="margin-right:6px; color:#818cf8;"></i> All Roles</span>
-                                <i class="fas fa-check" style="font-size:11px; color:#818cf8;"></i>
+                <!-- 1. Searchable Role Combobox -->
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label" style="font-size:var(--font-size-xs); font-weight:600; color:#94a3b8; margin-bottom:6px; display:block;">
+                        <i class="fas fa-user-tie" style="color:#6366f1; margin-right:4px;"></i> Job Role (125+ Roles)
+                    </label>
+                    <div class="custom-combobox" id="role-combobox">
+                        <button type="button" class="combobox-trigger" onclick="toggleCombobox('role')" aria-expanded="false" id="role-combobox-trigger">
+                            <span class="combobox-trigger-text" id="role-selected-text">
+                                <i class="fas fa-briefcase" style="color:#818cf8; font-size:12px;"></i> All Roles
+                            </span>
+                            <i class="fas fa-chevron-down combobox-chevron"></i>
+                        </button>
+                        <div class="combobox-dropdown" id="role-combobox-dropdown" data-lenis-prevent>
+                            <div class="combobox-search-box">
+                                <i class="fas fa-search combobox-search-icon"></i>
+                                <input type="text" class="combobox-search-input" id="role-search-input" placeholder="Search 125+ roles (e.g. data, react, devops)..." oninput="filterComboboxOptions('role')">
+                                <button type="button" class="combobox-search-clear" id="role-search-clear" onclick="clearComboboxSearch('role')">&times;</button>
                             </div>
-                            {% for cat, roles in roles_by_category.items() %}
-                            <div class="combobox-group-header" data-category="{{ cat }}">{{ cat }}</div>
-                            {% for r in roles %}
-                            <div class="combobox-option" data-value="{{ r }}" data-category="{{ cat }}" onclick="selectComboboxOption('role', '{{ r }}', '{{ r }}')">
-                                <span>{{ r }}</span>
+                            <div class="combobox-options-list" id="role-options-list" data-lenis-prevent>
+                                <div class="combobox-option selected" data-value="" onclick="selectComboboxOption('role', '', 'All Roles')">
+                                    <span><i class="fas fa-layer-group" style="margin-right:6px; color:#818cf8;"></i> All Roles</span>
+                                    <i class="fas fa-check" style="font-size:11px; color:#818cf8;"></i>
+                                </div>
+                                {% for cat, roles in roles_by_category.items() %}
+                                <div class="combobox-group-header" data-category="{{ cat }}">{{ cat }}</div>
+                                {% for r in roles %}
+                                <div class="combobox-option" data-value="{{ r }}" data-category="{{ cat }}" onclick="selectComboboxOption('role', '{{ r }}', '{{ r }}')">
+                                    <span>{{ r }}</span>
+                                </div>
+                                {% endfor %}
+                                {% endfor %}
                             </div>
-                            {% endfor %}
-                            {% endfor %}
                         </div>
+                        <input type="hidden" id="filter-role" value="">
                     </div>
-                    <input type="hidden" id="filter-role" value="">
                 </div>
-            </div>
 
-            <!-- 2. Searchable Location Combobox -->
-            <div class="form-group" style="margin-bottom:0;">
-                <label class="form-label" style="font-size:var(--font-size-xs); font-weight:600; color:#94a3b8; margin-bottom:6px; display:block;">
-                    <i class="fas fa-map-marker-alt" style="color:#10b981; margin-right:4px;"></i> Location / City
-                </label>
-                <div class="custom-combobox" id="location-combobox">
-                    <button type="button" class="combobox-trigger" onclick="toggleCombobox('location')" aria-expanded="false" id="location-combobox-trigger">
-                        <span class="combobox-trigger-text" id="location-selected-text">
-                            <i class="fas fa-globe" style="color:#34d399; font-size:12px;"></i> All Locations
-                        </span>
-                        <i class="fas fa-chevron-down combobox-chevron"></i>
-                    </button>
-                    <div class="combobox-dropdown" id="location-combobox-dropdown" data-lenis-prevent>
-                        <div class="combobox-search-box">
-                            <i class="fas fa-search combobox-search-icon"></i>
-                            <input type="text" class="combobox-search-input" id="location-search-input" placeholder="Search cities, remote, global (e.g. chennai, bangalore)..." oninput="filterComboboxOptions('location')">
-                            <button type="button" class="combobox-search-clear" id="location-search-clear" onclick="clearComboboxSearch('location')">&times;</button>
-                        </div>
-                        <div class="combobox-options-list" id="location-options-list" data-lenis-prevent>
-                            <div class="combobox-option selected" data-value="" onclick="selectComboboxOption('location', '', 'All Locations')">
-                                <span><i class="fas fa-globe" style="margin-right:6px; color:#34d399;"></i> All Locations</span>
-                                <i class="fas fa-check" style="font-size:11px; color:#34d399;"></i>
+                <!-- 2. Searchable Location Combobox -->
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label" style="font-size:var(--font-size-xs); font-weight:600; color:#94a3b8; margin-bottom:6px; display:block;">
+                        <i class="fas fa-map-marker-alt" style="color:#10b981; margin-right:4px;"></i> Location / City
+                    </label>
+                    <div class="custom-combobox" id="location-combobox">
+                        <button type="button" class="combobox-trigger" onclick="toggleCombobox('location')" aria-expanded="false" id="location-combobox-trigger">
+                            <span class="combobox-trigger-text" id="location-selected-text">
+                                <i class="fas fa-globe" style="color:#34d399; font-size:12px;"></i> All Locations
+                            </span>
+                            <i class="fas fa-chevron-down combobox-chevron"></i>
+                        </button>
+                        <div class="combobox-dropdown" id="location-combobox-dropdown" data-lenis-prevent>
+                            <div class="combobox-search-box">
+                                <i class="fas fa-search combobox-search-icon"></i>
+                                <input type="text" class="combobox-search-input" id="location-search-input" placeholder="Search cities, remote, global (e.g. chennai, bangalore)..." oninput="filterComboboxOptions('location')">
+                                <button type="button" class="combobox-search-clear" id="location-search-clear" onclick="clearComboboxSearch('location')">&times;</button>
                             </div>
-                            {% for loc in all_locations %}
-                            <div class="combobox-option" data-value="{{ loc }}" onclick="selectComboboxOption('location', '{{ loc }}', '{{ loc }}')">
-                                <span><i class="fas fa-map-pin" style="margin-right:6px; color:#64748b; font-size:11px;"></i> {{ loc }}</span>
+                            <div class="combobox-options-list" id="location-options-list" data-lenis-prevent>
+                                <div class="combobox-option selected" data-value="" onclick="selectComboboxOption('location', '', 'All Locations')">
+                                    <span><i class="fas fa-globe" style="margin-right:6px; color:#34d399;"></i> All Locations</span>
+                                    <i class="fas fa-check" style="font-size:11px; color:#34d399;"></i>
+                                </div>
+                                {% for loc in all_locations %}
+                                <div class="combobox-option" data-value="{{ loc }}" onclick="selectComboboxOption('location', '{{ loc }}', '{{ loc }}')">
+                                    <span><i class="fas fa-map-pin" style="margin-right:6px; color:#64748b; font-size:11px;"></i> {{ loc }}</span>
+                                </div>
+                                {% endfor %}
                             </div>
-                            {% endfor %}
                         </div>
+                        <input type="hidden" id="filter-location" value="">
                     </div>
-                    <input type="hidden" id="filter-location" value="">
+                </div>
+
+                <!-- 3. Experience Level Filter -->
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label" style="font-size:var(--font-size-xs); font-weight:600; color:#94a3b8; margin-bottom:6px; display:block;">
+                        <i class="fas fa-layer-group" style="color:#06b6d4; margin-right:4px;"></i> Experience Level
+                    </label>
+                    <select id="filter-experience" class="form-select" onchange="syncFromDesktopAndFetch()" style="height:44px; background:#090d16; border:1px solid #1e293b; color:#f8fafc; border-radius:10px;">
+                        <option value="">All Experience</option>
+                        <option value="0–1 Years">0–1 Years (Entry Level)</option>
+                        <option value="1–3 Years">1–3 Years (Junior / Mid)</option>
+                        <option value="3–5 Years">3–5 Years (Mid-Senior)</option>
+                        <option value="5–8 Years">5–8 Years (Senior)</option>
+                        <option value="8+ Years">8+ Years (Lead / Staff / Principal)</option>
+                    </select>
+                </div>
+
+                <!-- 4. Technology / Skill Filter -->
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label" style="font-size:var(--font-size-xs); font-weight:600; color:#94a3b8; margin-bottom:6px; display:block;">
+                        <i class="fas fa-code" style="color:#ec4899; margin-right:4px;"></i> Tech / Skill Stack
+                    </label>
+                    <select id="filter-skill" class="form-select" onchange="syncFromDesktopAndFetch()" style="height:44px; background:#090d16; border:1px solid #1e293b; color:#f8fafc; border-radius:10px;">
+                        <option value="">All Tech / Skills</option>
+                        <option value="Python">Python</option>
+                        <option value="SQL">SQL</option>
+                        <option value="Power BI">Power BI</option>
+                        <option value="Excel">Excel / Analytics</option>
+                        <option value="Java">Java / Spring Boot</option>
+                        <option value="JavaScript">JavaScript</option>
+                        <option value="React">React / Next.js</option>
+                        <option value="Node.js">Node.js</option>
+                        <option value="AWS">AWS Cloud</option>
+                        <option value="Docker">Docker & Containerization</option>
+                        <option value="Kubernetes">Kubernetes</option>
+                        <option value="Tableau">Tableau</option>
+                        <option value="Figma">Figma</option>
+                        <option value="PyTorch">PyTorch / Deep Learning</option>
+                        <option value="Go">Go (Golang)</option>
+                    </select>
+                </div>
+
+                <!-- 5. Keyword Search Input -->
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label" style="font-size:var(--font-size-xs); font-weight:600; color:#94a3b8; margin-bottom:6px; display:block;">
+                        <i class="fas fa-search" style="color:#f59e0b; margin-right:4px;"></i> Keyword Search
+                    </label>
+                    <div class="keyword-search-container">
+                        <i class="fas fa-search keyword-search-icon"></i>
+                        <input type="text" id="filter-search" class="keyword-search-input" placeholder="Search role, tech, city..." oninput="debounceDesktopSearch()" onkeydown="if(event.key==='Enter') fetchSalaryAnalytics()">
+                        <button type="button" class="keyword-search-clear" id="search-clear-btn" onclick="clearDesktopKeywordSearch()">&times;</button>
+                    </div>
+                </div>
+
+                <!-- 6. Clear Filters Button -->
+                <div>
+                    <button type="button" class="btn btn-secondary btn-md" onclick="clearSalaryFilters()" title="Reset all filters to default" style="height:44px; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; border-radius:10px; border:1px solid #334155; font-weight:600;">
+                        <i class="fas fa-rotate-left"></i> Clear Filters
+                    </button>
                 </div>
             </div>
 
-            <!-- 3. Experience Level Filter -->
-            <div class="form-group" style="margin-bottom:0;">
-                <label class="form-label" style="font-size:var(--font-size-xs); font-weight:600; color:#94a3b8; margin-bottom:6px; display:block;">
-                    <i class="fas fa-layer-group" style="color:#06b6d4; margin-right:4px;"></i> Experience Level
-                </label>
-                <select id="filter-experience" class="form-select" onchange="fetchSalaryAnalytics()" style="height:44px; background:#090d16; border:1px solid #1e293b; color:#f8fafc; border-radius:10px;">
-                    <option value="">All Experience</option>
-                    <option value="0–1 Years">0–1 Years (Entry Level)</option>
-                    <option value="1–3 Years">1–3 Years (Junior / Mid)</option>
-                    <option value="3–5 Years">3–5 Years (Mid-Senior)</option>
-                    <option value="5–8 Years">5–8 Years (Senior)</option>
-                    <option value="8+ Years">8+ Years (Lead / Staff / Principal)</option>
-                </select>
+            <!-- Quick Keyword Search Pills -->
+            <div class="quick-tags-container">
+                <span style="font-size:11.5px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-right:4px;">
+                    Popular Stacks:
+                </span>
+                <span class="quick-tag-pill" onclick="applyQuickTag('Python')">Python</span>
+                <span class="quick-tag-pill" onclick="applyQuickTag('SQL')">SQL</span>
+                <span class="quick-tag-pill" onclick="applyQuickTag('Power BI')">Power BI</span>
+                <span class="quick-tag-pill" onclick="applyQuickTag('Excel')">Excel</span>
+                <span class="quick-tag-pill" onclick="applyQuickTag('Machine Learning')">Machine Learning</span>
+                <span class="quick-tag-pill" onclick="applyQuickTag('React')">React</span>
+                <span class="quick-tag-pill" onclick="applyQuickTag('AWS')">AWS</span>
+                <span class="quick-tag-pill" onclick="applyQuickTag('Docker')">Docker</span>
+                <span class="quick-tag-pill" onclick="applyQuickTag('Java')">Java</span>
+                <span class="quick-tag-pill" onclick="applyQuickTag('Figma')">Figma</span>
+                <span class="quick-tag-pill" onclick="applyQuickTag('Bangalore')">Bangalore</span>
+                <span class="quick-tag-pill" onclick="applyQuickTag('Chennai')">Chennai</span>
             </div>
-
-            <!-- 4. Technology / Skill Filter -->
-            <div class="form-group" style="margin-bottom:0;">
-                <label class="form-label" style="font-size:var(--font-size-xs); font-weight:600; color:#94a3b8; margin-bottom:6px; display:block;">
-                    <i class="fas fa-code" style="color:#ec4899; margin-right:4px;"></i> Tech / Skill Stack
-                </label>
-                <select id="filter-skill" class="form-select" onchange="fetchSalaryAnalytics()" style="height:44px; background:#090d16; border:1px solid #1e293b; color:#f8fafc; border-radius:10px;">
-                    <option value="">All Tech / Skills</option>
-                    <option value="Python">Python</option>
-                    <option value="SQL">SQL</option>
-                    <option value="Power BI">Power BI</option>
-                    <option value="Excel">Excel / Analytics</option>
-                    <option value="Java">Java / Spring Boot</option>
-                    <option value="JavaScript">JavaScript</option>
-                    <option value="React">React / Next.js</option>
-                    <option value="Node.js">Node.js</option>
-                    <option value="AWS">AWS Cloud</option>
-                    <option value="Docker">Docker & Containerization</option>
-                    <option value="Kubernetes">Kubernetes</option>
-                    <option value="Tableau">Tableau</option>
-                    <option value="Figma">Figma</option>
-                    <option value="PyTorch">PyTorch / Deep Learning</option>
-                    <option value="Go">Go (Golang)</option>
-                </select>
-            </div>
-
-            <!-- 5. Keyword Search Input -->
-            <div class="form-group" style="margin-bottom:0;">
-                <label class="form-label" style="font-size:var(--font-size-xs); font-weight:600; color:#94a3b8; margin-bottom:6px; display:block;">
-                    <i class="fas fa-search" style="color:#f59e0b; margin-right:4px;"></i> Keyword Search
-                </label>
-                <div class="keyword-search-container">
-                    <i class="fas fa-search keyword-search-icon"></i>
-                    <input type="text" id="filter-search" class="keyword-search-input" placeholder="Search role, tech, city..." oninput="debounceFetchSalaryAnalytics()">
-                    <button type="button" class="keyword-search-clear" id="search-clear-btn" onclick="clearKeywordSearch()">&times;</button>
-                </div>
-            </div>
-
-            <!-- 6. Clear Filters Button -->
-            <div>
-                <button type="button" class="btn btn-secondary btn-md" onclick="clearSalaryFilters()" title="Reset all filters to default" style="height:44px; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; border-radius:10px; border:1px solid #334155; font-weight:600;">
-                    <i class="fas fa-rotate-left"></i> Clear Filters
-                </button>
-            </div>
-        </div>
-
-        <!-- Quick Keyword Search Pills -->
-        <div class="quick-tags-container">
-            <span style="font-size:11.5px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-right:4px;">
-                Popular Stacks:
-            </span>
-            <span class="quick-tag-pill" onclick="applyQuickTag('Python')">Python</span>
-            <span class="quick-tag-pill" onclick="applyQuickTag('SQL')">SQL</span>
-            <span class="quick-tag-pill" onclick="applyQuickTag('Power BI')">Power BI</span>
-            <span class="quick-tag-pill" onclick="applyQuickTag('Excel')">Excel</span>
-            <span class="quick-tag-pill" onclick="applyQuickTag('Machine Learning')">Machine Learning</span>
-            <span class="quick-tag-pill" onclick="applyQuickTag('React')">React</span>
-            <span class="quick-tag-pill" onclick="applyQuickTag('AWS')">AWS</span>
-            <span class="quick-tag-pill" onclick="applyQuickTag('Docker')">Docker</span>
-            <span class="quick-tag-pill" onclick="applyQuickTag('Java')">Java</span>
-            <span class="quick-tag-pill" onclick="applyQuickTag('Figma')">Figma</span>
-            <span class="quick-tag-pill" onclick="applyQuickTag('Bangalore')">Bangalore</span>
-            <span class="quick-tag-pill" onclick="applyQuickTag('Chennai')">Chennai</span>
         </div>
     </div>
 
-    <!-- KPI Metric Cards -->
+    <!-- =====================================================================
+         MOBILE-FIRST SEARCH INTERFACE (Shown Strictly on <= 991px)
+         ===================================================================== -->
+    <div class="salary-mobile-only">
+        <div class="salary-mobile-search-card">
+            <div class="mobile-search-section-header">
+                <span class="mobile-search-section-title">
+                    <i class="fas fa-sliders" style="color:#6366f1;"></i> Filter Salary Benchmarks
+                </span>
+                <span class="badge" style="background:rgba(99, 102, 241, 0.15); color:#818cf8; font-size:11px; padding:3px 8px;">
+                    Mobile Analytics
+                </span>
+            </div>
+
+            <div class="mobile-search-fields-stack">
+
+                <!-- 1. Role Search with Autocomplete & Active Selection -->
+                <div class="mobile-form-field">
+                    <label class="mobile-field-label" for="mobile-role-input">
+                        <i class="fas fa-user-tie" style="color:#6366f1;"></i> Job Role
+                    </label>
+                    <div class="mobile-autocomplete-wrap">
+                        <div class="mobile-autocomplete-input-row">
+                            <i class="fas fa-briefcase mobile-autocomplete-icon"></i>
+                            <input type="text" id="mobile-role-input" class="salary-mobile-input with-icon" placeholder="Search 125+ roles (e.g. Data, React)..." autocomplete="off" oninput="handleMobileRoleInput()" onfocus="showMobileRoleSuggestions()">
+                            <button type="button" class="mobile-input-clear-btn" id="mobile-role-input-clear" onclick="clearMobileRole()">&times;</button>
+                        </div>
+                        <!-- Active Selected Chip -->
+                        <div class="mobile-selected-chip" id="mobile-role-selected-chip">
+                            <span><i class="fas fa-check-circle" style="margin-right:6px;"></i><span id="mobile-role-selected-text">All Roles</span></span>
+                            <button type="button" class="mobile-chip-clear" onclick="clearMobileRole()" title="Clear role">&times;</button>
+                        </div>
+                        <!-- Compact Suggestions Tray -->
+                        <div class="mobile-suggestions-tray" id="mobile-role-suggestions" data-lenis-prevent></div>
+                    </div>
+                </div>
+
+                <!-- 2. Location Search (City, State, Country) -->
+                <div class="mobile-form-field">
+                    <label class="mobile-field-label" for="mobile-location-input">
+                        <i class="fas fa-map-marker-alt" style="color:#10b981;"></i> Location / City / State
+                    </label>
+                    <div class="mobile-autocomplete-wrap">
+                        <div class="mobile-autocomplete-input-row">
+                            <i class="fas fa-location-dot mobile-autocomplete-icon" style="color:#10b981;"></i>
+                            <input type="text" id="mobile-location-input" class="salary-mobile-input with-icon" placeholder="Search city, state, country..." autocomplete="off" oninput="handleMobileLocationInput()" onfocus="showMobileLocationSuggestions()">
+                            <button type="button" class="mobile-input-clear-btn" id="mobile-location-input-clear" onclick="clearMobileLocation()">&times;</button>
+                        </div>
+                        <!-- Active Selected Chip -->
+                        <div class="mobile-selected-chip" id="mobile-location-selected-chip" style="background:rgba(16, 185, 129, 0.12); border-color:rgba(16, 185, 129, 0.35); color:#34d399;">
+                            <span><i class="fas fa-check-circle" style="margin-right:6px;"></i><span id="mobile-location-selected-text">All Locations</span></span>
+                            <button type="button" class="mobile-chip-clear" onclick="clearMobileLocation()" style="color:#34d399;" title="Clear location">&times;</button>
+                        </div>
+                        <!-- Compact Suggestions Tray -->
+                        <div class="mobile-suggestions-tray" id="mobile-location-suggestions" data-lenis-prevent></div>
+                    </div>
+                </div>
+
+                <!-- 3. Experience Level Dropdown -->
+                <div class="mobile-form-field">
+                    <label class="mobile-field-label" for="mobile-filter-experience">
+                        <i class="fas fa-layer-group" style="color:#06b6d4;"></i> Experience Level
+                    </label>
+                    <select id="mobile-filter-experience" class="salary-mobile-select" onchange="syncFromMobileAndFetch()">
+                        <option value="">All Experience Bands</option>
+                        <option value="0–1 Years">0–1 Years (Entry Level)</option>
+                        <option value="1–3 Years">1–3 Years (Junior / Mid)</option>
+                        <option value="3–5 Years">3–5 Years (Mid-Senior)</option>
+                        <option value="5–8 Years">5–8 Years (Senior)</option>
+                        <option value="8+ Years">8+ Years (Lead / Principal)</option>
+                    </select>
+                </div>
+
+                <!-- 4. Salary Filters: Minimum & Maximum (Stacked / 2-Col Grid) -->
+                <div class="mobile-form-field">
+                    <label class="mobile-field-label">
+                        <i class="fas fa-indian-rupee-sign" style="color:#f59e0b;"></i> Salary Filter Range (₹ LPA)
+                    </label>
+                    <div class="mobile-salary-range-grid">
+                        <div>
+                            <input type="number" step="0.5" min="0" id="mobile-min-salary" class="salary-mobile-input" placeholder="Min (e.g. 6.0)" inputmode="decimal" onchange="syncFromMobileAndFetch()">
+                        </div>
+                        <div>
+                            <input type="number" step="0.5" min="0" id="mobile-max-salary" class="salary-mobile-input" placeholder="Max (e.g. 25.0)" inputmode="decimal" onchange="syncFromMobileAndFetch()">
+                        </div>
+                    </div>
+                    <!-- Quick Salary Range Pills -->
+                    <div class="mobile-range-pills-row">
+                        <button type="button" class="mobile-salary-pill" onclick="setMobileSalaryRange(0, 6, this)">&lt; ₹6 LPA</button>
+                        <button type="button" class="mobile-salary-pill" onclick="setMobileSalaryRange(6, 12, this)">₹6–12 LPA</button>
+                        <button type="button" class="mobile-salary-pill" onclick="setMobileSalaryRange(12, 20, this)">₹12–20 LPA</button>
+                        <button type="button" class="mobile-salary-pill" onclick="setMobileSalaryRange(20, 35, this)">₹20–35 LPA</button>
+                        <button type="button" class="mobile-salary-pill" onclick="setMobileSalaryRange(35, '', this)">₹35+ LPA</button>
+                        <button type="button" class="mobile-salary-pill" onclick="setMobileSalaryRange('', '', this)">All Salaries</button>
+                    </div>
+                </div>
+
+                <!-- 5. Technology / Skill Stack -->
+                <div class="mobile-form-field">
+                    <label class="mobile-field-label" for="mobile-filter-skill">
+                        <i class="fas fa-code" style="color:#ec4899;"></i> Technology / Skill Stack
+                    </label>
+                    <select id="mobile-filter-skill" class="salary-mobile-select" onchange="syncFromMobileAndFetch()">
+                        <option value="">All Technologies & Skills</option>
+                        <option value="Python">Python</option>
+                        <option value="SQL">SQL</option>
+                        <option value="Power BI">Power BI</option>
+                        <option value="Excel">Excel / Analytics</option>
+                        <option value="Java">Java / Spring Boot</option>
+                        <option value="JavaScript">JavaScript</option>
+                        <option value="React">React / Next.js</option>
+                        <option value="Node.js">Node.js</option>
+                        <option value="AWS">AWS Cloud</option>
+                        <option value="Docker">Docker & Containerization</option>
+                        <option value="Kubernetes">Kubernetes</option>
+                        <option value="Tableau">Tableau</option>
+                        <option value="Figma">Figma</option>
+                        <option value="PyTorch">PyTorch / Deep Learning</option>
+                        <option value="Go">Go (Golang)</option>
+                    </select>
+                </div>
+
+                <!-- 6. Keyword Search Input (Multi-Token, Enter Key, Clear Button) -->
+                <div class="mobile-form-field">
+                    <label class="mobile-field-label" for="mobile-filter-search">
+                        <i class="fas fa-magnifying-glass" style="color:#f59e0b;"></i> Keyword Search
+                    </label>
+                    <div class="mobile-autocomplete-wrap">
+                        <div class="mobile-autocomplete-input-row">
+                            <i class="fas fa-search mobile-autocomplete-icon" style="color:#f59e0b;"></i>
+                            <input type="search" id="mobile-filter-search" class="salary-mobile-input with-icon" placeholder="Search role, stack, city, keywords..." enterkeyhint="search" autocapitalize="none" autocorrect="off" spellcheck="false" oninput="debounceMobileKeywordSearch()" onkeydown="handleMobileSearchKeydown(event)">
+                            <button type="button" class="mobile-input-clear-btn" id="mobile-search-clear-btn" onclick="clearMobileKeywordSearch()">&times;</button>
+                        </div>
+                    </div>
+                    <!-- Popular Search Pills -->
+                    <div class="mobile-range-pills-row" style="margin-top:2px;">
+                        <span style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; align-self:center; margin-right:2px;">Popular:</span>
+                        <button type="button" class="mobile-salary-pill" onclick="applyMobileQuickTag('Python')">Python</button>
+                        <button type="button" class="mobile-salary-pill" onclick="applyMobileQuickTag('SQL')">SQL</button>
+                        <button type="button" class="mobile-salary-pill" onclick="applyMobileQuickTag('React')">React</button>
+                        <button type="button" class="mobile-salary-pill" onclick="applyMobileQuickTag('AWS')">AWS</button>
+                        <button type="button" class="mobile-salary-pill" onclick="applyMobileQuickTag('Bangalore')">Bangalore</button>
+                        <button type="button" class="mobile-salary-pill" onclick="applyMobileQuickTag('Chennai')">Chennai</button>
+                    </div>
+                </div>
+
+                <!-- 7. Action Controls -->
+                <div class="mobile-search-actions">
+                    <button type="button" class="btn-mobile-search-primary" onclick="applyMobileFilters()">
+                        <i class="fas fa-search"></i> Search Benchmarks
+                    </button>
+                    <button type="button" class="btn-mobile-reset" onclick="resetAllFilters()">
+                        <i class="fas fa-rotate-left"></i> Reset All Filters
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================================
+         RESULT SUMMARY (KPI Cards: 4 Cards in 2x2 Grid on Mobile)
+         ===================================================================== -->
     <div class="kpi-stat-grid">
         <!-- 1. Average Salary -->
-        <div class="kpi-card">
+        <div class="kpi-card card-indigo">
             <div>
                 <div class="kpi-title">
                     <span>Average Salary</span>
-                    <i class="fas fa-chart-line" style="color:#6366f1; font-size:16px;"></i>
+                    <i class="fas fa-chart-line" style="color:#6366f1;"></i>
                 </div>
                 <div class="kpi-value" id="kpi-avg-salary">₹0.0 LPA</div>
             </div>
@@ -619,11 +1232,11 @@
         </div>
 
         <!-- 2. Minimum Salary -->
-        <div class="kpi-card">
+        <div class="kpi-card card-cyan">
             <div>
                 <div class="kpi-title">
                     <span>Minimum Salary</span>
-                    <i class="fas fa-arrow-down-short-wide" style="color:#06b6d4; font-size:16px;"></i>
+                    <i class="fas fa-arrow-down-short-wide" style="color:#06b6d4;"></i>
                 </div>
                 <div class="kpi-value" id="kpi-min-salary">₹0.0 LPA</div>
             </div>
@@ -634,37 +1247,39 @@
         </div>
 
         <!-- 3. Maximum Salary -->
-        <div class="kpi-card">
+        <div class="kpi-card card-emerald">
             <div>
                 <div class="kpi-title">
                     <span>Maximum Salary</span>
-                    <i class="fas fa-arrow-up-wide-short" style="color:#10b981; font-size:16px;"></i>
+                    <i class="fas fa-arrow-up-wide-short" style="color:#10b981;"></i>
                 </div>
                 <div class="kpi-value" id="kpi-max-salary">₹0.0 LPA</div>
             </div>
             <div class="kpi-sub">
                 <span style="color:#94a3b8;">Top tier:</span>
-                <span>Senior & lead compensation</span>
+                <span>Senior compensation</span>
             </div>
         </div>
 
         <!-- 4. Median Salary -->
-        <div class="kpi-card">
+        <div class="kpi-card card-purple">
             <div>
                 <div class="kpi-title">
                     <span>Median Salary</span>
-                    <i class="fas fa-balance-scale" style="color:#a855f7; font-size:16px;"></i>
+                    <i class="fas fa-balance-scale" style="color:#a855f7;"></i>
                 </div>
                 <div class="kpi-value" id="kpi-median-salary">₹0.0 LPA</div>
             </div>
             <div class="kpi-sub">
-                <span style="color:#94a3b8;">Survey Points:</span>
+                <span style="color:#94a3b8;">Data Points:</span>
                 <strong id="kpi-total-points" style="color:#f8fafc;">0+</strong>
             </div>
         </div>
     </div>
 
-    <!-- 5 Interactive Charts Grid -->
+    <!-- =====================================================================
+         5 INTERACTIVE CHARTS (Responsive & Viewport Fitted)
+         ===================================================================== -->
     <div class="chart-grid">
         <!-- Chart 1: Average Salary by Job Role -->
         <div class="chart-card-lg">
@@ -685,7 +1300,7 @@
             <div class="chart-header">
                 <h3 class="chart-title">
                     <i class="fas fa-chart-area" style="color:#06b6d4;"></i>
-                    Salary Progression by Experience (LPA)
+                    Salary by Experience (LPA)
                 </h3>
                 <span style="font-size:var(--font-size-xs); color:#64748b;">Bands Progression</span>
             </div>
@@ -701,7 +1316,7 @@
                     <i class="fas fa-city" style="color:#10b981;"></i>
                     Salary Benchmark by Location (LPA)
                 </h3>
-                <span style="font-size:var(--font-size-xs); color:#64748b;">Major Metros & Hubs</span>
+                <span style="font-size:var(--font-size-xs); color:#64748b;">Metros & Hubs</span>
             </div>
             <div class="chart-canvas-wrapper">
                 <canvas id="chartLocation"></canvas>
@@ -727,7 +1342,7 @@
             <div class="chart-header">
                 <h3 class="chart-title">
                     <i class="fas fa-code-branch" style="color:#ec4899;"></i>
-                    Average Compensation by Technology / Skill Stack (LPA)
+                    Average Compensation by Skill Stack (LPA)
                 </h3>
                 <span style="font-size:var(--font-size-xs); color:#64748b;">Tech Premium</span>
             </div>
@@ -737,7 +1352,9 @@
         </div>
     </div>
 
-    <!-- Data Table Section -->
+    <!-- =====================================================================
+         DATA TABLE & MOBILE BENCHMARK CARDS
+         ===================================================================== -->
     <div class="table-container-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-5); flex-wrap:wrap; gap:var(--space-3);">
             <div>
@@ -754,7 +1371,7 @@
                 <label for="table-sort" style="font-size:var(--font-size-xs); color:#94a3b8; font-weight:600; white-space:nowrap;">
                     Sort By:
                 </label>
-                <select id="table-sort" class="form-select" style="padding:6px 12px; font-size:var(--font-size-xs); width:auto; height:36px; background:#090d16; border:1px solid #1e293b; color:#f8fafc; border-radius:8px;" onchange="fetchSalaryAnalytics()">
+                <select id="table-sort" class="form-select" style="padding:6px 12px; font-size:var(--font-size-xs); width:auto; height:36px; background:#090d16; border:1px solid #1e293b; color:#f8fafc; border-radius:8px;" onchange="syncSortAndFetch()">
                     <option value="avg_desc">Average Salary: High to Low</option>
                     <option value="avg_asc">Average Salary: Low to High</option>
                     <option value="max_desc">Maximum Salary: High to Low</option>
@@ -764,41 +1381,75 @@
             </div>
         </div>
 
-        <div style="overflow-x:auto;" data-lenis-prevent>
-            <table class="salary-table">
-                <thead>
-                    <tr>
-                        <th>Job Role</th>
-                        <th>Experience</th>
-                        <th>Location</th>
-                        <th>Technology / Skill</th>
-                        <th>Min Salary</th>
-                        <th>Avg Salary</th>
-                        <th>Max Salary</th>
-                        <th>Sample Size</th>
-                    </tr>
-                </thead>
-                <tbody id="salary-table-body">
-                    <tr>
-                        <td colspan="8" style="text-align:center; padding:30px; color:#94a3b8;">
-                            <i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i> Loading compensation benchmarks...
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <!-- Desktop Viewport: Standard Data Table -->
+        <div class="salary-desktop-table-wrap">
+            <div style="overflow-x:auto;" data-lenis-prevent>
+                <div class="table-responsive table-responsive-cards">
+                    <table class="salary-table">
+                        <thead>
+                            <tr>
+                                <th>Job Role</th>
+                                <th>Experience</th>
+                                <th>Location</th>
+                                <th>Technology / Skill</th>
+                                <th>Min Salary</th>
+                                <th>Avg Salary</th>
+                                <th>Max Salary</th>
+                                <th>Sample Size</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salary-table-body">
+                            <tr>
+                                <td colspan="8" style="text-align:center; padding:30px; color:#94a3b8;">
+                                    <i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i> Loading compensation benchmarks...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Viewport: Touch-Friendly Benchmark Cards Stream -->
+        <div class="salary-mobile-cards-list" id="salary-mobile-cards-list">
+            <div style="text-align:center; padding:30px; color:#94a3b8;">
+                <i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i> Loading compensation benchmarks...
+            </div>
         </div>
     </div>
 
 </div>
 
-<!-- JavaScript Engine for Searchable Comboboxes & Analytics -->
+<!-- =========================================================================
+     JAVASCRIPT ENGINE: SEARCH, AUTOCOMPLETE, CHARTS & STATE SYNC
+     ========================================================================= -->
 <script>
+    // Server-injected data
+    const ALL_ROLES = {{ all_roles|tojson|safe }};
+    const ALL_LOCATIONS_LIST = {{ all_locations|tojson|safe }};
+    const LOCATION_METADATA_MAP = {{ location_metadata|tojson|safe }};
+
     let chartRoleInstance = null;
     let chartExperienceInstance = null;
     let chartLocationInstance = null;
     let chartDistributionInstance = null;
     let chartSkillInstance = null;
+    
     let debounceTimer = null;
+    let mobileDebounceTimer = null;
+    let currentRequestId = 0;
+
+    // Master unified state
+    const salaryState = {
+        role: '',
+        location: '',
+        experience: '',
+        skill: '',
+        search: '',
+        minSalary: '',
+        maxSalary: '',
+        sortBy: 'avg_desc'
+    };
 
     function escapeHtml(str) {
         if (!str) return '';
@@ -810,14 +1461,13 @@
             .replace(/'/g, "&#039;");
     }
 
-    // Combobox Dropdown Controller
+    // =========================================================================
+    // DESKTOP COMBOBOX CONTROLLER (Preserved Exactly)
+    // =========================================================================
     function toggleCombobox(type) {
         const combobox = document.getElementById(`${type}-combobox`);
         const isOpen = combobox.classList.contains('open');
-        
-        // Close all comboboxes first
         closeAllComboboxes();
-
         if (!isOpen) {
             combobox.classList.add('open');
             const searchInput = document.getElementById(`${type}-search-input`);
@@ -833,21 +1483,22 @@
         });
     }
 
-    // Dismiss combobox on outside click
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.custom-combobox')) {
             closeAllComboboxes();
         }
-    });
-
-    // Dismiss on Escape key
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' || e.key === 'Esc') {
-            closeAllComboboxes();
+        if (!e.target.closest('.mobile-autocomplete-wrap')) {
+            closeMobileSuggestionTrays();
         }
     });
 
-    // Dynamic Filter inside Combobox
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' || e.key === 'Esc') {
+            closeAllComboboxes();
+            closeMobileSuggestionTrays();
+        }
+    });
+
     function filterComboboxOptions(type) {
         const query = document.getElementById(`${type}-search-input`).value.toLowerCase().trim();
         const clearBtn = document.getElementById(`${type}-search-clear`);
@@ -870,7 +1521,6 @@
             }
         });
 
-        // Hide headers if no options visible under that category
         headers.forEach(header => {
             const cat = header.getAttribute('data-category');
             if (cat) {
@@ -879,7 +1529,6 @@
             }
         });
 
-        // Show empty message if needed
         let emptyMsg = optionsList.querySelector('.combobox-option-empty');
         if (!matchCount && query) {
             if (!emptyMsg) {
@@ -904,22 +1553,23 @@
     }
 
     function selectComboboxOption(type, value, labelText) {
-        // Set hidden input value
-        document.getElementById(`filter-${type}`).value = value;
+        salaryState[type] = value;
+        const hiddenInput = document.getElementById(`filter-${type}`);
+        if (hiddenInput) hiddenInput.value = value;
 
-        // Update trigger text
         const triggerText = document.getElementById(`${type}-selected-text`);
-        if (type === 'role') {
-            triggerText.innerHTML = value 
-                ? `<i class="fas fa-user-tie" style="color:#6366f1; font-size:12px;"></i> ${escapeHtml(labelText)}`
-                : `<i class="fas fa-briefcase" style="color:#818cf8; font-size:12px;"></i> All Roles`;
-        } else if (type === 'location') {
-            triggerText.innerHTML = value 
-                ? `<i class="fas fa-map-pin" style="color:#10b981; font-size:12px;"></i> ${escapeHtml(labelText)}`
-                : `<i class="fas fa-globe" style="color:#34d399; font-size:12px;"></i> All Locations`;
+        if (triggerText) {
+            if (type === 'role') {
+                triggerText.innerHTML = value 
+                    ? `<i class="fas fa-user-tie" style="color:#6366f1; font-size:12px;"></i> ${escapeHtml(labelText)}`
+                    : `<i class="fas fa-briefcase" style="color:#818cf8; font-size:12px;"></i> All Roles`;
+            } else if (type === 'location') {
+                triggerText.innerHTML = value 
+                    ? `<i class="fas fa-map-pin" style="color:#10b981; font-size:12px;"></i> ${escapeHtml(labelText)}`
+                    : `<i class="fas fa-globe" style="color:#34d399; font-size:12px;"></i> All Locations`;
+            }
         }
 
-        // Highlight selected option
         const options = document.querySelectorAll(`#${type}-options-list .combobox-option`);
         options.forEach(opt => {
             const optVal = opt.getAttribute('data-value') || '';
@@ -940,89 +1590,426 @@
             }
         });
 
-        // Close dropdown
         closeAllComboboxes();
-
-        // Refresh analytics
+        syncStateToMobile();
         fetchSalaryAnalytics();
     }
 
-    // Keyword Search Handler
-    function debounceFetchSalaryAnalytics() {
+    function debounceDesktopSearch() {
         const searchInput = document.getElementById('filter-search');
         const clearBtn = document.getElementById('search-clear-btn');
         if (clearBtn) {
             clearBtn.style.display = searchInput.value.trim() ? 'block' : 'none';
         }
+        salaryState.search = searchInput.value.trim();
 
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
+            syncStateToMobile();
             fetchSalaryAnalytics();
         }, 300);
     }
 
-    function clearKeywordSearch() {
+    function clearDesktopKeywordSearch() {
         const searchInput = document.getElementById('filter-search');
-        searchInput.value = '';
+        if (searchInput) searchInput.value = '';
         const clearBtn = document.getElementById('search-clear-btn');
         if (clearBtn) clearBtn.style.display = 'none';
-        
-        // Remove active class on quick tags
-        document.querySelectorAll('.quick-tag-pill').forEach(p => p.classList.remove('active'));
-
+        salaryState.search = '';
+        syncStateToMobile();
         fetchSalaryAnalytics();
     }
 
-    function applyQuickTag(tag) {
-        const searchInput = document.getElementById('filter-search');
-        searchInput.value = tag;
-        const clearBtn = document.getElementById('search-clear-btn');
-        if (clearBtn) clearBtn.style.display = 'block';
-
-        // Highlight clicked pill
-        document.querySelectorAll('.quick-tag-pill').forEach(p => {
-            p.classList.toggle('active', p.textContent.trim() === tag);
-        });
-
+    function syncFromDesktopAndFetch() {
+        salaryState.experience = document.getElementById('filter-experience')?.value || '';
+        salaryState.skill = document.getElementById('filter-skill')?.value || '';
+        syncStateToMobile();
         fetchSalaryAnalytics();
     }
 
     function clearSalaryFilters() {
         selectComboboxOption('role', '', 'All Roles');
         selectComboboxOption('location', '', 'All Locations');
-        document.getElementById('filter-experience').value = '';
-        document.getElementById('filter-skill').value = '';
-        document.getElementById('filter-search').value = '';
+        if (document.getElementById('filter-experience')) document.getElementById('filter-experience').value = '';
+        if (document.getElementById('filter-skill')) document.getElementById('filter-skill').value = '';
+        if (document.getElementById('filter-search')) document.getElementById('filter-search').value = '';
         const clearBtn = document.getElementById('search-clear-btn');
         if (clearBtn) clearBtn.style.display = 'none';
-        document.getElementById('table-sort').value = 'avg_desc';
-        
+        if (document.getElementById('table-sort')) document.getElementById('table-sort').value = 'avg_desc';
+
         document.querySelectorAll('.quick-tag-pill').forEach(p => p.classList.remove('active'));
+
+        salaryState.experience = '';
+        salaryState.skill = '';
+        salaryState.search = '';
+        salaryState.minSalary = '';
+        salaryState.maxSalary = '';
+        salaryState.sortBy = 'avg_desc';
+
+        syncStateToMobile();
+        fetchSalaryAnalytics();
+    }
+
+    function applyQuickTag(tag) {
+        const searchInput = document.getElementById('filter-search');
+        if (searchInput) searchInput.value = tag;
+        const clearBtn = document.getElementById('search-clear-btn');
+        if (clearBtn) clearBtn.style.display = 'block';
+
+        document.querySelectorAll('.quick-tag-pill').forEach(p => {
+            p.classList.toggle('active', p.textContent.trim() === tag);
+        });
+
+        salaryState.search = tag;
+        syncStateToMobile();
+        fetchSalaryAnalytics();
+    }
+
+    // =========================================================================
+    // MOBILE AUTOCOMPLETE & SEARCH CONTROLLERS (<= 991px)
+    // =========================================================================
+    function closeMobileSuggestionTrays() {
+        const roleTray = document.getElementById('mobile-role-suggestions');
+        const locTray = document.getElementById('mobile-location-suggestions');
+        if (roleTray) roleTray.style.display = 'none';
+        if (locTray) locTray.style.display = 'none';
+    }
+
+    // Mobile Role Autocomplete
+    function showMobileRoleSuggestions() {
+        const tray = document.getElementById('mobile-role-suggestions');
+        const query = (document.getElementById('mobile-role-input')?.value || '').toLowerCase().trim();
+        renderMobileRoleSuggestions(query);
+        tray.style.display = 'block';
+    }
+
+    function handleMobileRoleInput() {
+        const input = document.getElementById('mobile-role-input');
+        const clearBtn = document.getElementById('mobile-role-input-clear');
+        const query = input.value.toLowerCase().trim();
+        if (clearBtn) clearBtn.style.display = query ? 'flex' : 'none';
+        renderMobileRoleSuggestions(query);
+        document.getElementById('mobile-role-suggestions').style.display = 'block';
+    }
+
+    function renderMobileRoleSuggestions(query) {
+        const tray = document.getElementById('mobile-role-suggestions');
+        if (!tray) return;
+
+        let matches = ALL_ROLES.filter(r => !query || r.toLowerCase().includes(query));
+        if (!query) {
+            // Default top recommendations
+            const popular = ["Data Analyst", "Software Engineer", "DevOps Engineer", "Frontend Developer", "Data Scientist", "Product Manager", "Full Stack Developer", "Cloud Architect"];
+            matches = popular;
+        }
+
+        if (!matches.length) {
+            tray.innerHTML = `<div style="padding:14px; text-align:center; color:#64748b; font-size:12.5px;"><i class="fas fa-search" style="margin-right:6px;"></i>No roles match "${escapeHtml(query)}"</div>`;
+            return;
+        }
+
+        // Limit to top 5-6 results so it never overwhelms mobile screen
+        const displayMatches = matches.slice(0, 6);
+        tray.innerHTML = displayMatches.map(r => `
+            <div class="mobile-suggestion-item" onclick="selectMobileRole('${escapeHtml(r)}')">
+                <div>
+                    <div style="font-weight:600; color:#f8fafc;">${escapeHtml(r)}</div>
+                    <div class="mobile-suggestion-item-sub"><i class="fas fa-briefcase" style="font-size:10px; margin-right:4px;"></i>Job Role</div>
+                </div>
+                <i class="fas fa-arrow-turn-down" style="font-size:11px; color:#818cf8; transform:rotate(-90deg);"></i>
+            </div>
+        `).join('');
+    }
+
+    function selectMobileRole(roleName) {
+        salaryState.role = roleName;
+        const input = document.getElementById('mobile-role-input');
+        if (input) input.value = '';
+        const clearBtn = document.getElementById('mobile-role-input-clear');
+        if (clearBtn) clearBtn.style.display = 'none';
+
+        const chip = document.getElementById('mobile-role-selected-chip');
+        const chipText = document.getElementById('mobile-role-selected-text');
+        if (chip && chipText) {
+            chipText.textContent = roleName || 'All Roles';
+            chip.style.display = roleName ? 'flex' : 'none';
+        }
+
+        closeMobileSuggestionTrays();
+        syncStateToDesktop();
+        fetchSalaryAnalytics();
+    }
+
+    function clearMobileRole() {
+        selectMobileRole('');
+    }
+
+    // Mobile Location Autocomplete
+    function showMobileLocationSuggestions() {
+        const tray = document.getElementById('mobile-location-suggestions');
+        const query = (document.getElementById('mobile-location-input')?.value || '').toLowerCase().trim();
+        renderMobileLocationSuggestions(query);
+        tray.style.display = 'block';
+    }
+
+    function handleMobileLocationInput() {
+        const input = document.getElementById('mobile-location-input');
+        const clearBtn = document.getElementById('mobile-location-input-clear');
+        const query = input.value.toLowerCase().trim();
+        if (clearBtn) clearBtn.style.display = query ? 'flex' : 'none';
+        renderMobileLocationSuggestions(query);
+        document.getElementById('mobile-location-suggestions').style.display = 'block';
+    }
+
+    function renderMobileLocationSuggestions(query) {
+        const tray = document.getElementById('mobile-location-suggestions');
+        if (!tray) return;
+
+        // Build list of searchable locations including states
+        const list = [];
+        // Add popular regions/states
+        const stateRegions = [
+            { value: 'Tamil Nadu', label: 'Tamil Nadu (State — Chennai, Coimbatore, Madurai...)', type: 'State', sub: 'State / Region' },
+            { value: 'Karnataka', label: 'Karnataka (State — Bangalore Tech Hub)', type: 'State', sub: 'State / Region' },
+            { value: 'Maharashtra', label: 'Maharashtra (State — Mumbai, Pune)', type: 'State', sub: 'State / Region' },
+            { value: 'Telangana', label: 'Telangana (State — Hyderabad)', type: 'State', sub: 'State / Region' }
+        ];
+
+        ALL_LOCATIONS_LIST.forEach(loc => {
+            const meta = LOCATION_METADATA_MAP[loc] || {};
+            const city = meta.city || loc;
+            const state = meta.state || '';
+            const country = meta.country || 'India';
+            const searchable = `${loc} ${city} ${state} ${country}`.toLowerCase();
+            if (!query || searchable.includes(query)) {
+                list.push({
+                    value: loc,
+                    label: loc,
+                    sub: `${state ? state + ', ' : ''}${country}`,
+                    type: 'City'
+                });
+            }
+        });
+
+        stateRegions.forEach(sr => {
+            if (!query || sr.value.toLowerCase().includes(query) || sr.label.toLowerCase().includes(query)) {
+                list.unshift(sr);
+            }
+        });
+
+        if (!list.length) {
+            tray.innerHTML = `<div style="padding:14px; text-align:center; color:#64748b; font-size:12.5px;"><i class="fas fa-search" style="margin-right:6px;"></i>No locations match "${escapeHtml(query)}"</div>`;
+            return;
+        }
+
+        const displayMatches = list.slice(0, 6);
+        tray.innerHTML = displayMatches.map(loc => `
+            <div class="mobile-suggestion-item" onclick="selectMobileLocation('${escapeHtml(loc.value)}')">
+                <div>
+                    <div style="font-weight:600; color:#f8fafc;">${escapeHtml(loc.label)}</div>
+                    <div class="mobile-suggestion-item-sub"><i class="fas fa-map-marker-alt" style="font-size:10px; margin-right:4px; color:#10b981;"></i>${escapeHtml(loc.sub)}</div>
+                </div>
+                <i class="fas fa-arrow-turn-down" style="font-size:11px; color:#10b981; transform:rotate(-90deg);"></i>
+            </div>
+        `).join('');
+    }
+
+    function selectMobileLocation(locationName) {
+        salaryState.location = locationName;
+        const input = document.getElementById('mobile-location-input');
+        if (input) input.value = '';
+        const clearBtn = document.getElementById('mobile-location-input-clear');
+        if (clearBtn) clearBtn.style.display = 'none';
+
+        const chip = document.getElementById('mobile-location-selected-chip');
+        const chipText = document.getElementById('mobile-location-selected-text');
+        if (chip && chipText) {
+            chipText.textContent = locationName || 'All Locations';
+            chip.style.display = locationName ? 'flex' : 'none';
+        }
+
+        closeMobileSuggestionTrays();
+        syncStateToDesktop();
+        fetchSalaryAnalytics();
+    }
+
+    function clearMobileLocation() {
+        selectMobileLocation('');
+    }
+
+    // Mobile Salary Range Controls
+    function setMobileSalaryRange(minVal, maxVal, buttonEl) {
+        document.getElementById('mobile-min-salary').value = minVal !== '' ? minVal : '';
+        document.getElementById('mobile-max-salary').value = maxVal !== '' ? maxVal : '';
+        
+        salaryState.minSalary = minVal !== '' ? String(minVal) : '';
+        salaryState.maxSalary = maxVal !== '' ? String(maxVal) : '';
+
+        if (buttonEl) {
+            document.querySelectorAll('.mobile-salary-pill').forEach(p => p.classList.remove('active'));
+            buttonEl.classList.add('active');
+        }
 
         fetchSalaryAnalytics();
     }
 
-    async function fetchSalaryAnalytics() {
-        const role = document.getElementById('filter-role').value;
-        const experience = document.getElementById('filter-experience').value;
-        const location = document.getElementById('filter-location').value;
-        const skill = document.getElementById('filter-skill').value;
-        const search = document.getElementById('filter-search').value.trim();
-        const sortBy = document.getElementById('table-sort').value;
+    // Mobile Keyword Search Controls (Root-Cause Fix for Multi-Word, Virtual Keyboards & Debounce)
+    function debounceMobileKeywordSearch() {
+        const input = document.getElementById('mobile-filter-search');
+        const clearBtn = document.getElementById('mobile-search-clear-btn');
+        if (clearBtn) {
+            clearBtn.style.display = input.value.trim() ? 'flex' : 'none';
+        }
+        salaryState.search = input.value.trim();
 
+        clearTimeout(mobileDebounceTimer);
+        mobileDebounceTimer = setTimeout(() => {
+            syncStateToDesktop();
+            fetchSalaryAnalytics();
+        }, 300);
+    }
+
+    function handleMobileSearchKeydown(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            clearTimeout(mobileDebounceTimer);
+            const input = document.getElementById('mobile-filter-search');
+            salaryState.search = input.value.trim();
+            syncStateToDesktop();
+            fetchSalaryAnalytics();
+            input.blur(); // Dismiss mobile virtual keyboard
+        }
+    }
+
+    function clearMobileKeywordSearch() {
+        const input = document.getElementById('mobile-filter-search');
+        if (input) input.value = '';
+        const clearBtn = document.getElementById('mobile-search-clear-btn');
+        if (clearBtn) clearBtn.style.display = 'none';
+        salaryState.search = '';
+        syncStateToDesktop();
+        fetchSalaryAnalytics();
+    }
+
+    function applyMobileQuickTag(tag) {
+        const input = document.getElementById('mobile-filter-search');
+        if (input) input.value = tag;
+        const clearBtn = document.getElementById('mobile-search-clear-btn');
+        if (clearBtn) clearBtn.style.display = 'flex';
+        salaryState.search = tag;
+        syncStateToDesktop();
+        fetchSalaryAnalytics();
+    }
+
+    function syncFromMobileAndFetch() {
+        salaryState.experience = document.getElementById('mobile-filter-experience')?.value || '';
+        salaryState.skill = document.getElementById('mobile-filter-skill')?.value || '';
+        salaryState.minSalary = document.getElementById('mobile-min-salary')?.value || '';
+        salaryState.maxSalary = document.getElementById('mobile-max-salary')?.value || '';
+        syncStateToDesktop();
+        fetchSalaryAnalytics();
+    }
+
+    function applyMobileFilters() {
+        syncFromMobileAndFetch();
+    }
+
+    function resetAllFilters() {
+        clearSalaryFilters();
+    }
+
+    function syncSortAndFetch() {
+        salaryState.sortBy = document.getElementById('table-sort').value;
+        fetchSalaryAnalytics();
+    }
+
+    // State Synchronization between Views
+    function syncStateToMobile() {
+        const roleChip = document.getElementById('mobile-role-selected-chip');
+        const roleChipText = document.getElementById('mobile-role-selected-text');
+        if (roleChip && roleChipText) {
+            roleChipText.textContent = salaryState.role || 'All Roles';
+            roleChip.style.display = salaryState.role ? 'flex' : 'none';
+        }
+
+        const locChip = document.getElementById('mobile-location-selected-chip');
+        const locChipText = document.getElementById('mobile-location-selected-text');
+        if (locChip && locChipText) {
+            locChipText.textContent = salaryState.location || 'All Locations';
+            locChip.style.display = salaryState.location ? 'flex' : 'none';
+        }
+
+        const expSelect = document.getElementById('mobile-filter-experience');
+        if (expSelect) expSelect.value = salaryState.experience;
+
+        const skillSelect = document.getElementById('mobile-filter-skill');
+        if (skillSelect) skillSelect.value = salaryState.skill;
+
+        const searchInput = document.getElementById('mobile-filter-search');
+        if (searchInput) {
+            searchInput.value = salaryState.search;
+            const clearBtn = document.getElementById('mobile-search-clear-btn');
+            if (clearBtn) clearBtn.style.display = salaryState.search ? 'flex' : 'none';
+        }
+    }
+
+    function syncStateToDesktop() {
+        const roleHidden = document.getElementById('filter-role');
+        if (roleHidden) roleHidden.value = salaryState.role;
+        const roleText = document.getElementById('role-selected-text');
+        if (roleText) {
+            roleText.innerHTML = salaryState.role
+                ? `<i class="fas fa-user-tie" style="color:#6366f1; font-size:12px;"></i> ${escapeHtml(salaryState.role)}`
+                : `<i class="fas fa-briefcase" style="color:#818cf8; font-size:12px;"></i> All Roles`;
+        }
+
+        const locHidden = document.getElementById('filter-location');
+        if (locHidden) locHidden.value = salaryState.location;
+        const locText = document.getElementById('location-selected-text');
+        if (locText) {
+            locText.innerHTML = salaryState.location
+                ? `<i class="fas fa-map-pin" style="color:#10b981; font-size:12px;"></i> ${escapeHtml(salaryState.location)}`
+                : `<i class="fas fa-globe" style="color:#34d399; font-size:12px;"></i> All Locations`;
+        }
+
+        const expSelect = document.getElementById('filter-experience');
+        if (expSelect) expSelect.value = salaryState.experience;
+
+        const skillSelect = document.getElementById('filter-skill');
+        if (skillSelect) skillSelect.value = salaryState.skill;
+
+        const searchInput = document.getElementById('filter-search');
+        if (searchInput) {
+            searchInput.value = salaryState.search;
+            const clearBtn = document.getElementById('search-clear-btn');
+            if (clearBtn) clearBtn.style.display = salaryState.search ? 'block' : 'none';
+        }
+    }
+
+    // =========================================================================
+    // API FETCHER & ANALYTICS RENDERER (Race-Condition Free)
+    // =========================================================================
+    async function fetchSalaryAnalytics() {
+        const requestId = ++currentRequestId;
         const params = new URLSearchParams({
-            role: role,
-            experience: experience,
-            location: location,
-            skill: skill,
-            search: search,
-            sort_by: sortBy
+            role: salaryState.role,
+            experience: salaryState.experience,
+            location: salaryState.location,
+            skill: salaryState.skill,
+            search: salaryState.search,
+            sort_by: salaryState.sortBy
         });
+
+        if (salaryState.minSalary) params.append('min_salary', salaryState.minSalary);
+        if (salaryState.maxSalary) params.append('max_salary', salaryState.maxSalary);
 
         try {
             const response = await fetch(`/api/salary_insights?${params.toString()}`);
             if (!response.ok) throw new Error('Network response was not ok');
             const data = await response.json();
+
+            // Discard stale responses from out-of-order execution
+            if (requestId !== currentRequestId) return;
 
             if (data.success) {
                 updateKpiCards(data.kpis);
@@ -1047,30 +2034,35 @@
         document.getElementById('kpi-total-points').textContent = `${(kpis.total_datapoints || 0).toLocaleString()}+`;
     }
 
+    // =========================================================================
+    // RESPONSIVE CHARTS ENGINE (Mobile Viewport Optimized)
+    // =========================================================================
     function updateCharts(charts) {
-        // Chart defaults
+        const isMobile = window.innerWidth <= 768;
+
         Chart.defaults.color = '#94a3b8';
         Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.08)';
         Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif';
 
-        // 1. Chart: Job Role (Horizontal Bar)
+        // 1. Chart: Job Role (Horizontal Bar, Top 5 on Mobile, Top 10 on Desktop)
         const ctxRole = document.getElementById('chartRole').getContext('2d');
         if (chartRoleInstance) chartRoleInstance.destroy();
+        const roleSliceLimit = isMobile ? 5 : 10;
         chartRoleInstance = new Chart(ctxRole, {
             type: 'bar',
             data: {
-                labels: charts.by_role.labels.length ? charts.by_role.labels.slice(0, 10) : ['No data'],
+                labels: charts.by_role.labels.length ? charts.by_role.labels.slice(0, roleSliceLimit) : ['No data'],
                 datasets: [
                     {
                         label: 'Average LPA',
-                        data: charts.by_role.avg_salaries.length ? charts.by_role.avg_salaries.slice(0, 10) : [0],
+                        data: charts.by_role.avg_salaries.length ? charts.by_role.avg_salaries.slice(0, roleSliceLimit) : [0],
                         backgroundColor: 'rgba(99, 102, 241, 0.85)',
                         hoverBackgroundColor: '#6366f1',
                         borderRadius: 6
                     },
                     {
                         label: 'Median LPA',
-                        data: charts.by_role.median_salaries.length ? charts.by_role.median_salaries.slice(0, 10) : [0],
+                        data: charts.by_role.median_salaries.length ? charts.by_role.median_salaries.slice(0, roleSliceLimit) : [0],
                         backgroundColor: 'rgba(168, 85, 247, 0.65)',
                         hoverBackgroundColor: '#a855f7',
                         borderRadius: 6
@@ -1082,21 +2074,28 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } },
+                    legend: { 
+                        position: 'bottom', 
+                        labels: { boxWidth: 10, padding: isMobile ? 8 : 15, font: { size: isMobile ? 11 : 12 } } 
+                    },
                     tooltip: {
+                        intersect: false,
                         callbacks: {
                             label: (context) => `${context.dataset.label}: ₹${context.raw} LPA`
                         }
                     }
                 },
                 scales: {
-                    x: { grid: { color: 'rgba(255,255,255,0.06)' }, title: { display: true, text: 'Salary (₹ LPA)' } },
-                    y: { grid: { display: false } }
+                    x: { grid: { color: 'rgba(255,255,255,0.06)' }, title: { display: !isMobile, text: 'Salary (₹ LPA)' } },
+                    y: { 
+                        grid: { display: false },
+                        ticks: { font: { size: isMobile ? 10.5 : 12 } }
+                    }
                 }
             }
         });
 
-        // 2. Chart: Experience (Line with filled range)
+        // 2. Chart: Experience (Line with simplified legend on mobile)
         const ctxExp = document.getElementById('chartExperience').getContext('2d');
         if (chartExperienceInstance) chartExperienceInstance.destroy();
         chartExperienceInstance = new Chart(ctxExp, {
@@ -1112,7 +2111,7 @@
                         fill: '+1',
                         tension: 0.35,
                         borderDash: [5, 5],
-                        pointRadius: 4
+                        pointRadius: isMobile ? 3 : 4
                     },
                     {
                         label: 'Average Salary',
@@ -1121,7 +2120,7 @@
                         backgroundColor: 'rgba(6, 182, 212, 0.15)',
                         fill: true,
                         tension: 0.35,
-                        pointRadius: 5
+                        pointRadius: isMobile ? 4 : 5
                     },
                     {
                         label: 'Min Salary',
@@ -1130,15 +2129,19 @@
                         backgroundColor: 'transparent',
                         tension: 0.35,
                         borderDash: [5, 5],
-                        pointRadius: 4
+                        pointRadius: isMobile ? 3 : 4
                     }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
                 plugins: {
-                    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } },
+                    legend: { 
+                        position: 'bottom', 
+                        labels: { boxWidth: 10, padding: isMobile ? 8 : 15, font: { size: isMobile ? 11 : 12 } } 
+                    },
                     tooltip: {
                         callbacks: {
                             label: (context) => `${context.dataset.label}: ₹${context.raw} LPA`
@@ -1146,22 +2149,23 @@
                     }
                 },
                 scales: {
-                    y: { grid: { color: 'rgba(255,255,255,0.06)' }, title: { display: true, text: 'Salary (₹ LPA)' } },
-                    x: { grid: { display: false } }
+                    y: { grid: { color: 'rgba(255,255,255,0.06)' }, title: { display: !isMobile, text: 'Salary (₹ LPA)' } },
+                    x: { grid: { display: false }, ticks: { font: { size: isMobile ? 10.5 : 12 } } }
                 }
             }
         });
 
-        // 3. Chart: Location (Bar)
+        // 3. Chart: Location (Horizontal bar on mobile to avoid 90-deg text overflow!)
         const ctxLoc = document.getElementById('chartLocation').getContext('2d');
         if (chartLocationInstance) chartLocationInstance.destroy();
+        const locSliceLimit = isMobile ? 5 : 8;
         chartLocationInstance = new Chart(ctxLoc, {
             type: 'bar',
             data: {
-                labels: charts.by_location.labels.length ? charts.by_location.labels.slice(0, 8) : ['No data'],
+                labels: charts.by_location.labels.length ? charts.by_location.labels.slice(0, locSliceLimit) : ['No data'],
                 datasets: [{
                     label: 'Avg Salary (₹ LPA)',
-                    data: charts.by_location.avg_salaries.length ? charts.by_location.avg_salaries.slice(0, 8) : [0],
+                    data: charts.by_location.avg_salaries.length ? charts.by_location.avg_salaries.slice(0, locSliceLimit) : [0],
                     backgroundColor: [
                         '#6366f1', '#06b6d4', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#3b82f6', '#14b8a6'
                     ],
@@ -1169,24 +2173,29 @@
                 }]
             },
             options: {
+                indexAxis: isMobile ? 'y' : 'x', // Switch to horizontal on mobile for 100% readable city labels!
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
                     legend: { display: false },
                     tooltip: {
+                        intersect: false,
                         callbacks: {
                             label: (context) => `Avg Salary: ₹${context.raw} LPA`
                         }
                     }
                 },
-                scales: {
+                scales: isMobile ? {
+                    x: { grid: { color: 'rgba(255,255,255,0.06)' }, title: { display: false } },
+                    y: { grid: { display: false }, ticks: { font: { size: 10.5 } } }
+                } : {
                     y: { grid: { color: 'rgba(255,255,255,0.06)' }, title: { display: true, text: 'Average Salary (₹ LPA)' } },
                     x: { grid: { display: false } }
                 }
             }
         });
 
-        // 4. Chart: Distribution (Doughnut)
+        // 4. Chart: Distribution (Doughnut with compact mobile legend)
         const ctxDist = document.getElementById('chartDistribution').getContext('2d');
         if (chartDistributionInstance) chartDistributionInstance.destroy();
         chartDistributionInstance = new Chart(ctxDist, {
@@ -1205,40 +2214,49 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                cutout: '68%',
+                cutout: isMobile ? '64%' : '68%',
                 plugins: {
-                    legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12 } }
+                    legend: { 
+                        position: 'bottom', 
+                        labels: { boxWidth: 8, padding: isMobile ? 6 : 12, font: { size: isMobile ? 10.5 : 12 } } 
+                    }
                 }
             }
         });
 
-        // 5. Chart: Technology / Skill (Bar)
+        // 5. Chart: Technology / Skill (Horizontal Bar on Mobile)
         const ctxSkill = document.getElementById('chartSkill').getContext('2d');
         if (chartSkillInstance) chartSkillInstance.destroy();
+        const skillSliceLimit = isMobile ? 6 : 12;
         chartSkillInstance = new Chart(ctxSkill, {
             type: 'bar',
             data: {
-                labels: charts.by_skill.labels.length ? charts.by_skill.labels.slice(0, 12) : ['No data'],
+                labels: charts.by_skill.labels.length ? charts.by_skill.labels.slice(0, skillSliceLimit) : ['No data'],
                 datasets: [{
                     label: 'Avg Salary (₹ LPA)',
-                    data: charts.by_skill.avg_salaries.length ? charts.by_skill.avg_salaries.slice(0, 12) : [0],
+                    data: charts.by_skill.avg_salaries.length ? charts.by_skill.avg_salaries.slice(0, skillSliceLimit) : [0],
                     backgroundColor: 'rgba(236, 72, 153, 0.75)',
                     hoverBackgroundColor: '#ec4899',
                     borderRadius: 6
                 }]
             },
             options: {
+                indexAxis: isMobile ? 'y' : 'x', // Horizontal bar on mobile prevents long tech names from tilting!
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
                     legend: { display: false },
                     tooltip: {
+                        intersect: false,
                         callbacks: {
                             label: (context) => `Avg Stack Comp: ₹${context.raw} LPA`
                         }
                     }
                 },
-                scales: {
+                scales: isMobile ? {
+                    x: { grid: { color: 'rgba(255,255,255,0.06)' }, title: { display: false } },
+                    y: { grid: { display: false }, ticks: { font: { size: 10.5 } } }
+                } : {
                     y: { grid: { color: 'rgba(255,255,255,0.06)' }, title: { display: true, text: 'Salary (₹ LPA)' } },
                     x: { grid: { display: false } }
                 }
@@ -1246,58 +2264,123 @@
         });
     }
 
+    // =========================================================================
+    // DATA TABLE & MOBILE CARDS STREAM CONTROLLER
+    // =========================================================================
     function updateTable(records) {
         const tbody = document.getElementById('salary-table-body');
+        const mobileList = document.getElementById('salary-mobile-cards-list');
         const countSpan = document.getElementById('table-record-count');
-        countSpan.textContent = records.length;
+        if (countSpan) countSpan.textContent = records.length;
 
         if (!records.length) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="8" style="text-align:center; padding:35px; color:#94a3b8;">
-                        <i class="fas fa-search" style="font-size:24px; margin-bottom:8px; display:block; opacity:0.5;"></i>
-                        No compensation benchmarks match the selected criteria. Try adjusting or clearing your filters.
-                    </td>
-                </tr>
+            const emptyHtml = `
+                <div style="text-align:center; padding:35px; color:#94a3b8;">
+                    <i class="fas fa-search" style="font-size:26px; margin-bottom:10px; display:block; opacity:0.4;"></i>
+                    <strong style="color:#f8fafc; font-size:14px; display:block; margin-bottom:4px;">No compensation benchmarks found</strong>
+                    <span>No data matches your current criteria. Try widening your salary range or search keywords.</span>
+                </div>
             `;
+            if (tbody) {
+                tbody.innerHTML = `<tr><td colspan="8">${emptyHtml}</td></tr>`;
+            }
+            if (mobileList) {
+                mobileList.innerHTML = emptyHtml;
+            }
             return;
         }
 
-        tbody.innerHTML = records.map(r => `
-            <tr>
-                <td>
-                    <div style="font-weight:700; color:#f8fafc; font-size:var(--font-size-sm);">${escapeHtml(r.job_role)}</div>
-                    <div style="font-size:11px; color:#64748b;">${escapeHtml(r.industry || 'Technology')}</div>
-                </td>
-                <td>
-                    <span class="salary-badge-pill" style="background:rgba(6, 182, 212, 0.15); color:#22d3ee;">
-                        ${escapeHtml(r.experience_level)}
-                    </span>
-                </td>
-                <td>
-                    <div style="display:flex; align-items:center; gap:5px; font-weight:500;">
-                        <i class="fas fa-map-marker-alt" style="color:#64748b; font-size:12px;"></i>
-                        ${escapeHtml(r.location)}
+        // 1. Render Desktop Table Rows
+        if (tbody) {
+            tbody.innerHTML = records.map(r => `
+                <tr>
+                    <td data-label="Job Role">
+                        <div style="font-weight:700; color:#f8fafc; font-size:var(--font-size-sm);">${escapeHtml(r.job_role)}</div>
+                        <div style="font-size:11px; color:#64748b;">${escapeHtml(r.industry || 'Technology')}</div>
+                    </td>
+                    <td data-label="Experience">
+                        <span class="salary-badge-pill" style="background:rgba(6, 182, 212, 0.15); color:#22d3ee;">
+                            ${escapeHtml(r.experience_level)}
+                        </span>
+                    </td>
+                    <td data-label="Location">
+                        <div style="display:flex; align-items:center; gap:5px; font-weight:500;">
+                            <i class="fas fa-map-marker-alt" style="color:#64748b; font-size:12px;"></i>
+                            ${escapeHtml(r.location)}
+                        </div>
+                    </td>
+                    <td data-label="Tech / Stack">
+                        <span class="salary-badge-pill" style="background:rgba(236, 72, 153, 0.15); color:#f472b6;">
+                            <i class="fas fa-code" style="font-size:10px;"></i> ${escapeHtml(r.primary_technology)}
+                        </span>
+                    </td>
+                    <td data-label="Min Salary" style="font-weight:600; color:#94a3b8;">₹${r.salary_min.toFixed(1)} LPA</td>
+                    <td data-label="Avg Salary" style="font-weight:800; color:#6366f1; font-size:15px;">₹${r.salary_avg.toFixed(1)} LPA</td>
+                    <td data-label="Max Salary" style="font-weight:700; color:#10b981;">₹${r.salary_max.toFixed(1)} LPA</td>
+                    <td data-label="Sample Size">
+                        <span style="font-size:11px; color:#64748b;">
+                            ${(r.sample_size || 100)} points
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 2. Render Mobile Touch Cards
+        if (mobileList) {
+            mobileList.innerHTML = records.map(r => `
+                <div class="salary-benchmark-card-mobile">
+                    <div class="benchmark-card-top">
+                        <div>
+                            <h4 class="benchmark-role-title">${escapeHtml(r.job_role)}</h4>
+                            <div style="font-size:11.5px; color:#64748b;">${escapeHtml(r.industry || 'Technology')}</div>
+                        </div>
+                        <span class="salary-badge-pill" style="background:rgba(6, 182, 212, 0.15); color:#22d3ee; font-size:10.5px;">
+                            ${escapeHtml(r.experience_level)}
+                        </span>
                     </div>
-                </td>
-                <td>
-                    <span class="salary-badge-pill" style="background:rgba(236, 72, 153, 0.15); color:#f472b6;">
-                        <i class="fas fa-code" style="font-size:10px;"></i> ${escapeHtml(r.primary_technology)}
-                    </span>
-                </td>
-                <td style="font-weight:600; color:#94a3b8;">₹${r.salary_min.toFixed(1)} LPA</td>
-                <td style="font-weight:800; color:#6366f1; font-size:15px;">₹${r.salary_avg.toFixed(1)} LPA</td>
-                <td style="font-weight:700; color:#10b981;">₹${r.salary_max.toFixed(1)} LPA</td>
-                <td>
-                    <span style="font-size:11px; color:#64748b;">
-                        ${(r.sample_size || 100)} points
-                    </span>
-                </td>
-            </tr>
-        `).join('');
+
+                    <div class="benchmark-meta-chips">
+                        <span class="salary-badge-pill" style="background:#090d16; border:1px solid #1e293b; color:#cbd5e1;">
+                            <i class="fas fa-map-marker-alt" style="color:#10b981; font-size:10px;"></i> ${escapeHtml(r.location)}
+                        </span>
+                        <span class="salary-badge-pill" style="background:rgba(236, 72, 153, 0.12); color:#f472b6; border:1px solid rgba(236, 72, 153, 0.25);">
+                            <i class="fas fa-code" style="font-size:10px;"></i> ${escapeHtml(r.primary_technology)}
+                        </span>
+                        <span class="salary-badge-pill" style="background:#090d16; color:#64748b; font-size:10px;">
+                            <i class="fas fa-users" style="font-size:9px;"></i> ${(r.sample_size || 100)} points
+                        </span>
+                    </div>
+
+                    <div class="benchmark-comp-meter">
+                        <div class="comp-meter-col">
+                            <span class="comp-meter-label">Min</span>
+                            <span class="comp-meter-val">₹${r.salary_min.toFixed(1)}L</span>
+                        </div>
+                        <div class="comp-meter-col" style="border-left:1px solid #1e293b; border-right:1px solid #1e293b;">
+                            <span class="comp-meter-label" style="color:#818cf8;">Average</span>
+                            <span class="comp-meter-val highlight">₹${r.salary_avg.toFixed(1)} LPA</span>
+                        </div>
+                        <div class="comp-meter-col">
+                            <span class="comp-meter-label">Max</span>
+                            <span class="comp-meter-val" style="color:#10b981;">₹${r.salary_max.toFixed(1)}L</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
     }
 
-    // Initialize analytics on page load
+    // Handle Window Resize with Debounce to Adapt Charts
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            fetchSalaryAnalytics();
+        }, 250);
+    });
+
+    // Initialize on DOM load
     document.addEventListener('DOMContentLoaded', () => {
         fetchSalaryAnalytics();
     });

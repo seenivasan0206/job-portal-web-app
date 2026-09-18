@@ -39,8 +39,8 @@ def test_candidate_preferences_api_with_current_job_role(client):
     # Create test user
     with db_cursor() as cur:
         cur.execute("INSERT INTO user (name, email, password) VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id)",
-                    ('Pref Test User', 'preftest@hirevolt.com', 'hashedpass'))
-        cur.execute("SELECT id FROM user WHERE email = 'preftest@hirevolt.com'")
+                    ('Pref Test User', 'preftest@hirevoltz.com', 'hashedpass'))
+        cur.execute("SELECT id FROM user WHERE email = 'preftest@hirevoltz.com'")
         user_id = cur.fetchone()['id']
 
     with client.session_transaction() as sess:
@@ -76,7 +76,7 @@ def test_candidate_preferences_api_with_current_job_role(client):
 def test_candidate_preferences_api_with_legacy_current_role(client):
     """Verify backward compatibility when legacy payload sends current_role."""
     with db_cursor() as cur:
-        cur.execute("SELECT id FROM user WHERE email = 'preftest@hirevolt.com'")
+        cur.execute("SELECT id FROM user WHERE email = 'preftest@hirevoltz.com'")
         user_id = cur.fetchone()['id']
 
     with client.session_transaction() as sess:

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-HireVolt AI/ML Job Recommendation Engine
+HireVoltz AI/ML Job Recommendation Engine
 ========================================
 A multi-factor, explainable, and cached recommendation system combining:
 1. Exact and Normalized Skill Matching (35% weight)

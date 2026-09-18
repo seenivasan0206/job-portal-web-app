@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Edit Candidate Profile — HireVolt{% endblock %}
+{% block title %}Edit Candidate Profile — HireVoltz{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -15,16 +15,60 @@
         margin: 0 auto;
     }
 
-    @media (max-width: 992px) {
+    @media (max-width: 991px) {
         .profile-edit-layout {
-            grid-template-columns: 1fr;
-            gap: var(--space-6);
+            display: flex;
+            flex-direction: column;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box;
+            gap: 16px;
+            padding: 12px 14px 32px;
         }
 
         .profile-nav-sidebar {
-            position: relative;
-            top: 0;
-            max-height: 360px;
+            display: none !important;
+        }
+
+        .profile-edit-content {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box;
+        }
+
+        .profile-section-card {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box;
+            padding: 16px 14px;
+            border-radius: 14px;
+            margin-bottom: 16px;
+        }
+
+        .profile-section-header {
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .profile-section-title {
+            font-size: 1.05rem;
+        }
+
+        .profile-edit-content input,
+        .profile-edit-content select,
+        .profile-edit-content textarea {
+            font-size: 16px !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        
+        .profile-edit-content .btn-primary,
+        .profile-edit-content .btn-secondary {
+            min-height: 44px;
         }
     }
 
@@ -300,6 +344,23 @@
 
         <!-- Main Content Column -->
         <main class="profile-edit-content">
+
+            <!-- Mobile Horizontal Section Pill Scroller (Screens <= 991px) -->
+            <div class="profile-mobile-nav-scroller" id="profile-mobile-nav-scroller">
+                <a href="#section-basic" class="profile-pill-link active"><i class="fas fa-user-circle" style="color:#38BDF8;"></i> Basic</a>
+                <a href="#section-summary" class="profile-pill-link"><i class="fas fa-file-alt" style="color:#A855F7;"></i> Summary</a>
+                <a href="#section-preferences" class="profile-pill-link"><i class="fas fa-sliders-h" style="color:#F59E0B;"></i> Preferences</a>
+                <a href="#section-education" class="profile-pill-link"><i class="fas fa-graduation-cap" style="color:#10B981;"></i> Education</a>
+                <a href="#section-skills" class="profile-pill-link"><i class="fas fa-tools" style="color:#EC4899;"></i> Skills</a>
+                <a href="#section-employment" class="profile-pill-link"><i class="fas fa-briefcase" style="color:#3B82F6;"></i> Employment</a>
+                <a href="#section-internships" class="profile-pill-link"><i class="fas fa-user-graduate" style="color:#14B8A6;"></i> Internships</a>
+                <a href="#section-projects" class="profile-pill-link"><i class="fas fa-laptop-code" style="color:#6366F1;"></i> Projects</a>
+                <a href="#section-certifications" class="profile-pill-link"><i class="fas fa-certificate" style="color:#EAB308;"></i> Certs</a>
+                <a href="#section-languages" class="profile-pill-link"><i class="fas fa-language" style="color:#8B5CF6;"></i> Languages</a>
+                <a href="#section-exams" class="profile-pill-link"><i class="fas fa-award" style="color:#F97316;"></i> Exams</a>
+                <a href="#section-academic" class="profile-pill-link"><i class="fas fa-medal" style="color:#10B981;"></i> Honors</a>
+                <a href="/candidate/resume" class="profile-pill-link"><i class="fas fa-file-pdf" style="color:#FF5E14;"></i> Resume AI</a>
+            </div>
 
             <!-- 0. Profile Photo & Quick Avatar Card -->
             <section id="section-photo" class="profile-section-card" style="display:flex; align-items:center; gap:20px; flex-wrap:wrap; padding:20px; background:linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.8)); margin-bottom:var(--space-6);">

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Candidate Dashboard — HireVolt{% endblock %}
+{% block title %}Candidate Dashboard — HireVoltz{% endblock %}
 
 {% block extra_head %}
 <script src="{{ url_for('static', filename='js/dashboard-shared.js') }}"></script>
@@ -396,20 +396,101 @@
     .status-active   { background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3); }
 
     /* Responsive */
-    @media (max-width: 992px) {
+    @media (max-width: 991px) {
         .candidate-workspace {
-            flex-direction: column;
-            gap: var(--space-5);
-            padding: var(--space-4);
+            flex-direction: column !important;
+            align-items: stretch !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            gap: var(--space-4) !important;
+            padding: 12px 14px 32px !important;
+            box-sizing: border-box !important;
         }
         .workspace-sidebar {
-            width: 100%;
-            position: static;
-            max-height: none;
+            display: none !important;
+        }
+        .workspace-main {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+        }
+        .dashboard-stat-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 10px !important;
+        }
+        .dash-stat-card {
+            padding: 14px 12px !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+        }
+        .dash-stat-number {
+            font-size: 1.4rem !important;
+        }
+        .dash-stat-icon {
+            width: 38px !important;
+            height: 38px !important;
+            font-size: 1.1rem !important;
+        }
+        .mobile-tab-scroller {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+        }
+        .profile-health-card {
+            padding: var(--space-4) !important;
+            box-sizing: border-box !important;
+            max-width: 100% !important;
+        }
+        .mobile-candidate-header {
+            display: flex !important;
         }
         .job-record-card {
             flex-direction: column;
+            align-items: stretch;
+            padding: 14px;
+            gap: 12px;
+        }
+        .job-record-left {
             align-items: flex-start;
+            gap: 12px;
+        }
+        .company-logo-box {
+            width: 44px;
+            height: 44px;
+            font-size: 1.15rem;
+            border-radius: 10px;
+        }
+        .job-record-title {
+            font-size: 0.95rem;
+        }
+        .job-record-meta-row {
+            gap: 8px;
+            font-size: 0.75rem;
+        }
+    }
+    @media (max-width: 480px) {
+        .candidate-workspace {
+            padding: 10px 10px 28px !important;
+        }
+        .dashboard-stat-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 8px !important;
+        }
+        .dash-stat-card {
+            padding: 10px 8px !important;
+        }
+        .dash-stat-number {
+            font-size: 1.2rem !important;
+        }
+        .dash-stat-label {
+            font-size: 0.72rem !important;
+        }
+        .dash-stat-icon {
+            width: 32px !important;
+            height: 32px !important;
+            font-size: 0.95rem !important;
         }
     }
 </style>
@@ -533,45 +614,139 @@
 
     <!-- 2. Main Dashboard Content -->
     <main class="workspace-main">
-        <!-- Top Metrics Cards -->
+        <!-- Mobile Candidate Quick Header (Screens <= 991px) -->
+        <div class="candidate-mobile-top-bar">
+            <div class="candidate-top-left">
+                <div class="candidate-top-avatar">
+                    {% if profile_photo %}
+                        <img src="{{ url_for('static', filename='uploads/' + profile_photo) }}" alt="Profile Photo" style="width:100%; height:100%; object-fit:cover;">
+                    {% else %}
+                        {{ (user_name or 'U')[0]|upper }}
+                    {% endif %}
+                </div>
+                <div class="candidate-top-info">
+                    <div class="candidate-top-greeting" id="candidate-greeting-text">Welcome back,</div>
+                    <div class="candidate-top-name">{{ user_name or 'Candidate' }}</div>
+                    <span class="candidate-top-status"><i class="fas fa-bolt"></i> Active Job Seeker</span>
+                </div>
+            </div>
+            <div class="candidate-top-actions">
+                <a href="/candidate/notifications" class="candidate-top-btn" aria-label="Notifications" title="Notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="candidate-top-badge" id="candidate-mob-notif-badge" style="display:none;">0</span>
+                </a>
+                <a href="/candidate/profile" class="candidate-top-btn" aria-label="Edit Profile" title="Edit Profile">
+                    <i class="fas fa-user-edit"></i>
+                </a>
+                <a href="/logout" onclick="openLogoutModal(); return false;" class="candidate-top-btn candidate-top-btn-logout" aria-label="Sign Out" title="Sign Out">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Candidate Quick Actions (Screens <= 991px) -->
+        <div class="candidate-quick-actions">
+            <a href="/jobs" class="candidate-qa-tile" aria-label="Find Jobs">
+                <div class="candidate-qa-icon" style="background:rgba(255,94,20,0.15); color:#FF5E14;">
+                    <i class="fas fa-search"></i>
+                </div>
+                <span class="candidate-qa-label">Find Jobs</span>
+            </a>
+            <div class="candidate-qa-tile" onclick="showSection('applications')" role="button" tabindex="0" aria-label="My Applications">
+                <div class="candidate-qa-icon" style="background:rgba(59,130,246,0.15); color:#3B82F6;">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <span class="candidate-qa-label">Applications</span>
+            </div>
+            <a href="/candidate/resume" class="candidate-qa-tile" aria-label="Resume ATS">
+                <div class="candidate-qa-icon" style="background:rgba(168,85,247,0.15); color:#A855F7;">
+                    <i class="fas fa-file-invoice"></i>
+                </div>
+                <span class="candidate-qa-label">Resume/ATS</span>
+            </a>
+            <a href="/candidate/assessments" class="candidate-qa-tile" aria-label="Skill Assessments">
+                <div class="candidate-qa-icon" style="background:rgba(16,185,129,0.15); color:#10B981;">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <span class="candidate-qa-label">Assessments</span>
+            </a>
+            <div class="candidate-qa-tile" onclick="showSection('saved')" role="button" tabindex="0" aria-label="Saved Jobs">
+                <div class="candidate-qa-icon" style="background:rgba(245,158,11,0.15); color:#F59E0B;">
+                    <i class="fas fa-bookmark"></i>
+                </div>
+                <span class="candidate-qa-label">Saved Jobs</span>
+            </div>
+            <a href="/candidate/profile" class="candidate-qa-tile" aria-label="Profile">
+                <div class="candidate-qa-icon" style="background:rgba(6,182,212,0.15); color:#06B6D4;">
+                    <i class="fas fa-id-card"></i>
+                </div>
+                <span class="candidate-qa-label">Profile</span>
+            </a>
+        </div>
+
+        <!-- Mobile Horizontal Pill Tab Scroller -->
+        <div class="mobile-tab-scroller" id="candidate-mobile-tabs">
+            <button type="button" class="mobile-tab-pill active" onclick="showSection('recommendations')" id="mobtab-recommendations">
+                <i class="fas fa-magic"></i> AI Match
+            </button>
+            <button type="button" class="mobile-tab-pill" onclick="showSection('applications')" id="mobtab-applications">
+                <i class="fas fa-paper-plane"></i> Applications
+                <span class="mobile-tab-pill-badge" id="mobbadge-total-apps" style="display:none;">0</span>
+            </button>
+            <button type="button" class="mobile-tab-pill" onclick="showSection('saved')" id="mobtab-saved">
+                <i class="fas fa-bookmark"></i> Saved Jobs
+                <span class="mobile-tab-pill-badge" id="mobbadge-saved" style="display:none;">0</span>
+            </button>
+            <button type="button" class="mobile-tab-pill" onclick="showSection('search')" id="mobtab-search">
+                <i class="fas fa-search"></i> Search
+            </button>
+            <button type="button" class="mobile-tab-pill" onclick="showSection('profile-health')" id="mobtab-profile-health">
+                <i class="fas fa-shield-alt"></i> Profile Health
+            </button>
+            <button type="button" class="mobile-tab-pill" onclick="showSection('analytics')" id="mobtab-analytics">
+                <i class="fas fa-chart-line"></i> Analytics
+            </button>
+        </div>
+
+        <!-- Top Metrics KPI Cards (Clean 2-Column Mobile Grid) -->
         <div class="dashboard-stat-grid">
-            <div class="dash-stat-card" onclick="showSection('applications')" style="cursor:pointer;">
+            <div class="dash-stat-card" onclick="showSection('applications')" style="cursor:pointer;" title="View Applications">
                 <div>
                     <div class="dash-stat-number" id="stat-total-apps">0</div>
-                    <div class="dash-stat-label">Applications Sent</div>
+                    <div class="dash-stat-label">Applications</div>
                 </div>
                 <div class="dash-stat-icon" style="background:rgba(59,130,246,0.15); color:#3B82F6;">
                     <i class="fas fa-paper-plane"></i>
                 </div>
             </div>
 
-            <div class="dash-stat-card" onclick="showSection('saved')" style="cursor:pointer;">
+            <div class="dash-stat-card" onclick="showSection('applications')" style="cursor:pointer;" title="View Shortlisted Applications">
                 <div>
-                    <div class="dash-stat-number" id="stat-saved">0</div>
-                    <div class="dash-stat-label">Bookmarked Jobs</div>
+                    <div class="dash-stat-number" id="stat-shortlisted">0</div>
+                    <div class="dash-stat-label">Shortlisted</div>
                 </div>
-                <div class="dash-stat-icon" style="background:rgba(245,158,11,0.15); color:#F59E0B;">
-                    <i class="fas fa-bookmark"></i>
+                <div class="dash-stat-icon" style="background:rgba(168,85,247,0.15); color:#C084FC;">
+                    <i class="fas fa-user-check"></i>
                 </div>
             </div>
 
             <div class="dash-stat-card">
                 <div>
                     <div class="dash-stat-number" id="stat-interviews">0</div>
-                    <div class="dash-stat-label">Interviews Scheduled</div>
+                    <div class="dash-stat-label">Interviews</div>
                 </div>
                 <div class="dash-stat-icon" style="background:rgba(16,185,129,0.15); color:#10B981;">
                     <i class="fas fa-calendar-check"></i>
                 </div>
             </div>
 
-            <div class="dash-stat-card" onclick="showSection('profile-health')" style="cursor:pointer;">
+            <div class="dash-stat-card" onclick="showSection('saved')" style="cursor:pointer;" title="View Saved Jobs">
                 <div>
-                    <div class="dash-stat-number" id="stat-completeness">0%</div>
-                    <div class="dash-stat-label">Profile Completeness</div>
+                    <div class="dash-stat-number" id="stat-saved">0</div>
+                    <div class="dash-stat-label">Saved Jobs</div>
                 </div>
-                <div class="dash-stat-icon" id="stat-completeness-icon" style="background:rgba(6,182,212,0.15); color:#06B6D4;">
-                    <i class="fas fa-shield-alt"></i>
+                <div class="dash-stat-icon" style="background:rgba(245,158,11,0.15); color:#F59E0B;">
+                    <i class="fas fa-bookmark"></i>
                 </div>
             </div>
         </div>
@@ -580,7 +755,7 @@
         <div id="profile-health-banner" class="profile-health-card">
             <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
                 <div>
-                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px; flex-wrap:wrap;">
                         <h2 style="font-size:1.25rem; font-weight:800; color:#F8FAFC; margin:0;">Profile Completeness</h2>
                         <span id="completeness-score-tag" class="job-status-badge status-review">Calculating...</span>
                         <span id="candidate-track-tag" class="job-status-badge" style="background:rgba(56,189,248,0.15); color:#38BDF8; border:1px solid rgba(56,189,248,0.3);">Fresher Track</span>
@@ -613,7 +788,7 @@
                     <h2 class="card-title"><i class="fas fa-magic" style="color:var(--color-primary); margin-right:8px;"></i> Personalized AI Job Matches</h2>
                     <p style="font-size:0.8125rem; color:var(--color-text-muted); margin:4px 0 0 0;">Ranked multi-factor matches based on your skills, resume intelligence, target role, and experience.</p>
                 </div>
-                <div style="display:flex; gap:8px; align-items:center;">
+                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                     <button class="btn btn-secondary btn-sm" onclick="loadRecommendations()"><i class="fas fa-sync-alt"></i> Refresh Matches</button>
                     <button class="btn btn-ghost btn-sm" onclick="showSection('search')"><i class="fas fa-sliders-h"></i> Custom Search</button>
                 </div>
@@ -793,6 +968,7 @@
         const seenApps = parseInt(localStorage.getItem('seen_apps_count') || '0', 10);
         const unreadApps = Math.max(0, totalApps - seenApps);
         const badgeApps = document.getElementById('badge-total-apps');
+        const mobbadgeApps = document.getElementById('mobbadge-total-apps');
         if (badgeApps) {
             if (unreadApps > 0) {
                 badgeApps.textContent = unreadApps;
@@ -801,17 +977,34 @@
                 badgeApps.style.display = 'none';
             }
         }
+        if (mobbadgeApps) {
+            if (unreadApps > 0) {
+                mobbadgeApps.textContent = unreadApps;
+                mobbadgeApps.style.display = 'inline-flex';
+            } else {
+                mobbadgeApps.style.display = 'none';
+            }
+        }
 
         const totalSaved = globalStats.total_saved || 0;
         const seenSaved = parseInt(localStorage.getItem('seen_saved_count') || '0', 10);
         const unreadSaved = Math.max(0, totalSaved - seenSaved);
         const badgeSaved = document.getElementById('badge-saved');
+        const mobbadgeSaved = document.getElementById('mobbadge-saved');
         if (badgeSaved) {
             if (unreadSaved > 0) {
                 badgeSaved.textContent = unreadSaved;
                 badgeSaved.style.display = 'inline-flex';
             } else {
                 badgeSaved.style.display = 'none';
+            }
+        }
+        if (mobbadgeSaved) {
+            if (unreadSaved > 0) {
+                mobbadgeSaved.textContent = unreadSaved;
+                mobbadgeSaved.style.display = 'inline-flex';
+            } else {
+                mobbadgeSaved.style.display = 'none';
             }
         }
     }
@@ -840,10 +1033,15 @@
         ['recommendations', 'search', 'applications', 'saved', 'profile-health', 'analytics'].forEach(s => {
             const sec = document.getElementById('section-' + s);
             const nav = document.getElementById('nav-' + s);
+            const mobtab = document.getElementById('mobtab-' + s);
             if (sec) sec.style.display = (s === sectionId) ? 'block' : 'none';
             if (nav) {
                 if (s === sectionId) nav.classList.add('active');
                 else nav.classList.remove('active');
+            }
+            if (mobtab) {
+                if (s === sectionId) mobtab.classList.add('active');
+                else mobtab.classList.remove('active');
             }
         });
 
@@ -853,13 +1051,17 @@
         if (sectionId === 'saved') {
             localStorage.setItem('seen_saved_count', globalStats.total_saved || 0);
             const badgeSaved = document.getElementById('badge-saved');
+            const mobbadgeSaved = document.getElementById('mobbadge-saved');
             if (badgeSaved) badgeSaved.style.display = 'none';
+            if (mobbadgeSaved) mobbadgeSaved.style.display = 'none';
             loadSavedJobs();
         }
         if (sectionId === 'applications') {
             localStorage.setItem('seen_apps_count', globalStats.total_applications || 0);
             const badgeApps = document.getElementById('badge-total-apps');
+            const mobbadgeApps = document.getElementById('mobbadge-total-apps');
             if (badgeApps) badgeApps.style.display = 'none';
+            if (mobbadgeApps) mobbadgeApps.style.display = 'none';
             loadApplications();
         }
         if (sectionId === 'profile-health') renderFullProfileHealth();
@@ -920,7 +1122,7 @@
                     return `
                         <div class="job-card" style="display:flex; flex-direction:column; justify-content:space-between; position:relative; overflow:hidden; border:1px solid ${scoreBorder};">
                             <div>
-                                <div class="job-card-header" style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                                <div class="job-card-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
                                     <div class="job-card-company" style="display:flex; gap:12px; align-items:center;">
                                         <div class="company-logo-avatar">${(j.company_name || 'C')[0].toUpperCase()}</div>
                                         <div>
@@ -966,9 +1168,9 @@
                                 </div>` : ''}
                             </div>
 
-                            <div class="job-card-footer" style="padding-top:12px; border-top:1px solid rgba(255,255,255,0.06); margin-top:auto;">
+                            <div class="job-card-footer" style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.06); margin-top:auto;">
                                 <span class="job-salary-text" style="font-weight:700; color:#F8FAFC;">${escapeHtml(j.salary_display || j.salary || 'Competitive Salary')}</span>
-                                <div style="display:flex; gap:8px;">
+                                <div style="display:flex; gap:8px; flex-wrap:wrap;">
                                     <button class="btn btn-secondary btn-sm" onclick="saveJob(${j.id})" title="Bookmark Job"><i class="far fa-bookmark"></i></button>
                                     <a href="/job/${j.id}" class="btn btn-primary btn-sm">
                                         <i class="fas fa-paper-plane"></i> View & Apply
@@ -1018,14 +1220,18 @@
 
                 // Update Top Metric counts
                 document.getElementById('stat-total-apps').textContent = res.total_applications || 0;
+                const statShortlisted = document.getElementById('stat-shortlisted');
+                if (statShortlisted) statShortlisted.textContent = res.total_shortlisted || 0;
                 document.getElementById('stat-saved').textContent = res.total_saved || 0;
                 document.getElementById('stat-interviews').textContent = res.total_interviews || 0;
 
                 updateNavBadges();
 
                 const score = res.profile_completeness || 0;
-                document.getElementById('stat-completeness').textContent = score + '%';
-                document.getElementById('badge-completeness').textContent = score + '%';
+                const statComp = document.getElementById('stat-completeness');
+                if (statComp) statComp.textContent = score + '%';
+                const badgeComp = document.getElementById('badge-completeness');
+                if (badgeComp) badgeComp.textContent = score + '%';
 
                 const fillEl = document.getElementById('profile-progress-fill');
                 if (fillEl) fillEl.style.width = score + '%';
@@ -1194,11 +1400,11 @@
                                 <i class="fas fa-circle" style="font-size:6px; margin-right:4px;"></i> ${escapeHtml(a.status)}
                             </span>
                             <div style="display:flex; gap:8px;">
-                                <a href="/job/${a.job_id}" class="btn btn-secondary btn-sm" style="padding:4px 10px; font-size:12px;">
-                                    <i class="fas fa-external-link-alt"></i> View Job
+                                <a href="/job/${a.job_id}" class="btn btn-primary btn-sm" style="padding:5px 12px; font-size:12px; font-weight:700;">
+                                    <i class="fas fa-eye"></i> View Application
                                 </a>
                                 ${s !== 'withdrawn' && s !== 'hired' && s !== 'rejected' ? `
-                                <button type="button" class="btn btn-ghost btn-sm" style="color:#EF4444; padding:4px 10px; font-size:12px;" onclick="withdrawApp(${a.application_id})" title="Withdraw Application">
+                                <button type="button" class="btn btn-ghost btn-sm" style="color:#EF4444; padding:5px 10px; font-size:12px;" onclick="withdrawApp(${a.application_id})" title="Withdraw Application">
                                     <i class="fas fa-times"></i> Withdraw
                                 </button>` : ''}
                             </div>
@@ -1523,12 +1729,34 @@
         }
     }
 
-    function escapeHtml(str) {
-        if (!str) return '';
-        return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
+    function initGreeting() {
+        const hour = new Date().getHours();
+        let greeting = 'Good evening,';
+        if (hour < 12) greeting = 'Good morning,';
+        else if (hour < 17) greeting = 'Good afternoon,';
+        const greetEl = document.getElementById('candidate-greeting-text');
+        if (greetEl) greetEl.textContent = greeting;
+    }
+
+    async function fetchCandidateNotificationBadge() {
+        try {
+            const res = await getReq('/api/notifications/unread_count');
+            const count = (res && res.unread_count) || 0;
+            const badge = document.getElementById('candidate-mob-notif-badge');
+            if (badge) {
+                if (count > 0) {
+                    badge.textContent = count > 99 ? '99+' : count;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        } catch (e) {}
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+        initGreeting();
+        fetchCandidateNotificationBadge();
         loadStats();
         loadCategories();
         loadRecommendations();

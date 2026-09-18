@@ -64,7 +64,7 @@ def test_api_locations_dynamic_international_filtering(client):
     with db_cursor(dictionary=False) as cur:
         cur.execute("""
             INSERT INTO employee (company_name, email, password, is_verified)
-            VALUES ('Global Tech Inc', 'intl_test_employer@hirevolt.com', 'hashedpwd', 1)
+            VALUES ('Global Tech Inc', 'intl_test_employer@hirevoltz.com', 'hashedpwd', 1)
         """)
         emp_id = cur.lastrowid
 
@@ -169,6 +169,6 @@ def test_main_js_defines_locations_caching():
     assert 'fetchLocations' in js_code
     assert 'populateLocationSelect' in js_code
     assert 'populateLocationDatalist' in js_code
-    assert 'hirevolt_locations_cache' in js_code
+    assert 'hirevoltz_locations_cache' in js_code
     assert '<optgroup label="India">' in js_code
     assert '<optgroup label="International">' in js_code

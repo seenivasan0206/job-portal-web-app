@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Company Details — HireVolt{% endblock %}
+{% block title %}Company Details — HireVoltz{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -87,7 +87,7 @@
                 if (c.verification_status === 'verified') {
                     verifBadgeHtml = `
                         <div style="display:flex; flex-direction:column; align-items:flex-end;">
-                            <span class="badge badge-success" style="font-size:0.9rem; padding:6px 14px; display:inline-flex; align-items:center; gap:6px;" title="Company information has been reviewed by HireVolt.">
+                            <span class="badge badge-success" style="font-size:0.9rem; padding:6px 14px; display:inline-flex; align-items:center; gap:6px;" title="Company information has been reviewed by HireVoltz.">
                                 <i class="fas fa-check-circle"></i> Verified Employer
                             </span>
                             ${c.verified_on ? `<span style="font-size:11px; color:#10B981; margin-top:4px;">Verified on ${escapeHtml(c.verified_on)}</span>` : ''}

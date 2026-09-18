@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Comprehensive Test Suite for HireVolt Job Application System:
+Comprehensive Test Suite for HireVoltz Job Application System:
 1. Apply to job with JSON and multipart form data
 2. Select uploaded resume vs new resume file upload vs profile resume fallback
 3. Optional cover letter storage and retrieval

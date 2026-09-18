@@ -1,5 +1,5 @@
 /**
- * HireVolt — Master UI & Motion Engine
+ * HireVoltz — Master UI & Motion Engine
  * Powered by Lenis (https://lenis.dev/) for 60fps Butter-Smooth Scrolling
  */
 
@@ -8,7 +8,7 @@
 
   // ---- 1. Dark Mode / Theme Manager ----
   function initTheme() {
-    const savedTheme = localStorage.getItem('hirevolt-theme') || localStorage.getItem('nexrole-theme') || localStorage.getItem('dreamjobs-theme') || 'dark';
+    const savedTheme = localStorage.getItem('hirevoltz-theme') || localStorage.getItem('nexrole-theme') || localStorage.getItem('dreamjobs-theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
   }
 
@@ -16,7 +16,7 @@
     const current = document.documentElement.getAttribute('data-theme') || 'dark';
     const next = current === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('hirevolt-theme', next);
+    localStorage.setItem('hirevoltz-theme', next);
     localStorage.setItem('dreamjobs-theme', next);
   };
 
@@ -971,7 +971,7 @@ window.togglePasswordVisibility = function (inputId, btnEl) {
 
 // Universal Apply & Bookmark Handlers
 window.handleJobApply = function (jobId) {
-  const isCandidateLoggedIn = Boolean(window.HIREVOLT_USER_ID || window.NEXROLE_USER_ID || window.DREAMJOBS_USER_ID || document.body.classList.contains('user-authenticated'));
+  const isCandidateLoggedIn = Boolean(window.HIREVOLTZ_USER_ID || window.NEXROLE_USER_ID || window.DREAMJOBS_USER_ID || document.body.classList.contains('user-authenticated'));
   if (isCandidateLoggedIn) {
     if (typeof window.applyDirectly === 'function') {
       window.applyDirectly(jobId);
@@ -1003,7 +1003,7 @@ window.handleJobApply = function (jobId) {
 };
 
 window.handleJobBookmark = function (jobId, btn) {
-  const isCandidateLoggedIn = Boolean(window.HIREVOLT_USER_ID || window.NEXROLE_USER_ID || window.DREAMJOBS_USER_ID || document.body.classList.contains('user-authenticated'));
+  const isCandidateLoggedIn = Boolean(window.HIREVOLTZ_USER_ID || window.NEXROLE_USER_ID || window.DREAMJOBS_USER_ID || document.body.classList.contains('user-authenticated'));
   if (isCandidateLoggedIn) {
     window.postReq('/api/save_job', { job_id: jobId }).then((res) => {
       if (res.success) {
@@ -1054,7 +1054,7 @@ window.fetchLocations = async function (forceRefresh = false) {
 
   if (!forceRefresh) {
     try {
-      const cached = sessionStorage.getItem('hirevolt_locations_cache');
+      const cached = sessionStorage.getItem('hirevoltz_locations_cache');
       if (cached) {
         const parsed = JSON.parse(cached);
         if (parsed && parsed.success && Array.isArray(parsed.india) && parsed.india.length > 0) {
@@ -1071,7 +1071,7 @@ window.fetchLocations = async function (forceRefresh = false) {
     if (data && data.success) {
       window._cachedLocationsData = data;
       try {
-        sessionStorage.setItem('hirevolt_locations_cache', JSON.stringify(data));
+        sessionStorage.setItem('hirevoltz_locations_cache', JSON.stringify(data));
       } catch (e) {}
       return data;
     }
@@ -1160,7 +1160,7 @@ window.populateLocationDatalist = function (datalistId, inputTarget) {
 // UNIVERSAL JOB APPLICATION CONTROLLER
 // =========================================================================
 window.openJobApplyModal = async function(jobId, prefillMeta) {
-  const isCandidateLoggedIn = Boolean(window.HIREVOLT_USER_ID || window.NEXROLE_USER_ID || window.DREAMJOBS_USER_ID || document.body.classList.contains('user-authenticated'));
+  const isCandidateLoggedIn = Boolean(window.HIREVOLTZ_USER_ID || window.NEXROLE_USER_ID || window.DREAMJOBS_USER_ID || document.body.classList.contains('user-authenticated'));
   if (!isCandidateLoggedIn) {
     try {
       sessionStorage.setItem('pending_job_action', JSON.stringify({ action: 'apply', jobId: jobId }));
@@ -1445,7 +1445,50 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// Auto-fetch unread count on page load
+// Auto-fetch unread count on page load and initialize mobile navigation state
+function initMobileBottomNav() {
+  const currentPath = window.location.pathname;
+  const currentHash = window.location.hash;
+  const navItems = document.querySelectorAll('.mobile-bottom-nav .mobile-nav-item');
+  if (!navItems.length) return;
+
+  navItems.forEach(item => {
+    const itemPath = item.getAttribute('data-path');
+    const itemHash = item.getAttribute('data-hash');
+    
+    // Check hash match first if in dashboard
+    if (itemHash && currentHash && currentHash === itemHash) {
+      navItems.forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+    } else if (!currentHash && itemPath && (currentPath === itemPath || (itemPath !== '/' && currentPath.startsWith(itemPath)))) {
+      item.classList.add('active');
+    }
+  });
+
+  // Check unread messages badge on mobile bottom nav
+  const msgBadge = document.getElementById('mobile-bottom-msg-badge');
+  if (msgBadge) {
+    fetch('/api/messages/unread_count', { method: 'GET' })
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.unread_count > 0) {
+          msgBadge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
+          msgBadge.style.display = 'inline-block';
+        } else {
+          msgBadge.style.display = 'none';
+        }
+      })
+      .catch(() => {});
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   window.fetchNavbarUnreadCount();
+  initMobileBottomNav();
 });
+
+// Update active state on hash changes (e.g. #applications, #post-job, #verifications)
+window.addEventListener('hashchange', () => {
+  initMobileBottomNav();
+});
+

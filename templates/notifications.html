@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Notifications & Alerts — HireVolt{% endblock %}
+{% block title %}Notifications & Alerts — HireVoltz{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -241,52 +241,537 @@
         font-size: 0.8125rem;
         color: var(--color-text-secondary, #64748B);
     }
+
+    /* ==========================================================================
+       RESPONSIVE DISPLAY SWITCH
+       Desktop layout strictly active on >= 992px (100% preserved)
+       Mobile layout strictly active on <= 991px
+       ========================================================================== */
+    @media (min-width: 992px) {
+        .notif-mobile-view {
+            display: none !important;
+        }
+        .notif-desktop-view {
+            display: block !important;
+        }
+    }
+
+    @media (max-width: 991px) {
+        .notif-desktop-view {
+            display: none !important;
+        }
+        .notif-mobile-view {
+            display: block !important;
+        }
+
+        .notif-center-container {
+            padding-top: var(--space-3, 12px);
+            padding-bottom: calc(72px + env(safe-area-inset-bottom, 16px));
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+    }
+
+    /* ==========================================================================
+       MOBILE NOTIFICATION CENTER (<= 991px)
+       ========================================================================== */
+    .notif-mobile-header {
+        position: sticky;
+        top: 0;
+        z-index: 25;
+        background: var(--color-surface, #F8FAFC);
+        padding: 10px 0 12px 0;
+        margin-bottom: 12px;
+        border-bottom: 1px solid var(--color-border, #E2E8F0);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
+    .notif-mobile-header-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .notif-mobile-title-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .notif-mobile-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--color-text-primary, #0F172A);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        letter-spacing: -0.02em;
+    }
+
+    .notif-mobile-title i {
+        color: #0284C7;
+        font-size: 1.15rem;
+    }
+
+    .notif-mobile-counter {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 9px;
+        border-radius: 999px;
+        background: #E0F2FE;
+        color: #0284C7;
+        font-size: 0.75rem;
+        font-weight: 700;
+        border: 1px solid rgba(2, 132, 199, 0.25);
+    }
+
+    .notif-mobile-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-mobile-header-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        min-height: 44px;
+        min-width: 44px;
+        padding: 6px 12px;
+        border-radius: 10px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        border: 1px solid var(--color-border, #E2E8F0);
+        background: var(--color-card-bg, #FFFFFF);
+        color: var(--color-text-primary, #1E293B);
+        cursor: pointer;
+        transition: all 0.15s ease;
+        text-decoration: none;
+        touch-action: manipulation;
+    }
+
+    .btn-mobile-header-action:active {
+        transform: scale(0.96);
+        background: #F1F5F9;
+    }
+
+    .btn-mobile-header-action.text-danger {
+        color: #DC2626;
+        border-color: rgba(220, 38, 38, 0.2);
+    }
+    .btn-mobile-header-action.text-danger:active {
+        background: #FEE2E2;
+    }
+
+    @media (max-width: 360px) {
+        .notif-mobile-header-actions {
+            gap: 4px;
+        }
+        .btn-mobile-header-action {
+            min-width: 38px;
+            min-height: 38px;
+            padding: 6px 8px;
+        }
+        .btn-mobile-header-action span {
+            display: none;
+        }
+    }
+
+    /* Mobile Horizontal Category Pills */
+    .notif-mobile-categories-wrapper {
+        margin-bottom: 14px;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    .notif-mobile-categories-scroll {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 4px 2px 6px 2px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    .notif-mobile-categories-scroll::-webkit-scrollbar {
+        display: none;
+    }
+
+    .notif-mobile-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 44px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        white-space: nowrap;
+        background: var(--color-card-bg, #FFFFFF);
+        color: var(--color-text-secondary, #64748B);
+        border: 1px solid var(--color-border, #E2E8F0);
+        cursor: pointer;
+        transition: all 0.15s ease;
+        flex-shrink: 0;
+        touch-action: manipulation;
+    }
+
+    .notif-mobile-pill:active {
+        transform: scale(0.97);
+    }
+
+    .notif-mobile-pill.active {
+        background: #0284C7;
+        color: #FFFFFF;
+        border-color: #0284C7;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+    }
+
+    .notif-mobile-pill.active i {
+        color: #FFFFFF !important;
+    }
+
+    .notif-mobile-pill .pill-badge {
+        background: #EF4444;
+        color: #FFFFFF;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        padding: 1px 6px;
+        border-radius: 999px;
+    }
+
+    /* Mobile Notification Cards */
+    .notif-mobile-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .mobile-notif-card {
+        background: var(--color-card-bg, #FFFFFF);
+        border: 1px solid var(--color-border, #E2E8F0);
+        border-radius: 14px;
+        padding: 14px 16px;
+        position: relative;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease, max-height 0.25s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+    }
+
+    .mobile-notif-card.unread {
+        background: #F8FAFC;
+        border-left: 4px solid #0284C7;
+        box-shadow: 0 2px 6px rgba(2, 132, 199, 0.08);
+    }
+
+    .mobile-notif-header-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .mobile-cat-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        padding: 3px 8px;
+        border-radius: 6px;
+    }
+
+    .badge-applications { background: #DBEAFE; color: #1D4ED8; }
+    .badge-interviews { background: #D1FAE5; color: #047857; }
+    .badge-jobs { background: #FEF3C7; color: #B45309; }
+    .badge-assessments { background: #FCE7F3; color: #BE185D; }
+    .badge-messages { background: #EDE9FE; color: #6D28D9; }
+    .badge-security { background: #FEE2E2; color: #B91C1C; }
+    .badge-general { background: #F1F5F9; color: #475569; }
+
+    .mobile-status-time-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .mobile-unread-dot-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        color: #0284C7;
+        background: #E0F2FE;
+        padding: 2px 6px;
+        border-radius: 999px;
+    }
+
+    .mobile-notif-time {
+        font-size: 0.75rem;
+        color: var(--color-text-muted, #94A3B8);
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+    }
+
+    .mobile-notif-title {
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: var(--color-text-primary, #0F172A);
+        margin: 0 0 6px 0;
+        line-height: 1.4;
+    }
+
+    .mobile-notif-message {
+        font-size: 0.875rem;
+        color: var(--color-text-secondary, #475569);
+        margin: 0 0 12px 0;
+        line-height: 1.5;
+        word-break: break-word;
+    }
+
+    /* Mobile Card Actions */
+    .mobile-notif-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        padding-top: 10px;
+        border-top: 1px solid var(--color-border-subtle, #F1F5F9);
+    }
+
+    .mobile-action-link {
+        flex: 1;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 8px;
+        background: #0284C7;
+        color: #FFFFFF !important;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background 0.15s ease;
+        touch-action: manipulation;
+    }
+
+    .mobile-action-link:active {
+        background: #0369A1;
+        transform: scale(0.98);
+    }
+
+    .mobile-card-btn-action {
+        min-height: 44px;
+        min-width: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        border: 1px solid var(--color-border, #E2E8F0);
+        background: var(--color-surface, #F8FAFC);
+        color: var(--color-text-secondary, #475569);
+        cursor: pointer;
+        transition: all 0.15s ease;
+        touch-action: manipulation;
+    }
+
+    .mobile-card-btn-action:active {
+        background: #E2E8F0;
+        transform: scale(0.96);
+    }
+
+    .mobile-card-btn-action.delete-btn {
+        color: #EF4444;
+        border-color: rgba(239, 68, 68, 0.2);
+    }
+
+    .mobile-card-btn-action.delete-btn:active {
+        background: #FEE2E2;
+    }
+
+    /* Mobile Pagination */
+    .mobile-notif-pagination {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 18px;
+        padding-top: 14px;
+        border-top: 1px solid var(--color-border, #E2E8F0);
+    }
+
+    .mobile-pag-info {
+        font-size: 0.8125rem;
+        color: var(--color-text-secondary, #64748B);
+    }
+
+    .mobile-pag-controls {
+        display: flex;
+        gap: 6px;
+    }
+
+    .mobile-pag-btn {
+        min-height: 44px;
+        padding: 8px 14px;
+        border-radius: 8px;
+        border: 1px solid var(--color-border, #E2E8F0);
+        background: var(--color-card-bg, #FFFFFF);
+        color: var(--color-text-primary, #0F172A);
+        font-size: 0.8125rem;
+        font-weight: 600;
+        cursor: pointer;
+        touch-action: manipulation;
+    }
+
+    .mobile-pag-btn:active {
+        background: #F1F5F9;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="app-container notif-center-container" data-lenis-prevent>
-    <!-- Header -->
-    <div class="notif-header">
-        <div class="notif-title-area">
-            <h1><i class="fas fa-bell" style="color:#0284C7;"></i> Notification Center</h1>
-            <p>Real-time notifications, status updates, interview schedules, and security alerts.</p>
+
+    <!-- ====================================================================
+         DESKTOP NOTIFICATION VIEW (Screens >= 992px) - 100% UNTOUCHED
+         ==================================================================== -->
+    <div class="notif-desktop-view">
+        <!-- Desktop Header -->
+        <div class="notif-header">
+            <div class="notif-title-area">
+                <h1><i class="fas fa-bell" style="color:#0284C7;"></i> Notification Center</h1>
+                <p>Real-time notifications, status updates, interview schedules, and security alerts.</p>
+            </div>
+            <div class="notif-actions-bar">
+                <button class="btn btn-secondary btn-sm" onclick="markAllAsRead()">
+                    <i class="fas fa-check-double me-1"></i> Mark All as Read
+                </button>
+                <button class="btn btn-ghost btn-sm text-danger" onclick="clearAllNotifications()">
+                    <i class="fas fa-trash-alt me-1"></i> Clear All
+                </button>
+                <a href="{% if role == 'employer' %}/recruiter/settings/notifications{% elif role == 'admin' %}/admin/settings{% else %}/candidate/settings/notifications{% endif %}" class="btn btn-ghost btn-sm" title="Notification Preferences">
+                    <i class="fas fa-cog"></i> Preferences
+                </a>
+            </div>
         </div>
-        <div class="notif-actions-bar">
-            <button class="btn btn-secondary btn-sm" onclick="markAllAsRead()">
-                <i class="fas fa-check-double me-1"></i> Mark All as Read
-            </button>
-            <button class="btn btn-ghost btn-sm text-danger" onclick="clearAllNotifications()">
-                <i class="fas fa-trash-alt me-1"></i> Clear All
-            </button>
-            <a href="{% if role == 'employer' %}/recruiter/settings{% else %}/candidate/settings{% endif %}" class="btn btn-ghost btn-sm" title="Notification Preferences">
-                <i class="fas fa-cog"></i> Preferences
-            </a>
+
+        <!-- Desktop Category Tabs -->
+        <div class="notif-tabs-bar" role="tablist">
+            <button class="notif-tab-btn active" data-filter="all" onclick="switchNotifTab('all', this)"><i class="fas fa-inbox"></i> All</button>
+            <button class="notif-tab-btn" data-filter="unread" onclick="switchNotifTab('unread', this)"><i class="fas fa-envelope"></i> Unread (<span id="notif-unread-count-tab">0</span>)</button>
+            <button class="notif-tab-btn" data-filter="applications" onclick="switchNotifTab('applications', this)"><i class="fas fa-briefcase"></i> Applications</button>
+            <button class="notif-tab-btn" data-filter="interviews" onclick="switchNotifTab('interviews', this)"><i class="fas fa-calendar-alt"></i> Interviews</button>
+            <button class="notif-tab-btn" data-filter="messages" onclick="switchNotifTab('messages', this)"><i class="fas fa-comment-dots"></i> Messages</button>
+            <button class="notif-tab-btn" data-filter="jobs" onclick="switchNotifTab('jobs', this)"><i class="fas fa-bolt"></i> Job Alerts</button>
+            <button class="notif-tab-btn" data-filter="assessments" onclick="switchNotifTab('assessments', this)"><i class="fas fa-award"></i> Assessments</button>
+            <button class="notif-tab-btn" data-filter="security" onclick="switchNotifTab('security', this)"><i class="fas fa-shield-alt"></i> Security</button>
         </div>
+
+        <!-- Desktop Notifications List -->
+        <div id="notif-list-wrapper" class="notif-list">
+            <div style="text-align:center; padding:40px; color:#94A3B8;">
+                <i class="fas fa-circle-notch fa-spin fa-2x mb-2" style="color:#0284C7;"></i>
+                <div>Loading notifications...</div>
+            </div>
+        </div>
+
+        <!-- Desktop Pagination Controls -->
+        <div id="notif-pagination-wrapper" class="notif-pagination" style="display:none;"></div>
     </div>
 
-    <!-- Category Tabs -->
-    <div class="notif-tabs-bar" role="tablist">
-        <button class="notif-tab-btn active" onclick="switchNotifTab('all', this)"><i class="fas fa-inbox"></i> All</button>
-        <button class="notif-tab-btn" onclick="switchNotifTab('unread', this)"><i class="fas fa-envelope"></i> Unread (<span id="notif-unread-count-tab">0</span>)</button>
-        <button class="notif-tab-btn" onclick="switchNotifTab('application', this)"><i class="fas fa-briefcase"></i> Applications</button>
-        <button class="notif-tab-btn" onclick="switchNotifTab('interview', this)"><i class="fas fa-calendar-alt"></i> Interviews</button>
-        <button class="notif-tab-btn" onclick="switchNotifTab('message', this)"><i class="fas fa-comment-dots"></i> Messages</button>
-        <button class="notif-tab-btn" onclick="switchNotifTab('job_alert', this)"><i class="fas fa-bolt"></i> Job Alerts</button>
-        <button class="notif-tab-btn" onclick="switchNotifTab('assessment', this)"><i class="fas fa-award"></i> Assessments</button>
-        <button class="notif-tab-btn" onclick="switchNotifTab('security', this)"><i class="fas fa-shield-alt"></i> Security</button>
-    </div>
-
-    <!-- Notifications List -->
-    <div id="notif-list-wrapper" class="notif-list">
-        <div style="text-align:center; padding:40px; color:#94A3B8;">
-            <i class="fas fa-circle-notch fa-spin fa-2x mb-2" style="color:#0284C7;"></i>
-            <div>Loading notifications...</div>
+    <!-- ====================================================================
+         MOBILE NOTIFICATION CENTER VIEW (Screens <= 991px)
+         ==================================================================== -->
+    <div class="notif-mobile-view">
+        <!-- Sticky Mobile Header -->
+        <div class="notif-mobile-header">
+            <div class="notif-mobile-header-top">
+                <div class="notif-mobile-title-group">
+                    <h1 class="notif-mobile-title">
+                        <i class="fas fa-bell"></i> Alerts
+                    </h1>
+                    <span class="notif-mobile-counter" id="mobile-notif-unread-badge">0 Unread</span>
+                </div>
+                <div class="notif-mobile-header-actions">
+                    <button type="button" class="btn-mobile-header-action" onclick="markAllAsRead()" title="Mark all as read" aria-label="Mark all as read">
+                        <i class="fas fa-check-double text-primary"></i>
+                        <span>Read All</span>
+                    </button>
+                    <button type="button" class="btn-mobile-header-action text-danger" onclick="clearAllNotifications()" title="Clear all notifications" aria-label="Clear all">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                    <a href="{% if role == 'employer' %}/recruiter/settings/notifications{% elif role == 'admin' %}/admin/settings{% else %}/candidate/settings/notifications{% endif %}" class="btn-mobile-header-action" title="Notification Preferences" aria-label="Settings">
+                        <i class="fas fa-cog"></i>
+                    </a>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <!-- Pagination Controls -->
-    <div id="notif-pagination-wrapper" class="notif-pagination" style="display:none;"></div>
+        <!-- Mobile Horizontal Category Pills (6 Groups + All & Unread) -->
+        <div class="notif-mobile-categories-wrapper" role="tablist" aria-label="Notification Categories">
+            <div class="notif-mobile-categories-scroll">
+                <button type="button" class="notif-mobile-pill active" data-filter="all" onclick="switchNotifTab('all', this)">
+                    <i class="fas fa-inbox"></i> All
+                </button>
+                <button type="button" class="notif-mobile-pill" data-filter="unread" onclick="switchNotifTab('unread', this)">
+                    <i class="fas fa-envelope"></i> Unread
+                    <span class="pill-badge" id="mobile-pill-unread-count" style="display:none;">0</span>
+                </button>
+                <button type="button" class="notif-mobile-pill" data-filter="applications" onclick="switchNotifTab('applications', this)">
+                    <i class="fas fa-briefcase"></i> Applications
+                </button>
+                <button type="button" class="notif-mobile-pill" data-filter="interviews" onclick="switchNotifTab('interviews', this)">
+                    <i class="fas fa-calendar-alt"></i> Interviews
+                </button>
+                <button type="button" class="notif-mobile-pill" data-filter="jobs" onclick="switchNotifTab('jobs', this)">
+                    <i class="fas fa-bolt"></i> Jobs
+                </button>
+                <button type="button" class="notif-mobile-pill" data-filter="assessments" onclick="switchNotifTab('assessments', this)">
+                    <i class="fas fa-award"></i> Assessments
+                </button>
+                <button type="button" class="notif-mobile-pill" data-filter="messages" onclick="switchNotifTab('messages', this)">
+                    <i class="fas fa-comment-dots"></i> Messages
+                </button>
+                <button type="button" class="notif-mobile-pill" data-filter="security" onclick="switchNotifTab('security', this)">
+                    <i class="fas fa-shield-alt"></i> Security
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Notifications List -->
+        <div id="notif-mobile-list-wrapper" class="notif-mobile-list">
+            <div style="text-align:center; padding:36px; color:#94A3B8;">
+                <i class="fas fa-circle-notch fa-spin fa-2x mb-2" style="color:#0284C7;"></i>
+                <div>Loading alerts...</div>
+            </div>
+        </div>
+
+        <!-- Mobile Pagination -->
+        <div id="notif-mobile-pagination-wrapper" class="mobile-notif-pagination" style="display:none;"></div>
+    </div>
 </div>
 {% endblock %}
 
@@ -297,7 +782,8 @@
 
     async function loadNotifications(page = 1) {
         currentPage = page;
-        const wrapper = document.getElementById('notif-list-wrapper');
+        const desktopWrapper = document.getElementById('notif-list-wrapper');
+        const mobileWrapper = document.getElementById('notif-mobile-list-wrapper');
         
         let url = `/api/notifications?page=${page}&limit=15`;
         if (currentFilter === 'unread') {
@@ -316,17 +802,40 @@
             }
             const data = await res.json();
             if (!data || !data.success) {
-                wrapper.innerHTML = '<div class="notif-empty-state"><p>Could not load notifications.</p></div>';
+                const errHtml = '<div class="notif-empty-state"><p>Could not load notifications.</p></div>';
+                if (desktopWrapper) desktopWrapper.innerHTML = errHtml;
+                if (mobileWrapper) mobileWrapper.innerHTML = errHtml;
                 return;
             }
 
-            document.getElementById('notif-unread-count-tab').textContent = data.unread_count || 0;
+            const unreadCount = data.unread_count || 0;
+
+            // Update desktop tab count
+            const desktopCountEl = document.getElementById('notif-unread-count-tab');
+            if (desktopCountEl) desktopCountEl.textContent = unreadCount;
+
+            // Update mobile header counter
+            const mobileBadgeEl = document.getElementById('mobile-notif-unread-badge');
+            if (mobileBadgeEl) {
+                mobileBadgeEl.textContent = `${unreadCount} Unread`;
+            }
+
+            // Update mobile unread pill badge
+            const mobilePillBadge = document.getElementById('mobile-pill-unread-count');
+            if (mobilePillBadge) {
+                if (unreadCount > 0) {
+                    mobilePillBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                    mobilePillBadge.style.display = 'inline-block';
+                } else {
+                    mobilePillBadge.style.display = 'none';
+                }
+            }
             
-            // Update navbar badge if present
+            // Update base navbar bell badge if present
             const navBadge = document.getElementById('navbar-notif-badge');
             if (navBadge) {
-                if (data.unread_count > 0) {
-                    navBadge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
+                if (unreadCount > 0) {
+                    navBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
                     navBadge.style.display = 'inline-block';
                 } else {
                     navBadge.style.display = 'none';
@@ -334,23 +843,104 @@
             }
 
             if (!data.notifications || data.notifications.length === 0) {
-                wrapper.innerHTML = `
+                const emptyHtml = `
                     <div class="notif-empty-state">
                         <div class="notif-empty-icon"><i class="fas fa-bell-slash"></i></div>
-                        <h3 style="font-size:1.125rem; font-weight:700; margin-bottom:6px;">No Notifications Found</h3>
-                        <p style="color:#64748B; font-size:0.875rem; margin:0;">You're all caught up! When updates or alerts arrive, they'll appear here.</p>
+                        <h3 style="font-size:1.125rem; font-weight:700; margin-bottom:6px; color:#0F172A;">No Notifications Found</h3>
+                        <p style="color:#64748B; font-size:0.875rem; margin:0 0 14px 0;">You're all caught up! When updates or alerts arrive, they'll appear here.</p>
+                        ${currentFilter !== 'all' ? `<button class="btn btn-secondary btn-sm" onclick="switchNotifTab('all')">View All Notifications</button>` : ''}
                     </div>
                 `;
-                document.getElementById('notif-pagination-wrapper').style.display = 'none';
+                if (desktopWrapper) desktopWrapper.innerHTML = emptyHtml;
+                if (mobileWrapper) mobileWrapper.innerHTML = emptyHtml;
+                
+                const pagDesktop = document.getElementById('notif-pagination-wrapper');
+                if (pagDesktop) pagDesktop.style.display = 'none';
+                const pagMobile = document.getElementById('notif-mobile-pagination-wrapper');
+                if (pagMobile) pagMobile.style.display = 'none';
                 return;
             }
 
-            wrapper.innerHTML = data.notifications.map(n => renderNotificationCard(n)).join('');
+            // Render desktop cards
+            if (desktopWrapper) {
+                desktopWrapper.innerHTML = data.notifications.map(n => renderNotificationCard(n)).join('');
+            }
+
+            // Render mobile cards
+            if (mobileWrapper) {
+                mobileWrapper.innerHTML = data.notifications.map(n => renderMobileNotificationCard(n)).join('');
+            }
+
             renderPagination(data);
         } catch (e) {
             console.error('Error loading notifications:', e);
-            wrapper.innerHTML = '<div class="notif-empty-state"><p>Error connecting to notifications service.</p></div>';
+            const errHtml = '<div class="notif-empty-state"><p>Error connecting to notifications service.</p></div>';
+            if (desktopWrapper) desktopWrapper.innerHTML = errHtml;
+            if (mobileWrapper) mobileWrapper.innerHTML = errHtml;
         }
+    }
+
+    function getCategoryMeta(n) {
+        const cat = (n.category_group || '').toLowerCase();
+        const type = (n.notification_type || '').toLowerCase();
+
+        if (cat === 'applications' || type.includes('application') || type.includes('shortlist') || type.includes('rejection')) {
+            return {
+                key: 'applications',
+                label: 'Applications',
+                icon: type.includes('shortlist') ? 'fa-star' : type.includes('rejection') ? 'fa-times-circle' : 'fa-briefcase',
+                badgeClass: 'badge-applications',
+                actionLabel: 'View Application'
+            };
+        } else if (cat === 'interviews' || type.includes('interview')) {
+            return {
+                key: 'interviews',
+                label: 'Interviews',
+                icon: type.includes('reminder') ? 'fa-clock' : 'fa-calendar-check',
+                badgeClass: 'badge-interviews',
+                actionLabel: 'View Interview'
+            };
+        } else if (cat === 'jobs' || type.includes('job') || type.includes('alert') || type.includes('recommend')) {
+            return {
+                key: 'jobs',
+                label: 'Jobs',
+                icon: 'fa-bolt',
+                badgeClass: 'badge-jobs',
+                actionLabel: 'View Job'
+            };
+        } else if (cat === 'assessments' || type.includes('assessment') || type.includes('badge')) {
+            return {
+                key: 'assessments',
+                label: 'Assessments',
+                icon: 'fa-award',
+                badgeClass: 'badge-assessments',
+                actionLabel: 'View Assessment'
+            };
+        } else if (cat === 'messages' || type.includes('message')) {
+            return {
+                key: 'messages',
+                label: 'Messages',
+                icon: 'fa-comment-dots',
+                badgeClass: 'badge-messages',
+                actionLabel: 'Open Chat'
+            };
+        } else if (cat === 'security' || type.includes('security') || type.includes('password') || type.includes('lockout')) {
+            return {
+                key: 'security',
+                label: 'Security',
+                icon: 'fa-shield-alt',
+                badgeClass: 'badge-security',
+                actionLabel: 'Review Security'
+            };
+        }
+
+        return {
+            key: 'general',
+            label: 'General',
+            icon: 'fa-bell',
+            badgeClass: 'badge-general',
+            actionLabel: 'Open Action'
+        };
     }
 
     function renderNotificationCard(n) {
@@ -404,31 +994,122 @@
         `;
     }
 
-    function renderPagination(data) {
-        const pag = document.getElementById('notif-pagination-wrapper');
-        if (data.pages <= 1) {
-            pag.style.display = 'none';
-            return;
-        }
+    function renderMobileNotificationCard(n) {
+        const meta = getCategoryMeta(n);
+        const unreadClass = n.is_read ? '' : 'unread';
 
-        pag.style.display = 'flex';
-        pag.innerHTML = `
-            <div>Showing page ${data.page} of ${data.pages} (${data.total} total)</div>
-            <div style="display:flex; gap:6px;">
-                ${data.page > 1 ? `<button class="btn btn-ghost btn-sm" onclick="loadNotifications(${data.page - 1})">Previous</button>` : ''}
-                ${data.page < data.pages ? `<button class="btn btn-ghost btn-sm" onclick="loadNotifications(${data.page + 1})">Next</button>` : ''}
+        return `
+            <div class="mobile-notif-card ${unreadClass}" id="mobile-notif-card-${n.id}">
+                <div class="mobile-notif-header-row">
+                    <span class="mobile-cat-badge ${meta.badgeClass}">
+                        <i class="fas ${meta.icon}"></i> ${meta.label}
+                    </span>
+                    <div class="mobile-status-time-row">
+                        ${!n.is_read ? `<span class="mobile-unread-dot-badge" id="mobile-unread-dot-${n.id}"><i class="fas fa-circle" style="font-size:6px;"></i> Unread</span>` : ''}
+                        <span class="mobile-notif-time">
+                            <i class="far fa-clock"></i> ${escapeHtml(n.time_ago || '')}
+                        </span>
+                    </div>
+                </div>
+
+                <h4 class="mobile-notif-title">${escapeHtml(n.title)}</h4>
+                <p class="mobile-notif-message">${escapeHtml(n.message)}</p>
+
+                <div class="mobile-notif-actions">
+                    ${n.action_url ? `
+                        <a href="${escapeHtml(n.action_url)}" class="mobile-action-link" onclick="markSingleRead(${n.id})">
+                            <span>${meta.actionLabel}</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    ` : ''}
+                    ${!n.is_read ? `
+                        <button type="button" class="mobile-card-btn-action" id="mobile-mark-read-btn-${n.id}" onclick="markSingleRead(${n.id})" title="Mark as read" aria-label="Mark as read">
+                            <i class="fas fa-check text-success"></i>
+                            <span>Mark read</span>
+                        </button>
+                    ` : ''}
+                    <button type="button" class="mobile-card-btn-action delete-btn" onclick="deleteNotification(${n.id})" title="Delete notification" aria-label="Delete notification">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
             </div>
         `;
     }
 
+    function renderPagination(data) {
+        const desktopPag = document.getElementById('notif-pagination-wrapper');
+        const mobilePag = document.getElementById('notif-mobile-pagination-wrapper');
+
+        if (data.pages <= 1) {
+            if (desktopPag) desktopPag.style.display = 'none';
+            if (mobilePag) mobilePag.style.display = 'none';
+            return;
+        }
+
+        // Desktop pagination
+        if (desktopPag) {
+            desktopPag.style.display = 'flex';
+            desktopPag.innerHTML = `
+                <div>Showing page ${data.page} of ${data.pages} (${data.total} total)</div>
+                <div style="display:flex; gap:6px;">
+                    ${data.page > 1 ? `<button class="btn btn-ghost btn-sm" onclick="loadNotifications(${data.page - 1})">Previous</button>` : ''}
+                    ${data.page < data.pages ? `<button class="btn btn-ghost btn-sm" onclick="loadNotifications(${data.page + 1})">Next</button>` : ''}
+                </div>
+            `;
+        }
+
+        // Mobile pagination
+        if (mobilePag) {
+            mobilePag.style.display = 'flex';
+            mobilePag.innerHTML = `
+                <div class="mobile-pag-info">Page ${data.page} of ${data.pages} (${data.total})</div>
+                <div class="mobile-pag-controls">
+                    ${data.page > 1 ? `<button class="mobile-pag-btn" onclick="loadNotifications(${data.page - 1})">&larr; Prev</button>` : ''}
+                    ${data.page < data.pages ? `<button class="mobile-pag-btn" onclick="loadNotifications(${data.page + 1})">Next &rarr;</button>` : ''}
+                </div>
+            `;
+        }
+    }
+
     function switchNotifTab(filterName, btn) {
         currentFilter = filterName;
-        document.querySelectorAll('.notif-tab-btn').forEach(b => b.classList.remove('active'));
-        if (btn) btn.classList.add('active');
+
+        // Synchronize desktop tabs
+        document.querySelectorAll('.notif-tab-btn').forEach(b => {
+            if (b.dataset.filter === filterName || b === btn) {
+                b.classList.add('active');
+            } else {
+                b.classList.remove('active');
+            }
+        });
+
+        // Synchronize mobile pills
+        document.querySelectorAll('.notif-mobile-pill').forEach(p => {
+            if (p.dataset.filter === filterName || p === btn) {
+                p.classList.add('active');
+                p.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            } else {
+                p.classList.remove('active');
+            }
+        });
+
         loadNotifications(1);
     }
 
     async function markSingleRead(id) {
+        // Immediate in-place visual update for responsive feel
+        const desktopCard = document.getElementById(`notif-card-${id}`);
+        if (desktopCard) desktopCard.classList.remove('unread');
+
+        const mobileCard = document.getElementById(`mobile-notif-card-${id}`);
+        if (mobileCard) {
+            mobileCard.classList.remove('unread');
+            const unreadDot = document.getElementById(`mobile-unread-dot-${id}`);
+            if (unreadDot) unreadDot.remove();
+            const markReadBtn = document.getElementById(`mobile-mark-read-btn-${id}`);
+            if (markReadBtn) markReadBtn.remove();
+        }
+
         try {
             const csrfToken = document.querySelector('input[name="csrf_token"]')?.value || '';
             const res = await fetch(`/api/notifications/${id}/read`, {
@@ -437,8 +1118,6 @@
             });
             const data = await res.json();
             if (data.success) {
-                const card = document.getElementById(`notif-card-${id}`);
-                if (card) card.classList.remove('unread');
                 loadNotifications(currentPage);
             }
         } catch (e) {
@@ -447,6 +1126,18 @@
     }
 
     async function markAllAsRead() {
+        // Instant visual update for all cards on screen
+        document.querySelectorAll('.mobile-notif-card.unread, .notif-card.unread').forEach(c => c.classList.remove('unread'));
+        document.querySelectorAll('.mobile-unread-dot-badge').forEach(d => d.remove());
+        document.querySelectorAll('[id^="mobile-mark-read-btn-"]').forEach(b => b.remove());
+
+        const mobileBadge = document.getElementById('mobile-notif-unread-badge');
+        if (mobileBadge) mobileBadge.textContent = '0 Unread';
+        const desktopTabBadge = document.getElementById('notif-unread-count-tab');
+        if (desktopTabBadge) desktopTabBadge.textContent = '0';
+        const mobilePillBadge = document.getElementById('mobile-pill-unread-count');
+        if (mobilePillBadge) mobilePillBadge.style.display = 'none';
+
         try {
             const csrfToken = document.querySelector('input[name="csrf_token"]')?.value || '';
             const res = await fetch('/api/notifications/mark_all_read', {
@@ -455,7 +1146,9 @@
             });
             const data = await res.json();
             if (data.success) {
-                if (typeof showToast === 'function') showToast('All notifications marked as read', 'success');
+                if (typeof showToast === 'function') {
+                    showToast('All notifications marked as read', 'success');
+                }
                 loadNotifications(1);
             }
         } catch (e) {
@@ -464,6 +1157,20 @@
     }
 
     async function deleteNotification(id) {
+        // Smooth in-place removal
+        const mobileCard = document.getElementById(`mobile-notif-card-${id}`);
+        if (mobileCard) {
+            mobileCard.style.opacity = '0';
+            mobileCard.style.transform = 'translateY(-10px)';
+            setTimeout(() => { mobileCard.remove(); }, 200);
+        }
+
+        const desktopCard = document.getElementById(`notif-card-${id}`);
+        if (desktopCard) {
+            desktopCard.style.opacity = '0';
+            setTimeout(() => { desktopCard.remove(); }, 200);
+        }
+
         try {
             const csrfToken = document.querySelector('input[name="csrf_token"]')?.value || '';
             const res = await fetch(`/api/notifications/${id}`, {
@@ -472,8 +1179,6 @@
             });
             const data = await res.json();
             if (data.success) {
-                const card = document.getElementById(`notif-card-${id}`);
-                if (card) card.remove();
                 loadNotifications(currentPage);
             }
         } catch (e) {

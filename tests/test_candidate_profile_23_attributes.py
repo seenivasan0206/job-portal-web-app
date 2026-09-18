@@ -47,7 +47,7 @@ def client():
 @pytest.fixture
 def candidate_user():
     """Sets up a clean test candidate user and returns credentials."""
-    email = "cand_23_attrs@hirevolt.test"
+    email = "cand_23_attrs@hirevoltz.test"
     raw_password = "SecurePassword123!"
     hashed_pwd = generate_password_hash(raw_password)
 
@@ -211,12 +211,12 @@ def test_candidate_profile_all_23_attributes_lifecycle(client, candidate_user):
     # 10. Save Project (Attribute: Projects)
     resp = client.post('/api/candidate/profile/items', json={
         'section': 'projects',
-        'project_title': 'HireVolt AI Job Matcher',
+        'project_title': 'HireVoltz AI Job Matcher',
         'client_name': 'Internal Open-Source Venture',
         'project_status': 'In Progress',
         'project_details': 'Engineered real-time semantic skill matching with embedding vector search.',
         'skills_used': 'Python, PyTorch, React, FastAPI, Docker',
-        'project_url': 'https://github.com/ananya-sharma/hirevolt-matcher'
+        'project_url': 'https://github.com/ananya-sharma/hirevoltz-matcher'
     })
     assert resp.status_code == 200
 

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Explore Companies — HireVolt{% endblock %}
+{% block title %}Explore Companies — HireVoltz{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -51,6 +51,31 @@
         transform: translateY(-3px);
         border-color: var(--color-primary);
         box-shadow: var(--shadow-lg);
+    }
+
+    @media (max-width: 767px) {
+        .companies-header {
+            margin: var(--space-4) auto var(--space-4);
+            padding: 0 var(--space-2);
+        }
+        .companies-filter-bar {
+            padding: var(--space-3);
+            border-radius: var(--radius-lg);
+            gap: var(--space-2);
+        }
+        .company-card-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: var(--space-4);
+        }
+        .company-card-item {
+            padding: var(--space-4);
+        }
+    }
+
+    @media (max-width: 575px) {
+        .company-card-grid {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 {% endblock %}
@@ -158,7 +183,7 @@
                                 <h2 style="font-size:var(--font-size-base); font-weight:700; margin:0;">
                                     <a href="/company/${c.id}" style="color:var(--color-text);">${escapeHtml(name)}</a>
                                 </h2>
-                                ${c.is_company_verified ? `<span style="color:#10B981; font-size:11px;" title="Company information has been reviewed by HireVolt."><i class="fas fa-check-circle"></i></span>` : ''}
+                                ${c.is_company_verified ? `<span style="color:#10B981; font-size:11px;" title="Company information has been reviewed by HireVoltz."><i class="fas fa-check-circle"></i></span>` : ''}
                             </div>
                             <div style="font-size:var(--font-size-xs); color:var(--color-text-muted); font-weight:500; margin-top:2px;">
                                 ${escapeHtml(c.industry || 'Technology & Services')}

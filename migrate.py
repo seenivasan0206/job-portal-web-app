@@ -348,7 +348,7 @@ def migrate_admin_and_moderation_schema():
             cur.execute("""
                 INSERT INTO user (name, email, password, is_admin, is_verified, profile_visibility)
                 VALUES (%s, %s, %s, TRUE, TRUE, 'private')
-            """, ('HireVolt Admin', admin_email, generate_password_hash(admin_password)))
+            """, ('HireVoltz Admin', admin_email, generate_password_hash(admin_password)))
             print(f"admin: user {admin_email} created with is_admin=TRUE.")
         else:
             cur.execute("UPDATE user SET is_admin = TRUE, is_verified = TRUE WHERE id = %s", (admin_user['id'],))

@@ -25,7 +25,7 @@ def client():
 
 @pytest.fixture
 def test_candidate_id():
-    email = "profile_fixes_test@hirevolt.com"
+    email = "profile_fixes_test@hirevoltz.com"
     with db_cursor(dictionary=True) as cursor:
         cursor.execute("SELECT id FROM user WHERE email = %s", (email,))
         user = cursor.fetchone()

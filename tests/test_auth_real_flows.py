@@ -34,7 +34,7 @@ def get_csrf(test_client):
 
 def test_candidate_complete_auth_lifecycle(client):
     """Test full candidate registration, login, dashboard access, and logout lifecycle."""
-    email = f"cand_test_{int(time.time())}@hirevolt.com"
+    email = f"cand_test_{int(time.time())}@hirevoltz.com"
     password = "CandSecurePass123!"
 
     # 1. Send OTP
@@ -101,7 +101,7 @@ def test_candidate_complete_auth_lifecycle(client):
 
 def test_employer_complete_auth_lifecycle(client):
     """Test full employer registration, login, dashboard access, and logout lifecycle."""
-    email = f"emp_test_{int(time.time())}@hirevolt.com"
+    email = f"emp_test_{int(time.time())}@hirevoltz.com"
     password = "EmpSecurePass123!"
 
     # 1. Send OTP
@@ -118,7 +118,7 @@ def test_employer_complete_auth_lifecycle(client):
     # 2. Register
     csrf = get_csrf(client)
     reg_res = client.post('/api/employer/register', json={
-        'name': 'HireVolt Testing Corp',
+        'name': 'HireVoltz Testing Corp',
         'email': email,
         'password': password,
         'mobile': '9876543211',

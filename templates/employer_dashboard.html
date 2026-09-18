@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Employer Recruitment Portal — HireVolt{% endblock %}
+{% block title %}Employer Recruitment Portal — HireVoltz{% endblock %}
 
 {% block extra_head %}
 <script src="{{ url_for('static', filename='js/dashboard-shared.js') }}"></script>
@@ -28,18 +28,40 @@
         overflow-y: auto;
     }
 
-    @media (max-width: 992px) {
+    @media (max-width: 991px) {
         .employer-workspace {
             flex-direction: column;
         }
         .emp-sidebar {
-            width: 100%;
-            border-right: none;
-            border-bottom: 1px solid var(--color-border);
-            padding: var(--space-4);
+            display: none !important;
         }
         .emp-main {
-            padding: var(--space-5) var(--space-4);
+            padding: 12px 14px 32px;
+        }
+        .ats-kpis-wrapper {
+            display: flex !important;
+            overflow-x: auto !important;
+            padding-bottom: 8px !important;
+            scrollbar-width: none !important;
+            -webkit-overflow-scrolling: touch !important;
+            gap: 8px;
+        }
+        .ats-kpi-pill {
+            min-width: 105px !important;
+            flex-shrink: 0 !important;
+        }
+        .ats-filter-toolbar {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 8px !important;
+        }
+        .ats-filter-toolbar input,
+        .ats-filter-toolbar select {
+            width: 100% !important;
+        }
+        .pipeline-stepper {
+            padding: 8px;
+            gap: 4px;
         }
     }
 
@@ -430,136 +452,300 @@
 
     <!-- Main Workspace Content -->
     <main class="emp-main">
-        <!-- Stat KPI Metrics -->
-        <div class="stat-grid">
-            <div class="stat-card">
-                <div class="stat-info">
-                    <div class="stat-value" id="emp-stat-jobs">0</div>
-                    <div class="stat-label">Active Job Openings</div>
+        <!-- Compact Employer Mobile Top Bar (Screens <= 991px) -->
+        <div class="emp-mobile-top-bar d-lg-none" id="emp-mobile-top-bar">
+            <div class="emp-top-profile">
+                <div class="emp-top-avatar" id="emp-top-avatar-initial">
+                    {{ (user_name or 'E')[0]|upper }}
                 </div>
-                <div class="stat-icon"><i class="fas fa-briefcase"></i></div>
+                <div style="min-width:0;">
+                    <div class="emp-top-greeting" id="emp-top-greeting-text">Welcome, {{ user_name or 'Recruiter' }}</div>
+                    <span class="emp-top-status"><i class="fas fa-briefcase"></i> Recruitment Partner</span>
+                </div>
             </div>
-
-            <div class="stat-card">
-                <div class="stat-info">
-                    <div class="stat-value" id="emp-stat-apps">0</div>
-                    <div class="stat-label">Total Applicants</div>
-                </div>
-                <div class="stat-icon" style="background:rgba(6,182,212,0.1); color:#0891B2;"><i class="fas fa-user-friends"></i></div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-info">
-                    <div class="stat-value" id="emp-stat-shortlisted">0</div>
-                    <div class="stat-label">Shortlisted Candidates</div>
-                </div>
-                <div class="stat-icon" style="background:rgba(22,163,74,0.1); color:#16A34A;"><i class="fas fa-user-check"></i></div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-info">
-                    <div class="stat-value" id="emp-stat-interviews">0</div>
-                    <div class="stat-label">Interviews Scheduled</div>
-                </div>
-                <div class="stat-icon" style="background:rgba(245,158,11,0.1); color:#D97706;"><i class="fas fa-calendar-check"></i></div>
+            <div class="emp-top-actions">
+                <a href="/recruiter/messages" class="emp-top-btn" title="Candidate Messages" aria-label="Messages">
+                    <i class="fas fa-comments"></i>
+                    <span class="emp-top-badge" id="emp-top-badge-messages" style="display:none;">0</span>
+                </a>
+                <a href="/notifications" class="emp-top-btn" title="Notifications" aria-label="Notifications">
+                    <i class="fas fa-bell"></i>
+                    <span class="emp-top-badge" id="emp-top-badge-notifs" style="display:none;">0</span>
+                </a>
+                <a href="/recruiter_company_profile" class="emp-top-btn" title="Company Profile" aria-label="Profile">
+                    <i class="fas fa-building"></i>
+                </a>
+                <a href="/logout" onclick="openLogoutModal(); return false;" class="emp-top-btn emp-top-btn-logout" title="Sign Out" aria-label="Sign Out">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
             </div>
         </div>
 
-        <!-- 1. Post Job Form Section -->
-        <div id="empsec-post-job" class="card" style="margin-bottom:var(--space-8);">
-            <div class="card-header">
-                <h2 class="card-title"><i class="fas fa-plus-circle" style="color:var(--color-primary); margin-right:8px;"></i> Create New Job Posting</h2>
+        <!-- Mobile Horizontal Pill Tab Scroller -->
+        <div class="mobile-tab-scroller" id="emp-mobile-tabs">
+            <button type="button" class="mobile-tab-pill active" onclick="showEmpSection('post-job')" id="emptab-post-job">
+                <i class="fas fa-plus-circle"></i> Post Job
+            </button>
+            <button type="button" class="mobile-tab-pill" onclick="showEmpSection('jobs')" id="emptab-jobs">
+                <i class="fas fa-briefcase"></i> Active Postings
+            </button>
+            <button type="button" class="mobile-tab-pill" onclick="showEmpSection('applicants')" id="emptab-applicants">
+                <i class="fas fa-users-cog"></i> Applicants ATS
+            </button>
+            <button type="button" class="mobile-tab-pill" onclick="showEmpSection('analytics')" id="emptab-analytics">
+                <i class="fas fa-chart-line"></i> Analytics
+            </button>
+            <a href="/recruiter/interviews" class="mobile-tab-pill">
+                <i class="fas fa-calendar-check"></i> Interviews
+            </a>
+            <a href="/recruiter_candidates" class="mobile-tab-pill">
+                <i class="fas fa-search"></i> Talent Search
+            </a>
+            <a href="/recruiter/messages" class="mobile-tab-pill">
+                <i class="fas fa-comments"></i> Messages
+            </a>
+            <a href="/recruiter_company_profile" class="mobile-tab-pill">
+                <i class="fas fa-building"></i> Profile
+            </a>
+        </div>
+
+        <!-- Stat KPI Metrics (5 Cards for Full Hiring Pipeline) -->
+        <div class="stat-grid emp-kpi-grid-mobile" id="emp-stat-grid-container">
+            <div class="stat-card emp-kpi-card-mobile">
+                <div class="stat-info">
+                    <div class="stat-value emp-kpi-val" id="emp-stat-jobs">0</div>
+                    <div class="stat-label emp-kpi-label">Active Jobs</div>
+                </div>
+                <div class="stat-icon emp-kpi-icon"><i class="fas fa-briefcase"></i></div>
+            </div>
+
+            <div class="stat-card emp-kpi-card-mobile">
+                <div class="stat-info">
+                    <div class="stat-value emp-kpi-val" id="emp-stat-apps">0</div>
+                    <div class="stat-label emp-kpi-label">Applicants</div>
+                </div>
+                <div class="stat-icon emp-kpi-icon" style="background:rgba(6,182,212,0.1); color:#0891B2;"><i class="fas fa-user-friends"></i></div>
+            </div>
+
+            <div class="stat-card emp-kpi-card-mobile">
+                <div class="stat-info">
+                    <div class="stat-value emp-kpi-val" id="emp-stat-shortlisted">0</div>
+                    <div class="stat-label emp-kpi-label">Shortlisted</div>
+                </div>
+                <div class="stat-icon emp-kpi-icon" style="background:rgba(22,163,74,0.1); color:#16A34A;"><i class="fas fa-user-check"></i></div>
+            </div>
+
+            <div class="stat-card emp-kpi-card-mobile">
+                <div class="stat-info">
+                    <div class="stat-value emp-kpi-val" id="emp-stat-interviews">0</div>
+                    <div class="stat-label emp-kpi-label">Interviews</div>
+                </div>
+                <div class="stat-icon emp-kpi-icon" style="background:rgba(245,158,11,0.1); color:#D97706;"><i class="fas fa-calendar-check"></i></div>
+            </div>
+
+            <div class="stat-card emp-kpi-card-mobile card-span-2">
+                <div class="stat-info">
+                    <div class="stat-value emp-kpi-val" id="emp-stat-hired">0</div>
+                    <div class="stat-label emp-kpi-label">Hired Candidates</div>
+                </div>
+                <div class="stat-icon emp-kpi-icon" style="background:rgba(168,85,247,0.1); color:#A855F7;"><i class="fas fa-trophy"></i></div>
+            </div>
+        </div>
+
+        <!-- 1. Post Job Form Section (5-Step Mobile Wizard + Desktop Multi-column Form) -->
+        <div id="empsec-post-job" class="card create-job-wizard" style="margin-bottom:var(--space-8);">
+            <div class="card-header" style="border-bottom:1px solid var(--color-border); padding-bottom:var(--space-3); margin-bottom:var(--space-4);">
+                <h2 class="card-title" id="post-job-heading"><i class="fas fa-plus-circle" style="color:var(--color-primary); margin-right:8px;"></i> Create New Job Opening</h2>
+                <div style="font-size:var(--font-size-xs); color:var(--color-text-muted);" class="d-lg-none" id="wizard-step-counter">Step 1 of 5: Basic Information</div>
+            </div>
+
+            <!-- 5-Step Progress Header on Mobile -->
+            <div class="wizard-steps-header d-lg-none" id="wizard-steps-header">
+                <div class="wizard-step-node active" id="ws-node-1" onclick="goToJobStep(1)">
+                    <div class="wizard-step-bubble">1</div>
+                    <div class="wizard-step-title">Basic</div>
+                </div>
+                <div class="wizard-step-node" id="ws-node-2" onclick="goToJobStep(2)">
+                    <div class="wizard-step-bubble">2</div>
+                    <div class="wizard-step-title">Details</div>
+                </div>
+                <div class="wizard-step-node" id="ws-node-3" onclick="goToJobStep(3)">
+                    <div class="wizard-step-bubble">3</div>
+                    <div class="wizard-step-title">Skills</div>
+                </div>
+                <div class="wizard-step-node" id="ws-node-4" onclick="goToJobStep(4)">
+                    <div class="wizard-step-bubble">4</div>
+                    <div class="wizard-step-title">Salary</div>
+                </div>
+                <div class="wizard-step-node" id="ws-node-5" onclick="goToJobStep(5)">
+                    <div class="wizard-step-bubble">5</div>
+                    <div class="wizard-step-title">Publish</div>
+                </div>
             </div>
 
             <form id="post-job-form" onsubmit="event.preventDefault(); submitPostJob();">
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:var(--space-4);">
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Job Title</label>
-                        <input type="text" id="job-title" class="form-control" placeholder="e.g. Senior Backend Engineer" required>
-                    </div>
+                <!-- Hidden Edit Job ID -->
+                <input type="hidden" id="edit-job-id" value="">
 
-                    <div class="form-group">
-                        <label class="form-label form-label-required">Location</label>
-                        <input type="text" id="job-loc" list="employer-locations-list" class="form-control" placeholder="e.g. Bengaluru / Remote" required>
-                        <datalist id="employer-locations-list"></datalist>
+                <!-- STEP 1: Basic Information -->
+                <div class="wizard-step-pane active" id="wizard-step-pane-1">
+                    <div style="font-weight:700; font-size:var(--font-size-sm); color:var(--color-text); margin-bottom:var(--space-3);" class="d-lg-none">
+                        <i class="fas fa-info-circle" style="color:var(--color-primary); margin-right:6px;"></i> Step 1: Basic Information
                     </div>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:var(--space-4);">
+                        <div class="form-group">
+                            <label class="form-label form-label-required">Job Title</label>
+                            <input type="text" id="job-title" class="form-control" placeholder="e.g. Senior Backend Engineer" required>
+                        </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Compensation Text / Range</label>
-                        <input type="text" id="job-sal" class="form-control" placeholder="e.g. ₹18 - ₹26 LPA">
-                    </div>
+                        <div class="form-group">
+                            <label class="form-label form-label-required">Job Category</label>
+                            <select id="job-cat" class="form-select" required>
+                                <option value="">Select Category</option>
+                                <option value="IT & Software">IT & Software</option>
+                                <option value="Banking & Finance">Banking & Finance</option>
+                                <option value="Healthcare">Healthcare</option>
+                                <option value="Engineering">Engineering</option>
+                                <option value="Manufacturing">Manufacturing</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Education">Education</option>
+                                <option value="Design Engineer">Design Engineer</option>
+                                <option value="Government">Government</option>
+                                <option value="Retail">Retail</option>
+                                <option value="Other">Other Domains</option>
+                            </select>
+                        </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Job Category</label>
-                        <select id="job-cat" class="form-select" required>
-                            <option value="">Select Category</option>
-                            <option value="IT & Software">IT & Software</option>
-                            <option value="Banking & Finance">Banking & Finance</option>
-                            <option value="Healthcare">Healthcare</option>
-                            <option value="Engineering">Engineering</option>
-                            <option value="Manufacturing">Manufacturing</option>
-                            <option value="Marketing">Marketing</option>
-                            <option value="Education">Education</option>
-                            <option value="Design Engineer">Design Engineer</option>
-                            <option value="Government">Government</option>
-                            <option value="Retail">Retail</option>
-                            <option value="Other">Other Domains</option>
-                        </select>
-                    </div>
+                        <div class="form-group">
+                            <label class="form-label">Employment Type</label>
+                            <select id="job-type" class="form-select">
+                                <option value="Full-time">Full-time</option>
+                                <option value="Part-time">Part-time</option>
+                                <option value="Contract">Contract</option>
+                                <option value="Internship">Internship</option>
+                            </select>
+                        </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Employment Type</label>
-                        <select id="job-type" class="form-select">
-                            <option value="Full-time">Full-time</option>
-                            <option value="Part-time">Part-time</option>
-                            <option value="Contract">Contract</option>
-                            <option value="Internship">Internship</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Work Arrangement</label>
-                        <select id="job-work-mode" class="form-select">
-                            <option value="Onsite">Onsite</option>
-                            <option value="Remote">Remote</option>
-                            <option value="Hybrid">Hybrid</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Experience Required</label>
-                        <select id="job-exp" class="form-select">
-                            <option value="Fresher">Fresher (0 Years)</option>
-                            <option value="1-3 Years">1-3 Years</option>
-                            <option value="3-5 Years" selected>3-5 Years</option>
-                            <option value="5+ Years">5+ Years (Senior)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Open Positions Count</label>
-                        <input type="number" id="job-openings" class="form-control" min="1" value="1">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Application Deadline</label>
-                        <input type="date" id="job-deadline" class="form-control">
-                    </div>
-
-                    <div class="form-group" style="grid-column:1/-1;">
-                        <label class="form-label">Required Skills (Comma-separated)</label>
-                        <input type="text" id="job-skills" class="form-control" placeholder="Python, FastAPI, Docker, MySQL, Redis">
-                    </div>
-
-                    <div class="form-group" style="grid-column:1/-1;">
-                        <label class="form-label form-label-required">Job Description & Responsibilities</label>
-                        <textarea id="job-desc" class="form-control" rows="5" placeholder="Detail the role objectives, daily responsibilities, and team expectations..." required></textarea>
+                        <div class="form-group">
+                            <label class="form-label">Open Positions Count</label>
+                            <input type="number" id="job-openings" class="form-control" min="1" value="1">
+                        </div>
                     </div>
                 </div>
 
-                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:var(--space-6);">
-                    <button type="submit" id="btn-post-job" class="btn btn-primary btn-lg">
-                        <i class="fas fa-check"></i> Publish Job Opening
+                <!-- STEP 2: Job Details -->
+                <div class="wizard-step-pane" id="wizard-step-pane-2">
+                    <div style="font-weight:700; font-size:var(--font-size-sm); color:var(--color-text); margin-bottom:var(--space-3);" class="d-lg-none">
+                        <i class="fas fa-file-alt" style="color:var(--color-primary); margin-right:6px;"></i> Step 2: Job Details & Responsibilities
+                    </div>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:var(--space-4);">
+                        <div class="form-group">
+                            <label class="form-label">Work Arrangement</label>
+                            <select id="job-work-mode" class="form-select">
+                                <option value="Onsite">Onsite</option>
+                                <option value="Remote">Remote</option>
+                                <option value="Hybrid">Hybrid</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Experience Required</label>
+                            <select id="job-exp" class="form-select">
+                                <option value="Fresher">Fresher (0 Years)</option>
+                                <option value="1-3 Years">1-3 Years</option>
+                                <option value="3-5 Years" selected>3-5 Years</option>
+                                <option value="5+ Years">5+ Years (Senior)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="grid-column:1/-1;">
+                            <label class="form-label form-label-required">Job Description & Responsibilities</label>
+                            <textarea id="job-desc" class="form-control" rows="5" placeholder="Detail the role objectives, daily responsibilities, and team expectations..." required></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3: Skills -->
+                <div class="wizard-step-pane" id="wizard-step-pane-3">
+                    <div style="font-weight:700; font-size:var(--font-size-sm); color:var(--color-text); margin-bottom:var(--space-3);" class="d-lg-none">
+                        <i class="fas fa-tools" style="color:var(--color-primary); margin-right:6px;"></i> Step 3: Required Skills
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Required Skills (Comma-separated)</label>
+                        <input type="text" id="job-skills" class="form-control" placeholder="Python, FastAPI, Docker, MySQL, Redis">
+                        <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:8px;">
+                            <span style="font-size:11px; color:var(--color-text-muted); margin-right:4px;">Quick Add:</span>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="addJobSkillPreset('Python')" style="font-size:11px; padding:2px 8px;">+ Python</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="addJobSkillPreset('React')" style="font-size:11px; padding:2px 8px;">+ React</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="addJobSkillPreset('SQL')" style="font-size:11px; padding:2px 8px;">+ SQL</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="addJobSkillPreset('AWS')" style="font-size:11px; padding:2px 8px;">+ AWS</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="addJobSkillPreset('Docker')" style="font-size:11px; padding:2px 8px;">+ Docker</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="addJobSkillPreset('Node.js')" style="font-size:11px; padding:2px 8px;">+ Node.js</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 4: Salary & Location -->
+                <div class="wizard-step-pane" id="wizard-step-pane-4">
+                    <div style="font-weight:700; font-size:var(--font-size-sm); color:var(--color-text); margin-bottom:var(--space-3);" class="d-lg-none">
+                        <i class="fas fa-map-marker-alt" style="color:var(--color-primary); margin-right:6px;"></i> Step 4: Salary & Location
+                    </div>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:var(--space-4);">
+                        <div class="form-group">
+                            <label class="form-label form-label-required">Location</label>
+                            <input type="text" id="job-loc" list="employer-locations-list" class="form-control" placeholder="e.g. Bengaluru / Remote" required>
+                            <datalist id="employer-locations-list"></datalist>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Compensation Text / Range</label>
+                            <input type="text" id="job-sal" class="form-control" placeholder="e.g. ₹18 - ₹26 LPA">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Application Deadline</label>
+                            <input type="date" id="job-deadline" class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 5: Preview & Publish -->
+                <div class="wizard-step-pane" id="wizard-step-pane-5">
+                    <div style="font-weight:700; font-size:var(--font-size-sm); color:var(--color-text); margin-bottom:var(--space-3);" class="d-lg-none">
+                        <i class="fas fa-eye" style="color:var(--color-primary); margin-right:6px;"></i> Step 5: Preview & Publish
+                    </div>
+                    <!-- Live Job Preview Card -->
+                    <div id="job-preview-card" style="background:var(--color-surface-alt); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:16px; margin-bottom:16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                            <div>
+                                <h3 id="prev-job-title" style="font-size:1.1rem; font-weight:800; color:var(--color-text); margin:0 0 2px 0;">Job Title</h3>
+                                <div id="prev-job-category" style="font-size:12px; color:var(--color-primary); font-weight:700;">Category</div>
+                            </div>
+                            <span class="status-badge status-badge-shortlisted">Ready to Publish</span>
+                        </div>
+                        <div style="display:flex; flex-wrap:wrap; gap:6px; margin:10px 0;">
+                            <span class="emp-job-chip" id="prev-job-loc"><i class="fas fa-map-marker-alt"></i> Location</span>
+                            <span class="emp-job-chip" id="prev-job-sal"><i class="fas fa-money-bill-wave"></i> Salary</span>
+                            <span class="emp-job-chip" id="prev-job-type"><i class="fas fa-briefcase"></i> Full-time</span>
+                            <span class="emp-job-chip" id="prev-job-exp"><i class="fas fa-user-clock"></i> 3-5 Years</span>
+                        </div>
+                        <div style="margin-top:10px;">
+                            <div style="font-size:11px; font-weight:700; color:var(--color-text-muted); text-transform:uppercase;">Required Skills:</div>
+                            <div id="prev-job-skills" style="font-size:12px; color:var(--color-text); margin-top:2px;">None specified</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Wizard Navigation Footer -->
+                <div class="wizard-nav-footer">
+                    <button type="button" id="btn-wizard-prev" class="btn btn-secondary d-lg-none" onclick="prevJobStep()" style="visibility:hidden;">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button type="button" id="btn-wizard-next" class="btn btn-primary d-lg-none" onclick="nextJobStep()">
+                        Next Step <i class="fas fa-arrow-right"></i>
+                    </button>
+                    <button type="submit" id="btn-post-job" class="btn btn-primary btn-lg" style="margin-left:auto;">
+                        <i class="fas fa-check"></i> <span id="btn-post-job-text">Publish Job Opening</span>
                     </button>
                 </div>
             </form>
@@ -576,8 +762,48 @@
 
         <!-- 3. Applicant Pipeline Section -->
         <div id="empsec-applicants" class="card" style="display:none; margin-bottom:var(--space-8);">
-            <!-- Top ATS Stage Filter KPI Pills -->
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(115px, 1fr)); gap:8px; margin-bottom:var(--space-4);">
+            <!-- Mobile Sticky Pipeline Stage Scroller -->
+            <div class="emp-pipeline-scroller" id="emp-pipeline-stage-scroller">
+                <div class="emp-stage-pill active" onclick="setApplicantStageFilter('all')" id="ats-mob-kpi-all">
+                    <span>All Pipeline</span>
+                    <span class="emp-stage-pill-count" id="ats-mob-count-total">0</span>
+                </div>
+                <div class="emp-stage-pill" onclick="setApplicantStageFilter('Applied')" id="ats-mob-kpi-applied">
+                    <span>Applied</span>
+                    <span class="emp-stage-pill-count" id="ats-mob-count-applied">0</span>
+                </div>
+                <div class="emp-stage-pill" onclick="setApplicantStageFilter('Screening')" id="ats-mob-kpi-screening">
+                    <span>Screening</span>
+                    <span class="emp-stage-pill-count" id="ats-mob-count-screening">0</span>
+                </div>
+                <div class="emp-stage-pill" onclick="setApplicantStageFilter('Shortlisted')" id="ats-mob-kpi-shortlisted">
+                    <span>Shortlisted</span>
+                    <span class="emp-stage-pill-count" id="ats-mob-count-shortlisted">0</span>
+                </div>
+                <div class="emp-stage-pill" onclick="setApplicantStageFilter('Assessment')" id="ats-mob-kpi-assessment">
+                    <span>Assessment</span>
+                    <span class="emp-stage-pill-count" id="ats-mob-count-assessment">0</span>
+                </div>
+                <div class="emp-stage-pill" onclick="setApplicantStageFilter('Interview')" id="ats-mob-kpi-interview">
+                    <span>Interview</span>
+                    <span class="emp-stage-pill-count" id="ats-mob-count-interview">0</span>
+                </div>
+                <div class="emp-stage-pill" onclick="setApplicantStageFilter('Offer')" id="ats-mob-kpi-offer">
+                    <span>Offer</span>
+                    <span class="emp-stage-pill-count" id="ats-mob-count-offer">0</span>
+                </div>
+                <div class="emp-stage-pill" onclick="setApplicantStageFilter('Hired')" id="ats-mob-kpi-hired">
+                    <span>Hired</span>
+                    <span class="emp-stage-pill-count" id="ats-mob-count-hired">0</span>
+                </div>
+                <div class="emp-stage-pill" onclick="setApplicantStageFilter('Rejected')" id="ats-mob-kpi-rejected">
+                    <span>Rejected</span>
+                    <span class="emp-stage-pill-count" id="ats-mob-count-rejected">0</span>
+                </div>
+            </div>
+
+            <!-- Top ATS Stage Filter KPI Pills (Desktop View) -->
+            <div class="ats-kpis-wrapper d-none d-lg-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(115px, 1fr)); gap:8px; margin-bottom:var(--space-4);">
                 <div class="ats-kpi-pill active" onclick="setApplicantStageFilter('all')" id="ats-kpi-all">
                     <div style="font-size:10px; color:var(--color-text-muted); font-weight:700; text-transform:uppercase;">Total Pipeline</div>
                     <div style="font-size:1.2rem; font-weight:800; color:var(--color-text); margin-top:2px;" id="ats-count-total">0</div>
@@ -617,20 +843,20 @@
             </div>
 
             <!-- Header & Search Toolbar -->
-            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:var(--space-3); border-bottom:1px solid var(--color-border); padding-bottom:var(--space-3); margin-bottom:var(--space-3);">
+            <div class="card-header ats-filter-toolbar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:var(--space-3); border-bottom:1px solid var(--color-border); padding-bottom:var(--space-3); margin-bottom:var(--space-3);">
                 <div>
                     <h2 class="card-title" style="margin:0;"><i class="fas fa-users-cog" style="color:var(--color-primary); margin-right:8px;"></i> Applicant Tracking System (ATS)</h2>
                     <div style="font-size:var(--font-size-xs); color:var(--color-text-muted); margin-top:2px;">Filter, score, review, and advance candidates across recruitment stages</div>
                 </div>
-                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                    <div style="position:relative;">
+                <div class="ats-filter-controls" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                    <div style="position:relative; flex:1; min-width:140px;">
                         <i class="fas fa-search" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:12px; color:var(--color-text-muted);"></i>
-                        <input type="text" id="applicant-search-input" class="form-control" style="font-size:var(--font-size-xs); padding:6px 12px 6px 30px; width:180px;" placeholder="Search candidate, skills..." onkeyup="filterEmployerApplicants()">
+                        <input type="text" id="applicant-search-input" class="form-control" style="font-size:var(--font-size-xs); padding:6px 12px 6px 30px; width:100%;" placeholder="Search candidate, skills..." onkeyup="filterEmployerApplicants()">
                     </div>
-                    <select id="applicant-job-filter" class="form-select" style="font-size:var(--font-size-xs); padding:6px 12px; width:150px;" onchange="filterEmployerApplicants()">
+                    <select id="applicant-job-filter" class="form-select" style="font-size:var(--font-size-xs); padding:6px 12px; min-width:120px;" onchange="filterEmployerApplicants()">
                         <option value="all">All Jobs</option>
                     </select>
-                    <select id="applicant-status-filter" class="form-select" style="font-size:var(--font-size-xs); padding:6px 12px; width:130px;" onchange="syncStageFilterFromDropdown()">
+                    <select id="applicant-status-filter" class="form-select" style="font-size:var(--font-size-xs); padding:6px 12px; min-width:110px;" onchange="syncStageFilterFromDropdown()">
                         <option value="all">All Stages</option>
                         <option value="Applied">Applied</option>
                         <option value="Screening">Screening</option>
@@ -642,7 +868,7 @@
                         <option value="Rejected">Rejected</option>
                         <option value="Withdrawn">Withdrawn</option>
                     </select>
-                    <select id="applicant-sort-select" class="form-select" style="font-size:var(--font-size-xs); padding:6px 12px; width:150px;" onchange="filterEmployerApplicants()">
+                    <select id="applicant-sort-select" class="form-select" style="font-size:var(--font-size-xs); padding:6px 12px; min-width:120px;" onchange="filterEmployerApplicants()">
                         <option value="newest">Newest First</option>
                         <option value="match_high">Match Score: High</option>
                         <option value="ats_high">ATS Score: High</option>
@@ -654,7 +880,7 @@
                     </button>
                 </div>
             </div>
-            <div id="emp-applicants-table" class="table-responsive"></div>
+            <div id="emp-applicants-table" class="table-responsive table-responsive-cards"></div>
         </div>
 
         <!-- 4. Analytics Section -->
@@ -911,13 +1137,299 @@
     let activeCandidateAppId = null;
     let activeCandidateUserId = null;
     let activeCandidateData = null;
+    let cachedEmployerJobs = [];
+
+    // --- 5-Step Create Job Mobile Wizard ---
+    let currentJobStep = 1;
+    const totalJobSteps = 5;
+    const stepTitles = [
+        'Basic Information',
+        'Job Details & Responsibilities',
+        'Required Skills',
+        'Salary & Location',
+        'Preview & Publish'
+    ];
+
+    function goToJobStep(step) {
+        if (step < 1 || step > totalJobSteps) return;
+        if (step > currentJobStep) {
+            if (!validateJobStep(currentJobStep)) return;
+        }
+        currentJobStep = step;
+        updateWizardUI();
+    }
+
+    function nextJobStep() {
+        if (currentJobStep < totalJobSteps) {
+            if (!validateJobStep(currentJobStep)) return;
+            currentJobStep++;
+            updateWizardUI();
+        }
+    }
+
+    function prevJobStep() {
+        if (currentJobStep > 1) {
+            currentJobStep--;
+            updateWizardUI();
+        }
+    }
+
+    function validateJobStep(step) {
+        if (step === 1) {
+            const title = document.getElementById('job-title')?.value.trim();
+            const cat = document.getElementById('job-cat')?.value;
+            if (!title) {
+                showToast('Please enter a job title', 'warning');
+                document.getElementById('job-title')?.focus();
+                return false;
+            }
+            if (!cat) {
+                showToast('Please select a job category', 'warning');
+                document.getElementById('job-cat')?.focus();
+                return false;
+            }
+        } else if (step === 2) {
+            const desc = document.getElementById('job-desc')?.value.trim();
+            if (!desc) {
+                showToast('Please enter the job description and responsibilities', 'warning');
+                document.getElementById('job-desc')?.focus();
+                return false;
+            }
+        } else if (step === 4) {
+            const loc = document.getElementById('job-loc')?.value.trim();
+            if (!loc) {
+                showToast('Please specify the job location or Remote', 'warning');
+                document.getElementById('job-loc')?.focus();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function updateWizardUI() {
+        const counter = document.getElementById('wizard-step-counter');
+        if (counter) {
+            counter.textContent = `Step ${currentJobStep} of ${totalJobSteps}: ${stepTitles[currentJobStep - 1]}`;
+        }
+
+        for (let i = 1; i <= totalJobSteps; i++) {
+            const node = document.getElementById(`ws-node-${i}`);
+            const pane = document.getElementById(`wizard-step-pane-${i}`);
+            if (node) {
+                node.classList.remove('active', 'completed');
+                if (i === currentJobStep) {
+                    node.classList.add('active');
+                } else if (i < currentJobStep) {
+                    node.classList.add('completed');
+                }
+            }
+            if (pane) {
+                pane.classList.toggle('active', i === currentJobStep);
+            }
+        }
+
+        const btnPrev = document.getElementById('btn-wizard-prev');
+        const btnNext = document.getElementById('btn-wizard-next');
+        const btnSubmit = document.getElementById('btn-post-job');
+
+        if (btnPrev) {
+            btnPrev.style.visibility = (currentJobStep > 1) ? 'visible' : 'hidden';
+        }
+        if (btnNext) {
+            btnNext.style.display = (currentJobStep < totalJobSteps) ? 'inline-flex' : 'none';
+        }
+        if (btnSubmit) {
+            if (window.innerWidth <= 991) {
+                btnSubmit.style.display = (currentJobStep === totalJobSteps) ? 'inline-flex' : 'none';
+            } else {
+                btnSubmit.style.display = 'inline-flex';
+            }
+        }
+
+        if (currentJobStep === 5) {
+            updateJobPreview();
+        }
+    }
+
+    function updateJobPreview() {
+        const title = document.getElementById('job-title')?.value.trim() || 'Job Title';
+        const cat = document.getElementById('job-cat')?.value || 'Category';
+        const loc = document.getElementById('job-loc')?.value.trim() || 'Location';
+        const sal = document.getElementById('job-sal')?.value.trim() || 'Not specified';
+        const type = document.getElementById('job-type')?.value || 'Full-time';
+        const exp = document.getElementById('job-exp')?.value || '3-5 Years';
+        const skills = document.getElementById('job-skills')?.value.trim() || 'None specified';
+
+        const pTitle = document.getElementById('prev-job-title');
+        const pCat = document.getElementById('prev-job-category');
+        const pLoc = document.getElementById('prev-job-loc');
+        const pSal = document.getElementById('prev-job-sal');
+        const pType = document.getElementById('prev-job-type');
+        const pExp = document.getElementById('prev-job-exp');
+        const pSkills = document.getElementById('prev-job-skills');
+
+        if (pTitle) pTitle.textContent = title;
+        if (pCat) pCat.textContent = cat;
+        if (pLoc) pLoc.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${escapeHtml(loc)}`;
+        if (pSal) pSal.innerHTML = `<i class="fas fa-money-bill-wave"></i> ${escapeHtml(sal)}`;
+        if (pType) pType.innerHTML = `<i class="fas fa-briefcase"></i> ${escapeHtml(type)}`;
+        if (pExp) pExp.innerHTML = `<i class="fas fa-user-clock"></i> ${escapeHtml(exp)}`;
+        if (pSkills) pSkills.textContent = skills;
+    }
+
+    function addJobSkillPreset(skill) {
+        const input = document.getElementById('job-skills');
+        if (!input) return;
+        const current = input.value.split(',').map(s => s.trim()).filter(Boolean);
+        if (!current.includes(skill)) {
+            current.push(skill);
+            input.value = current.join(', ');
+            showToast(`Added ${skill}`, 'info');
+        }
+    }
+
+    async function submitPostJob() {
+        const editId = document.getElementById('edit-job-id')?.value;
+        const title = document.getElementById('job-title')?.value.trim();
+        const category = document.getElementById('job-cat')?.value;
+        const job_type = document.getElementById('job-type')?.value;
+        const openings = parseInt(document.getElementById('job-openings')?.value, 10) || 1;
+        const work_mode = document.getElementById('job-work-mode')?.value;
+        const experience = document.getElementById('job-exp')?.value;
+        const description = document.getElementById('job-desc')?.value.trim();
+        const skills = document.getElementById('job-skills')?.value.trim();
+        const location = document.getElementById('job-loc')?.value.trim();
+        const salary = document.getElementById('job-sal')?.value.trim();
+        const application_deadline = document.getElementById('job-deadline')?.value || null;
+
+        if (!title || !category || !description || !location) {
+            showToast('Please fill in all required fields marked with *', 'warning');
+            return;
+        }
+
+        const payload = {
+            title,
+            category,
+            job_type,
+            openings,
+            work_mode,
+            experience,
+            description,
+            skills,
+            location,
+            salary,
+            application_deadline
+        };
+
+        const submitBtn = document.getElementById('btn-post-job');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        }
+
+        try {
+            const url = editId ? `/api/edit_job/${editId}` : '/api/employer/post_job';
+            const res = await postReq(url, payload);
+
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<i class="fas fa-check"></i> <span id="btn-post-job-text">${editId ? 'Update Job Opening' : 'Publish Job Opening'}</span>`;
+            }
+
+            if (res && res.success) {
+                showToast(res.message || (editId ? 'Job updated successfully!' : 'Job published successfully!'), 'success');
+                resetJobForm();
+                showEmpSection('jobs');
+                loadEmployerStats();
+            } else {
+                showToast(res ? res.message : 'Failed to save job opening.', 'error');
+            }
+        } catch (e) {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<i class="fas fa-check"></i> <span id="btn-post-job-text">${editId ? 'Update Job Opening' : 'Publish Job Opening'}</span>`;
+            }
+            showToast('An error occurred while saving the job.', 'error');
+        }
+    }
+
+    function resetJobForm() {
+        document.getElementById('edit-job-id').value = '';
+        document.getElementById('post-job-form').reset();
+        document.getElementById('post-job-heading').innerHTML = '<i class="fas fa-plus-circle" style="color:var(--color-primary); margin-right:8px;"></i> Create New Job Opening';
+        const btnText = document.getElementById('btn-post-job-text');
+        if (btnText) btnText.textContent = 'Publish Job Opening';
+        currentJobStep = 1;
+        updateWizardUI();
+    }
+
+    function editEmployerJob(jobId) {
+        const job = cachedEmployerJobs.find(j => j.id === jobId);
+        if (!job) {
+            showToast('Job details not found', 'error');
+            return;
+        }
+
+        document.getElementById('edit-job-id').value = job.id;
+        document.getElementById('job-title').value = job.title || '';
+        document.getElementById('job-cat').value = job.category || '';
+        document.getElementById('job-type').value = job.job_type || 'Full-time';
+        document.getElementById('job-openings').value = job.openings || 1;
+        document.getElementById('job-work-mode').value = job.work_mode || 'Onsite';
+        document.getElementById('job-exp').value = job.experience || '3-5 Years';
+        document.getElementById('job-desc').value = job.description || '';
+        document.getElementById('job-skills').value = job.skills || '';
+        document.getElementById('job-loc').value = job.location || '';
+        document.getElementById('job-sal').value = job.salary || '';
+        if (job.application_deadline) {
+            document.getElementById('job-deadline').value = job.application_deadline.split('T')[0];
+        }
+
+        document.getElementById('post-job-heading').innerHTML = `<i class="fas fa-edit" style="color:var(--color-primary); margin-right:8px;"></i> Edit Job: ${escapeHtml(job.title)}`;
+        const btnText = document.getElementById('btn-post-job-text');
+        if (btnText) btnText.textContent = 'Update Job Opening';
+
+        showEmpSection('post-job');
+        currentJobStep = 1;
+        updateWizardUI();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function deleteEmployerJob(jobId) {
+        if (!confirm('Are you sure you want to delete this job posting? This action cannot be undone.')) {
+            return;
+        }
+        try {
+            const res = await postReq(`/api/delete_job/${jobId}`, {});
+            if (res && res.success) {
+                showToast('Job posting deleted successfully', 'success');
+                loadEmployerJobs();
+                loadEmployerStats();
+            } else {
+                showToast(res ? res.message : 'Failed to delete job', 'error');
+            }
+        } catch (e) {
+            showToast('An error occurred while deleting the job', 'error');
+        }
+    }
+
+    function filterApplicantsByJob(jobId) {
+        showEmpSection('applicants');
+        const sel = document.getElementById('applicant-job-filter');
+        if (sel) {
+            sel.value = String(jobId);
+        }
+        filterEmployerApplicants();
+    }
 
     function showEmpSection(sec) {
         ['post-job', 'jobs', 'applicants', 'analytics'].forEach(s => {
             const el = document.getElementById(`empsec-${s}`);
             const nav = document.getElementById(`empnav-${s}`);
+            const mobtab = document.getElementById(`emptab-${s}`);
             if (el) el.style.display = (s === sec) ? 'block' : 'none';
             if (nav) nav.classList.toggle('active', s === sec);
+            if (mobtab) mobtab.classList.toggle('active', s === sec);
         });
 
         if (sec === 'jobs') loadEmployerJobs();
@@ -931,6 +1443,7 @@
         const res = await getReq('/api/employer/jobs');
         
         if (!res.success || !res.jobs || res.jobs.length === 0) {
+            cachedEmployerJobs = [];
             area.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-state-icon"><i class="fas fa-briefcase"></i></div>
@@ -942,8 +1455,10 @@
             return;
         }
 
-        area.innerHTML = `
-            <table class="table">
+        cachedEmployerJobs = res.jobs;
+
+        const desktopTable = `
+            <table class="table d-none d-lg-table">
                 <thead>
                     <tr>
                         <th>Job Title</th>
@@ -957,24 +1472,25 @@
                 <tbody>
                     ${res.jobs.map(j => `
                         <tr>
-                            <td>
+                            <td data-label="Job Title">
                                 <div class="font-semibold">${escapeHtml(j.title)}</div>
-                                <div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">${escapeHtml(j.company_name || 'HireVolt')} • ${escapeHtml(j.experience || 'Any')}</div>
+                                <div style="font-size:var(--font-size-xs); color:var(--color-text-muted);">${escapeHtml(j.company_name || 'HireVoltz')} • ${escapeHtml(j.experience || 'Any')}</div>
                             </td>
-                            <td>${escapeHtml(j.category || 'General')}</td>
-                            <td>${escapeHtml(j.location || 'Remote')}</td>
-                            <td>
-                                <span class="badge" style="background:var(--color-primary-light); color:var(--color-primary); font-weight:700;">
+                            <td data-label="Category">${escapeHtml(j.category || 'General')}</td>
+                            <td data-label="Location">${escapeHtml(j.location || 'Remote')}</td>
+                            <td data-label="Applicants">
+                                <span class="badge" style="background:var(--color-primary-light); color:var(--color-primary); font-weight:700; cursor:pointer;" onclick="filterApplicantsByJob(${j.id})">
                                     ${j.applicant_count || 0}
                                 </span>
                             </td>
-                            <td>
+                            <td data-label="Status">
                                 <span class="status-badge status-badge-shortlisted">Active</span>
                             </td>
-                            <td>
+                            <td data-label="Actions" class="td-actions">
                                 <div style="display:flex; gap:6px;">
-                                    <a href="/job/${j.id}" class="btn btn-secondary btn-sm" title="View Public Posting"><i class="fas fa-eye"></i></a>
-                                    <button class="btn btn-secondary btn-sm" onclick="deleteEmployerJob(${j.id})" title="Delete Job" style="color:var(--color-error);"><i class="fas fa-trash-alt"></i></button>
+                                    <a href="/job/${j.id}" class="btn btn-secondary btn-sm" title="View Public Posting"><i class="fas fa-eye"></i> View</a>
+                                    <button class="btn btn-secondary btn-sm" onclick="editEmployerJob(${j.id})" title="Edit Job"><i class="fas fa-edit"></i> Edit</button>
+                                    <button class="btn btn-secondary btn-sm" onclick="deleteEmployerJob(${j.id})" title="Delete Job" style="color:var(--color-error);"><i class="fas fa-trash-alt"></i> Delete</button>
                                 </div>
                             </td>
                         </tr>
@@ -982,6 +1498,40 @@
                 </tbody>
             </table>
         `;
+
+        const mobileCards = `
+            <div class="emp-jobs-cards-mobile d-lg-none" style="display:flex; flex-direction:column; gap:12px;">
+                ${res.jobs.map(j => `
+                    <div class="emp-mobile-job-card">
+                        <div class="emp-job-card-header">
+                            <div>
+                                <div class="emp-job-card-title">${escapeHtml(j.title)}</div>
+                                <div class="emp-job-card-category">${escapeHtml(j.category || 'General')}</div>
+                            </div>
+                            <span class="status-badge status-badge-shortlisted" style="font-size:10px; padding:2px 8px;">Active</span>
+                        </div>
+
+                        <div class="emp-job-card-chips">
+                            <span class="emp-job-chip"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(j.location || 'Remote')}</span>
+                            <span class="emp-job-chip"><i class="fas fa-briefcase"></i> ${escapeHtml(j.job_type || 'Full-time')}</span>
+                            <span class="emp-job-chip"><i class="fas fa-user-clock"></i> ${escapeHtml(j.experience || 'Any Exp')}</span>
+                            <span class="emp-job-chip" style="background:rgba(6,182,212,0.12); color:#0891B2; font-weight:700;">
+                                <i class="fas fa-users"></i> ${j.applicant_count || 0} Applicants
+                            </span>
+                        </div>
+
+                        <div class="emp-job-actions-grid">
+                            <a href="/job/${j.id}" class="btn btn-secondary btn-sm" style="font-size:12px;"><i class="fas fa-eye"></i> View</a>
+                            <button class="btn btn-secondary btn-sm" onclick="editEmployerJob(${j.id})" style="font-size:12px;"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="btn btn-primary btn-sm" onclick="filterApplicantsByJob(${j.id})" style="font-size:12px;"><i class="fas fa-users"></i> Applicants</button>
+                            <button class="btn btn-secondary btn-sm" onclick="deleteEmployerJob(${j.id})" style="color:var(--color-error); font-size:12px;"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+        area.innerHTML = desktopTable + mobileCards;
     }
 
     function renderMatchScoreBadge(scoreStr) {
@@ -1078,15 +1628,14 @@
     }
 
     function updateAtsKpiCounts(stats) {
-        document.getElementById('ats-count-total').textContent = stats.total || 0;
-        document.getElementById('ats-count-applied').textContent = stats.applied || 0;
-        document.getElementById('ats-count-screening').textContent = stats.screening || 0;
-        document.getElementById('ats-count-shortlisted').textContent = stats.shortlisted || 0;
-        document.getElementById('ats-count-assessment').textContent = stats.assessment || 0;
-        document.getElementById('ats-count-interview').textContent = stats.interview || 0;
-        document.getElementById('ats-count-offer').textContent = stats.offer || 0;
-        document.getElementById('ats-count-hired').textContent = stats.hired || 0;
-        document.getElementById('ats-count-rejected').textContent = stats.rejected || 0;
+        const fields = ['total', 'applied', 'screening', 'shortlisted', 'assessment', 'interview', 'offer', 'hired', 'rejected'];
+        fields.forEach(f => {
+            const val = stats[f] || 0;
+            const deskEl = document.getElementById(`ats-count-${f}`);
+            const mobEl = document.getElementById(`ats-mob-count-${f}`);
+            if (deskEl) deskEl.textContent = val;
+            if (mobEl) mobEl.textContent = val;
+        });
     }
 
     function populateJobFilterDropdown(apps) {
@@ -1111,10 +1660,17 @@
 
     function setApplicantStageFilter(stage) {
         currentActiveStageFilter = stage;
+        // Desktop Pills
         document.querySelectorAll('.ats-kpi-pill').forEach(p => p.classList.remove('active'));
         const pillId = (stage === 'all') ? 'ats-kpi-all' : `ats-kpi-${stage.toLowerCase()}`;
         const pill = document.getElementById(pillId);
         if (pill) pill.classList.add('active');
+
+        // Mobile Pills
+        document.querySelectorAll('.emp-stage-pill').forEach(p => p.classList.remove('active'));
+        const mobPillId = (stage === 'all') ? 'ats-mob-kpi-all' : `ats-mob-kpi-${stage.toLowerCase()}`;
+        const mobPill = document.getElementById(mobPillId);
+        if (mobPill) mobPill.classList.add('active');
 
         const statusDropdown = document.getElementById('applicant-status-filter');
         if (statusDropdown) statusDropdown.value = stage;
@@ -1196,8 +1752,9 @@
             return;
         }
 
-        area.innerHTML = `
-            <table class="table">
+        // Desktop Table
+        const desktopTable = `
+            <table class="table d-none d-lg-table">
                 <thead>
                     <tr>
                         <th>Candidate</th>
@@ -1220,12 +1777,12 @@
 
                         return `
                         <tr>
-                            <td>
+                            <td data-label="Candidate">
                                 <div style="display:flex; align-items:center; gap:8px;">
-                                    <div style="width:32px; height:32px; border-radius:50%; background:var(--color-primary-light); color:var(--color-primary); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12px; flex-shrink:0;">
+                                    <div style="width:34px; height:34px; border-radius:50%; background:var(--color-primary-light); color:var(--color-primary); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12px; flex-shrink:0;">
                                         ${(a.candidate_name || 'C')[0].toUpperCase()}
                                     </div>
-                                    <div>
+                                    <div style="text-align:left;">
                                         <div class="font-semibold" style="color:var(--color-text); cursor:pointer;" onclick="openCandidateProfileModal(${a.user_id}, ${a.id})">${safeCandidateName}</div>
                                         <div style="font-size:11px; color:var(--color-text-muted);">${escapeHtml(a.candidate_email || '')}</div>
                                         ${tags.length ? `
@@ -1237,11 +1794,11 @@
                                     </div>
                                 </div>
                             </td>
-                            <td>
+                            <td data-label="Job Applied">
                                 <div style="font-weight:600; font-size:13px; color:var(--color-text);">${safeJobTitle}</div>
                                 <div style="font-size:11px; color:var(--color-text-secondary); margin-top:2px;">Applied: ${a.applied_at || 'Recently'}</div>
                             </td>
-                            <td>
+                            <td data-label="Skills & Exp">
                                 <div style="font-size:12px; color:var(--color-text-secondary); max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                                     ${escapeHtml(skillsPreview)}
                                 </div>
@@ -1249,15 +1806,15 @@
                                     ${escapeHtml(a.experience_level || 'Experienced')} ${a.years_experience ? `(${a.years_experience} yrs)` : ''}
                                 </div>
                             </td>
-                            <td>
+                            <td data-label="ATS & Fit Score">
                                 <div style="display:flex; flex-direction:column; gap:3px;">
                                     ${renderMatchScoreBadge(a.match_score || a.match_score_display)}
                                     ${renderAtsScoreBadge(a.ats_score || a.ats_score_display)}
                                 </div>
                             </td>
-                            <td>${renderStatusBadge(currentStatus)}</td>
-                            <td>
-                                <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                            <td data-label="Stage">${renderStatusBadge(currentStatus)}</td>
+                            <td data-label="Actions" class="td-actions">
+                                <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
                                     <button class="btn btn-secondary btn-sm" onclick="openCandidateProfileModal(${a.user_id}, ${a.id})" title="View Full Profile, Resume, Notes & ATS Pipeline">
                                         <i class="fas fa-user"></i> Profile
                                     </button>
@@ -1272,7 +1829,7 @@
                                         <i class="fas fa-calendar-plus"></i> Interview
                                     </button>
 
-                                    <select class="form-select" style="padding:4px 8px; font-size:11px; height:auto; width:auto; border-radius:var(--radius-sm);" onchange="if(this.value) updateApplicantStatus(${a.id}, this.value, '${jsCandidateName}', '${jsJobTitle}', ${a.user_id}, ${a.job_id}); this.value='';">
+                                    <select class="form-select" style="padding:4px 8px; font-size:11px; height:auto; width:auto; min-height:36px; border-radius:var(--radius-sm);" onchange="if(this.value) updateApplicantStatus(${a.id}, this.value, '${jsCandidateName}', '${jsJobTitle}', ${a.user_id}, ${a.job_id}); this.value='';">
                                         <option value="" disabled selected>Stage...</option>
                                         <option value="Applied" ${currentStatus==='Applied'?'disabled':''}>Applied</option>
                                         <option value="Screening" ${currentStatus==='Screening'?'disabled':''}>Screening</option>
@@ -1291,6 +1848,92 @@
                 </tbody>
             </table>
         `;
+
+        // Mobile Cards
+        const mobileCards = `
+            <div class="emp-applicants-cards-mobile d-lg-none" style="display:flex; flex-direction:column; gap:12px;">
+                ${applicants.map(a => {
+                    const safeCandidateName = escapeHtml(a.candidate_name || 'Candidate');
+                    const safeJobTitle = escapeHtml(a.job_title || 'Position');
+                    const jsCandidateName = escapeJs(a.candidate_name || 'Candidate');
+                    const jsJobTitle = escapeJs(a.job_title || 'Position');
+                    const currentStatus = a.status || 'Applied';
+                    const tags = a.tags_list || [];
+                    const skillsPreview = a.skills || a.qualification || a.experience_level || 'General';
+
+                    return `
+                    <div class="emp-mobile-applicant-card">
+                        <div class="emp-applicant-header">
+                            <div class="emp-applicant-identity">
+                                <div class="emp-applicant-avatar">
+                                    ${(a.candidate_name || 'C')[0].toUpperCase()}
+                                </div>
+                                <div style="min-width:0;">
+                                    <div class="emp-applicant-name" onclick="openCandidateProfileModal(${a.user_id}, ${a.id})">${safeCandidateName}</div>
+                                    <div class="emp-applicant-email">${escapeHtml(a.candidate_email || '')}</div>
+                                </div>
+                            </div>
+                            <div>${renderStatusBadge(currentStatus)}</div>
+                        </div>
+
+                        ${tags.length ? `
+                            <div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px;">
+                                ${tags.slice(0, 3).map(t => `<span class="cand-tag" style="font-size:10px; padding:1px 6px;">${escapeHtml(t)}</span>`).join('')}
+                                ${tags.length > 3 ? `<span style="font-size:10px; color:var(--color-text-muted);">+${tags.length - 3}</span>` : ''}
+                            </div>
+                        ` : ''}
+
+                        <div class="emp-applicant-scores">
+                            ${renderMatchScoreBadge(a.match_score || a.match_score_display)}
+                            ${renderAtsScoreBadge(a.ats_score || a.ats_score_display)}
+                        </div>
+
+                        <div class="emp-applicant-details">
+                            <div class="emp-applicant-detail-item">
+                                <span class="emp-applicant-detail-label">Role</span>
+                                <span class="emp-applicant-detail-val">${safeJobTitle}</span>
+                            </div>
+                            <div class="emp-applicant-detail-item">
+                                <span class="emp-applicant-detail-label">Applied</span>
+                                <span class="emp-applicant-detail-val">${a.applied_at || 'Recently'}</span>
+                            </div>
+                            <div class="emp-applicant-detail-item" style="grid-column:1/-1;">
+                                <span class="emp-applicant-detail-label">Skills & Experience</span>
+                                <span class="emp-applicant-detail-val" style="white-space:normal;">${escapeHtml(skillsPreview)} • ${escapeHtml(a.experience_level || 'Experienced')}</span>
+                            </div>
+                        </div>
+
+                        <div class="emp-applicant-actions">
+                            <button class="btn btn-secondary btn-sm" onclick="openCandidateProfileModal(${a.user_id}, ${a.id})" title="Full Profile">
+                                <i class="fas fa-user"></i> Profile
+                            </button>
+                            ${currentStatus !== 'Shortlisted' && currentStatus !== 'Selected' ? `
+                                <button class="btn btn-primary btn-sm" onclick="updateApplicantStatus(${a.id}, 'Shortlisted', '${jsCandidateName}', '${jsJobTitle}', ${a.user_id}, ${a.job_id})">
+                                    <i class="fas fa-check"></i> Shortlist
+                                </button>
+                            ` : ''}
+                            <button class="btn btn-secondary btn-sm" style="color:var(--color-primary); border-color:var(--color-primary);" onclick="openDashboardScheduleModal(${a.id}, ${a.user_id}, '${jsCandidateName}', ${a.job_id}, '${jsJobTitle}')">
+                                <i class="fas fa-calendar-plus"></i> Interview
+                            </button>
+                            <select class="form-select" style="padding:4px 8px; font-size:11px; height:auto; min-height:36px; border-radius:var(--radius-sm);" onchange="if(this.value) updateApplicantStatus(${a.id}, this.value, '${jsCandidateName}', '${jsJobTitle}', ${a.user_id}, ${a.job_id}); this.value='';">
+                                <option value="" disabled selected>Move Stage...</option>
+                                <option value="Applied" ${currentStatus==='Applied'?'disabled':''}>Applied</option>
+                                <option value="Screening" ${currentStatus==='Screening'?'disabled':''}>Screening</option>
+                                <option value="Shortlisted" ${currentStatus==='Shortlisted'?'disabled':''}>Shortlisted</option>
+                                <option value="Assessment" ${currentStatus==='Assessment'?'disabled':''}>Assessment</option>
+                                <option value="Interview" ${currentStatus==='Interview'?'disabled':''}>Interview</option>
+                                <option value="Offer" ${currentStatus==='Offer'?'disabled':''}>Offer</option>
+                                <option value="Hired" ${currentStatus==='Hired'||currentStatus==='Selected'?'disabled':''}>Hired</option>
+                                <option value="Rejected" ${currentStatus==='Rejected'?'disabled':''}>Rejected</option>
+                            </select>
+                        </div>
+                    </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+
+        area.innerHTML = desktopTable + mobileCards;
     }
 
     async function updateApplicantStatus(appId, newStatus, candidateName, jobTitle, candidateId, jobId, notes) {
@@ -1407,7 +2050,7 @@
                     cpAvatarEl.textContent = (c.name || 'C')[0].toUpperCase();
                 }
             }
-            document.getElementById('cp-headline').textContent = c.headline || 'Candidate on HireVolt';
+            document.getElementById('cp-headline').textContent = c.headline || 'Candidate on HireVoltz';
 
             // Applied role, score badges & status
             document.getElementById('cp-applied-role').textContent = c.applied_job_title || currentApp.job_title || 'Position';
@@ -1784,16 +2427,19 @@
                 const apps = res.total_applicants !== undefined ? res.total_applicants : (res.totals && res.totals.total_applicants !== undefined ? res.totals.total_applicants : 0);
                 const shortlisted = res.shortlisted !== undefined ? res.shortlisted : (res.totals && res.totals.shortlisted !== undefined ? res.totals.shortlisted : 0);
                 const interviews = res.interviews !== undefined ? res.interviews : (res.totals && res.totals.interviews !== undefined ? res.totals.interviews : 0);
+                const hired = res.hired !== undefined ? res.hired : (res.selected !== undefined ? res.selected : (res.totals && res.totals.selected !== undefined ? res.totals.selected : 0));
 
                 const statJobs = document.getElementById('emp-stat-jobs');
                 const statApps = document.getElementById('emp-stat-apps');
                 const statShortlisted = document.getElementById('emp-stat-shortlisted');
                 const statInterviews = document.getElementById('emp-stat-interviews');
+                const statHired = document.getElementById('emp-stat-hired');
 
                 if (statJobs) statJobs.textContent = jobs;
                 if (statApps) statApps.textContent = apps;
                 if (statShortlisted) statShortlisted.textContent = shortlisted;
                 if (statInterviews) statInterviews.textContent = interviews;
+                if (statHired) statHired.textContent = hired;
             }
         } catch (e) { console.error('Failed to load employer stats:', e); }
     }
@@ -1808,15 +2454,56 @@
         return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
     }
 
+    function initEmployerTopGreeting() {
+        const greetingEl = document.getElementById('emp-top-greeting-text');
+        if (greetingEl) {
+            const hour = new Date().getHours();
+            let greeting = 'Good morning';
+            if (hour >= 12 && hour < 17) greeting = 'Good afternoon';
+            else if (hour >= 17) greeting = 'Good evening';
+            const userName = "{{ (user_name or 'Recruiter')|e }}";
+            greetingEl.textContent = `${greeting}, ${userName}`;
+        }
+    }
+
     async function checkEmployerUnreadMessages() {
         try {
             const res = await fetch('/api/messages/unread_count');
             const data = await res.json();
-            if (data.success) {
+            if (data && data.success) {
+                const count = data.unread_count || 0;
                 const badge = document.getElementById('emp-badge-messages');
+                const topBadge = document.getElementById('emp-top-badge-messages');
                 if (badge) {
-                    if (data.unread_count > 0) {
-                        badge.textContent = data.unread_count;
+                    if (count > 0) {
+                        badge.textContent = count;
+                        badge.style.display = 'inline-flex';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+                if (topBadge) {
+                    if (count > 0) {
+                        topBadge.textContent = count;
+                        topBadge.style.display = 'inline-flex';
+                    } else {
+                        topBadge.style.display = 'none';
+                    }
+                }
+            }
+        } catch (e) {}
+    }
+
+    async function checkEmployerUnreadNotifications() {
+        try {
+            const res = await fetch('/api/notifications');
+            const data = await res.json();
+            if (data && data.success) {
+                const unread = (data.notifications || []).filter(n => !n.is_read).length;
+                const badge = document.getElementById('emp-top-badge-notifs');
+                if (badge) {
+                    if (unread > 0) {
+                        badge.textContent = unread;
                         badge.style.display = 'inline-flex';
                     } else {
                         badge.style.display = 'none';
@@ -1830,8 +2517,12 @@
         if (typeof window.populateLocationDatalist === 'function') {
             window.populateLocationDatalist('employer-locations-list', 'job-loc');
         }
+        initEmployerTopGreeting();
         loadEmployerStats();
         checkEmployerUnreadMessages();
+        checkEmployerUnreadNotifications();
+        updateWizardUI();
+
         const urlParams = new URLSearchParams(window.location.search);
         const tab = urlParams.get('tab') || window.location.hash.replace('#', '');
         if (tab && ['post-job', 'jobs', 'applicants', 'analytics'].includes(tab)) {

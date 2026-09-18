@@ -1,5 +1,5 @@
 /* ============================================================
-   HireVolt Design System — Global Stylesheet
+   HireVoltz Design System — Global Stylesheet
    Modern, Premium, Accessible SaaS Recruitment Platform
    ============================================================ */
 
@@ -476,7 +476,7 @@ p {
     inset: 0;
     background: rgba(15, 23, 42, 0.6);
     backdrop-filter: blur(4px);
-    z-index: 200;
+    z-index: 10000;
     opacity: 0;
     visibility: hidden;
     transition: opacity var(--transition-base), visibility var(--transition-base);
@@ -495,21 +495,25 @@ p {
     width: 320px;
     max-width: 85vw;
     height: 100vh;
+    height: 100dvh;
     background: var(--color-surface);
     box-shadow: var(--shadow-xl);
-    z-index: 210;
-    padding: var(--space-6);
+    z-index: 10001;
+    padding: var(--space-5) var(--space-5) var(--space-4);
     display: flex;
     flex-direction: column;
-    gap: var(--space-5);
-    overflow-y: auto;
+    overflow: hidden;
     transform: translate3d(100%, 0, 0);
-    transition: transform var(--transition-smooth);
+    visibility: hidden;
+    pointer-events: none;
+    transition: transform var(--transition-smooth), visibility var(--transition-smooth);
 }
 
 .mobile-drawer.active,
 .mobile-drawer.open {
     transform: translate3d(0, 0, 0);
+    visibility: visible;
+    pointer-events: auto;
 }
 
 .mobile-drawer-header {
@@ -518,12 +522,18 @@ p {
     justify-content: space-between;
     padding-bottom: var(--space-4);
     border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
 }
 
 .mobile-drawer-links {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
+    padding-top: var(--space-3);
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
 }
 
 .mobile-drawer-links a {
@@ -539,6 +549,145 @@ p {
 .mobile-drawer-links a:hover {
     background: var(--color-primary-light);
     color: var(--color-primary);
+}
+
+/* Drawer User Profile Card */
+.drawer-user-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-alt, rgba(255, 255, 255, 0.04));
+    border: 1px solid var(--color-border);
+    margin-bottom: var(--space-2);
+    flex-shrink: 0;
+}
+
+.drawer-user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--color-primary);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.drawer-user-details {
+    min-width: 0;
+    flex: 1;
+}
+
+.drawer-user-name {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+}
+
+.drawer-user-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 2px;
+}
+
+.drawer-user-badge i {
+    font-size: 0.7rem;
+}
+
+/* Drawer Section Label */
+.drawer-section-label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-muted);
+    padding: 8px 12px 2px;
+}
+
+/* Drawer Divider */
+.drawer-divider {
+    margin: var(--space-3) 0;
+    border-top: 1px solid var(--color-border);
+}
+
+/* Prominent Drawer Logout Button */
+.drawer-logout-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    width: 100% !important;
+    min-height: 48px !important;
+    padding: 12px 18px !important;
+    border-radius: var(--radius-lg) !important;
+    font-size: 0.9375rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.01em !important;
+    color: #EF4444 !important;
+    background: rgba(239, 68, 68, 0.1) !important;
+    border: 1.5px solid rgba(239, 68, 68, 0.3) !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    margin-top: var(--space-2) !important;
+    transition: all 0.2s ease !important;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.drawer-logout-btn i {
+    font-size: 1.05rem !important;
+    color: #EF4444 !important;
+    transition: transform 0.2s ease;
+}
+
+.drawer-logout-btn:hover,
+.drawer-logout-btn:active {
+    background: #EF4444 !important;
+    color: #FFFFFF !important;
+    border-color: #EF4444 !important;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35) !important;
+}
+
+.drawer-logout-btn:hover i,
+.drawer-logout-btn:active i {
+    color: #FFFFFF !important;
+    transform: translateX(2px);
+}
+
+.drawer-logout-btn-admin {
+    color: #F87171 !important;
+    background: rgba(248, 113, 113, 0.12) !important;
+    border-color: rgba(248, 113, 113, 0.35) !important;
+}
+
+/* Mobile Top Bar Logout Buttons */
+.emp-top-btn-logout,
+.candidate-top-btn-logout {
+    color: #F87171 !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+    background: rgba(239, 68, 68, 0.08) !important;
+}
+
+.emp-top-btn-logout:hover,
+.emp-top-btn-logout:active,
+.candidate-top-btn-logout:hover,
+.candidate-top-btn-logout:active {
+    background: #EF4444 !important;
+    border-color: #EF4444 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 2px 10px rgba(239, 68, 68, 0.4) !important;
 }
 
 /* ------------------------------------------------------------
@@ -1651,17 +1800,42 @@ textarea.form-control {
     margin-bottom: var(--space-12);
 }
 
-@media (max-width: 992px) {
+@media (max-width: 991px) {
+    .app-footer {
+        padding: var(--space-12) 0 calc(88px + env(safe-area-inset-bottom, 0px));
+    }
     .footer-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: var(--space-8);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--space-8) var(--space-6);
+        margin-bottom: var(--space-8);
+    }
+    .footer-col-brand,
+    .footer-col:first-child {
+        grid-column: 1 / -1;
+        max-width: 540px;
+        margin-bottom: var(--space-2);
     }
 }
 
 @media (max-width: 576px) {
+    .app-footer {
+        padding: var(--space-10) 0 calc(84px + env(safe-area-inset-bottom, 0px));
+    }
     .footer-grid {
-        grid-template-columns: 1fr;
-        gap: var(--space-6);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--space-6) 16px;
+        margin-bottom: var(--space-6);
+    }
+    .footer-col-brand,
+    .footer-col:first-child {
+        grid-column: 1 / -1;
+        margin-bottom: var(--space-2);
+    }
+}
+
+@media (max-width: 360px) {
+    .footer-grid {
+        gap: var(--space-5) 10px;
     }
 }
 
@@ -1672,10 +1846,23 @@ textarea.form-control {
     margin-bottom: var(--space-4);
 }
 
+@media (max-width: 576px) {
+    .footer-col h4 {
+        font-size: 0.875rem;
+        margin-bottom: var(--space-2);
+    }
+}
+
 .footer-links {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
+}
+
+@media (max-width: 576px) {
+    .footer-links {
+        gap: 2px;
+    }
 }
 
 .footer-links a {
@@ -1684,8 +1871,47 @@ textarea.form-control {
     transition: color var(--transition-fast);
 }
 
+@media (max-width: 991px) {
+    .footer-links a {
+        font-size: 0.8125rem;
+        padding: 6px 0;
+        min-height: 36px;
+        display: inline-flex;
+        align-items: center;
+        word-break: break-word;
+        overflow-wrap: break-word;
+        line-height: 1.35;
+    }
+}
+
+@media (max-width: 360px) {
+    .footer-links a {
+        font-size: 0.75rem;
+        padding: 4px 0;
+        min-height: 32px;
+    }
+}
+
 .footer-links a:hover {
     color: var(--color-text-white);
+}
+
+.footer-social-link {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #94A3B8;
+    border-radius: 8px;
+    transition: color var(--transition-fast), background var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.footer-social-link:hover,
+.footer-social-link:focus {
+    color: var(--color-text-white);
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .footer-bottom {
@@ -1700,8 +1926,13 @@ textarea.form-control {
 @media (max-width: 576px) {
     .footer-bottom {
         flex-direction: column;
-        gap: var(--space-4);
+        gap: var(--space-3);
         text-align: center;
+        padding-top: var(--space-6);
+    }
+    .footer-bottom a {
+        min-height: 36px;
+        padding: 4px 8px;
     }
 }
 
@@ -2484,3 +2715,1193 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
     gap: 6px;
 }
 
+/* ==========================================================================
+   MOBILE DESIGN SYSTEM LAYER (STRICTLY SCOPED TO <= 991px & <= 767px)
+   100% Desktop & Laptop Experience Protected
+   ========================================================================== */
+
+/* ------------------------------------------------------------
+   1. Role-Aware Mobile Bottom Navigation Bar (Screens <= 767px)
+   ------------------------------------------------------------ */
+.mobile-bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(62px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: rgba(11, 17, 32, 0.94);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 9999;
+    align-items: center;
+    justify-content: space-around;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.65);
+    user-select: none;
+}
+
+@media (max-width: 767px) {
+    .mobile-bottom-nav {
+        display: flex;
+    }
+    
+    body {
+        padding-bottom: calc(66px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+}
+
+.mobile-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 6px 2px;
+    color: #94A3B8;
+    text-decoration: none;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    transition: color 0.18s ease, transform 0.18s ease;
+    position: relative;
+    cursor: pointer;
+    background: none;
+    border: none;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 48px;
+}
+
+.mobile-nav-item:active {
+    transform: scale(0.94);
+}
+
+.mobile-nav-item:hover,
+.mobile-nav-item.active {
+    color: #FF5E14;
+}
+
+.mobile-nav-item.admin-item:hover,
+.mobile-nav-item.admin-item.active {
+    color: #06B6D4;
+}
+
+.mobile-nav-icon {
+    font-size: 1.15rem;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
+}
+
+.mobile-nav-label {
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mobile-nav-badge {
+    position: absolute;
+    top: -4px;
+    right: -8px;
+    background: #EF4444;
+    color: #FFFFFF;
+    font-size: 0.5625rem;
+    font-weight: 800;
+    padding: 1px 4px;
+    border-radius: 999px;
+    border: 1.5px solid #0B1120;
+    line-height: 1.2;
+    min-width: 14px;
+    text-align: center;
+}
+
+/* ------------------------------------------------------------
+   2. Mobile Horizontal Pill Tab Scroller (Dashboard Views)
+   ------------------------------------------------------------ */
+.mobile-tab-scroller {
+    display: none;
+    gap: 8px;
+    overflow-x: auto;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 4px 2px 10px;
+    margin-bottom: 16px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    position: relative;
+    z-index: 10;
+}
+
+.mobile-tab-scroller::-webkit-scrollbar {
+    display: none;
+}
+
+@media (max-width: 991px) {
+    .mobile-tab-scroller {
+        display: flex;
+    }
+}
+
+.mobile-tab-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    background: #1E293B;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #94A3B8;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-tab-pill:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #F8FAFC;
+}
+
+.mobile-tab-pill.active {
+    background: rgba(255, 94, 20, 0.16);
+    border-color: #FF5E14;
+    color: #FF7B1C;
+    font-weight: 700;
+    box-shadow: 0 0 12px rgba(255, 94, 20, 0.2);
+}
+
+.mobile-tab-pill.pill-cyan.active {
+    background: rgba(6, 182, 212, 0.16);
+    border-color: #06B6D4;
+    color: #06B6D4;
+    box-shadow: 0 0 12px rgba(6, 182, 212, 0.2);
+}
+
+.mobile-tab-pill-badge {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #E2E8F0;
+}
+
+.mobile-tab-pill.active .mobile-tab-pill-badge {
+    background: #FF5E14;
+    color: #FFFFFF;
+}
+
+.mobile-tab-pill.pill-cyan.active .mobile-tab-pill-badge {
+    background: #06B6D4;
+    color: #FFFFFF;
+}
+
+/* ------------------------------------------------------------
+   3. Universal Mobile Card Transformation for Data Tables
+   ------------------------------------------------------------ */
+@media (max-width: 767px) {
+    .table-responsive-cards {
+        border: none !important;
+        background: transparent !important;
+        overflow: visible !important;
+    }
+
+    .table-responsive-cards .table,
+    .table-responsive-cards tbody,
+    .table-responsive-cards tr,
+    .table-responsive-cards td {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    .table-responsive-cards thead {
+        display: none !important;
+    }
+
+    .table-responsive-cards tr {
+        background: #0F172A !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 14px !important;
+        margin-bottom: 12px !important;
+        padding: 16px !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+        position: relative !important;
+    }
+
+    .table-responsive-cards tr:hover {
+        background: #131E35 !important;
+        border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+
+    .table-responsive-cards td {
+        padding: 6px 0 !important;
+        border-bottom: none !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        text-align: right !important;
+        font-size: 0.8125rem !important;
+        gap: 8px !important;
+    }
+
+    .table-responsive-cards td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        font-size: 0.6875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #64748B;
+        text-align: left;
+        flex-shrink: 0;
+    }
+
+    .table-responsive-cards td:empty {
+        display: none !important;
+    }
+
+    .table-responsive-cards td.td-actions {
+        margin-top: 10px;
+        padding-top: 10px !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+        justify-content: flex-end !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+    }
+
+    .table-responsive-cards td.td-actions::before {
+        display: none !important;
+    }
+}
+
+/* ------------------------------------------------------------
+   4. Touch Accessibility & Prevent iOS Auto-Zoom (<= 991px)
+   ------------------------------------------------------------ */
+@media (max-width: 991px) {
+    /* Prevent iOS Auto-Zoom on Input Focus & Enforce Touch Size */
+    input,
+    select,
+    textarea,
+    .form-control,
+    .form-select {
+        font-size: 16px !important;
+        min-height: 44px !important;
+        border-radius: 8px !important;
+    }
+
+    textarea.form-control {
+        min-height: 90px !important;
+    }
+
+    /* Enforce 44px Minimum Touch Targets for interactive buttons */
+    .btn {
+        min-height: 44px !important;
+        padding: 10px 16px !important;
+        font-size: 0.875rem !important;
+        border-radius: 8px !important;
+    }
+
+    .btn-sm {
+        min-height: 38px !important;
+        padding: 8px 12px !important;
+        font-size: 0.8125rem !important;
+    }
+
+    .btn-icon {
+        min-width: 44px !important;
+        min-height: 44px !important;
+    }
+}
+
+/* ------------------------------------------------------------
+   4b. Mobile Layout, Modals & Spacing (<= 767px)
+   ------------------------------------------------------------ */
+@media (max-width: 767px) {
+    /* Mobile Container & Spacing Padding Polish */
+    .app-container {
+        padding: 12px 14px !important;
+    }
+
+    /* Mobile Modal Constraints (Viewport Safe, Max 90dvh, Sticky Footers) */
+    .modal-backdrop {
+        padding: 10px !important;
+        align-items: flex-end !important;
+    }
+
+    .modal-content {
+        max-height: 90dvh !important;
+        max-height: 90vh !important;
+        width: 100% !important;
+        border-bottom-left-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+        border-top-left-radius: 20px !important;
+        border-top-right-radius: 20px !important;
+        margin: 0 !important;
+    }
+
+    .modal-body,
+    .auth-modal-body {
+        padding: 20px 16px 20px !important;
+        max-height: calc(90dvh - 60px) !important;
+        max-height: calc(90vh - 60px) !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    /* Responsive KPI Stat Grids */
+    .stat-grid,
+    .dashboard-stat-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 10px !important;
+        margin-bottom: 16px !important;
+    }
+
+    .stat-card,
+    .dash-stat-card {
+        padding: 12px 14px !important;
+        border-radius: 12px !important;
+    }
+
+    .stat-value,
+    .dash-stat-number {
+        font-size: 1.4rem !important;
+    }
+
+    .stat-label,
+    .dash-stat-label {
+        font-size: 0.75rem !important;
+    }
+
+    .stat-icon,
+    .dash-stat-icon {
+        width: 38px !important;
+        height: 38px !important;
+        font-size: 1.1rem !important;
+        border-radius: 8px !important;
+    }
+}
+
+/* Extra Compact Devices (<= 375px) */
+@media (max-width: 375px) {
+    .stat-grid,
+    .dashboard-stat-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .mobile-tab-pill {
+        padding: 6px 10px !important;
+        font-size: 0.75rem !important;
+    }
+}
+
+/* ------------------------------------------------------------
+   4. Candidate-Specific Mobile Experience (Screens <= 991px & <= 767px)
+   ------------------------------------------------------------ */
+.candidate-mobile-top-bar,
+.emp-mobile-top-bar {
+    display: none;
+}
+
+.candidate-quick-actions {
+    display: none;
+}
+
+@media (min-width: 992px) {
+    .d-lg-none,
+    .emp-mobile-top-bar,
+    .candidate-mobile-top-bar {
+        display: none !important;
+    }
+}
+
+@media (max-width: 991px) {
+    .candidate-mobile-top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #0F172A;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 14px 16px;
+        margin-bottom: 14px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    }
+
+    .candidate-top-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    .candidate-top-avatar {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(255, 94, 20, 0.25), rgba(255, 123, 28, 0.45));
+        color: #FF5E14;
+        border: 2px solid rgba(255, 94, 20, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1.15rem;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    .candidate-top-info {
+        min-width: 0;
+    }
+
+    .candidate-top-greeting {
+        font-size: 0.75rem;
+        color: #94A3B8;
+        font-weight: 500;
+        line-height: 1.2;
+    }
+
+    .candidate-top-name {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #F8FAFC;
+        line-height: 1.25;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .candidate-top-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        color: #34D399;
+        background: rgba(16, 185, 129, 0.12);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        padding: 2px 8px;
+        border-radius: 999px;
+        margin-top: 3px;
+    }
+
+    .candidate-top-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .candidate-top-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: #1E293B;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #E2E8F0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        text-decoration: none;
+        position: relative;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .candidate-top-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #FFFFFF;
+    }
+
+    .candidate-top-badge {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        background: #EF4444;
+        color: #FFFFFF;
+        font-size: 0.5625rem;
+        font-weight: 800;
+        padding: 1px 4px;
+        border-radius: 999px;
+        border: 1.5px solid #0F172A;
+        line-height: 1.2;
+        min-width: 14px;
+        text-align: center;
+    }
+
+    /* Candidate Quick Actions (6 Thumb Tiles) */
+    .candidate-quick-actions {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+
+    .candidate-qa-tile {
+        background: #0F172A;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        padding: 12px 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        text-decoration: none;
+        color: #E2E8F0;
+        transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        min-height: 72px;
+    }
+
+    .candidate-qa-tile:active {
+        transform: scale(0.96);
+    }
+
+    .candidate-qa-tile:hover {
+        background: #152238;
+        border-color: rgba(255, 94, 20, 0.35);
+        color: #FFFFFF;
+    }
+
+    .candidate-qa-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        margin-bottom: 5px;
+    }
+
+    .candidate-qa-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        line-height: 1.2;
+        color: #CBD5E1;
+    }
+
+    .profile-mobile-nav-scroller {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+        padding: 4px 2px 10px;
+        margin-bottom: 16px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+        position: sticky;
+        top: calc(var(--navbar-height, 64px) + 8px);
+        z-index: 30;
+        background: rgba(8, 8, 8, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+
+    .profile-mobile-nav-scroller::-webkit-scrollbar {
+        display: none;
+    }
+
+    .profile-pill-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        background: #0F172A;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #94A3B8;
+        text-decoration: none;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: all 0.15s ease;
+    }
+
+    .profile-pill-link:hover,
+    .profile-pill-link.active {
+        background: rgba(255, 94, 20, 0.15);
+        border-color: #FF5E14;
+        color: #FF7B1C;
+        font-weight: 700;
+    }
+
+    /* Mobile Job Card Modernized */
+    .mobile-job-card-candidate {
+        background: #0F172A;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        padding: 16px;
+        margin-bottom: 12px;
+        position: relative;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    }
+
+    .mobile-job-card-candidate:hover {
+        border-color: rgba(255, 94, 20, 0.4);
+    }
+
+    .mobile-job-card-candidate .job-card-meta-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 10px 0 14px;
+    }
+
+    .mobile-job-card-candidate .job-meta-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 8px;
+        border-radius: 6px;
+        background: #1E293B;
+        color: #94A3B8;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    /* ==========================================================
+       EMPLOYER / RECRUITER MOBILE-FIRST DESIGN SYSTEM (<= 991px)
+       ========================================================== */
+
+    /* Employer Mobile Top Bar */
+    .emp-mobile-top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 14px;
+        background: #0F172A;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .emp-top-profile {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .emp-top-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(255, 94, 20, 0.2), rgba(6, 182, 212, 0.2));
+        border: 1.5px solid rgba(255, 94, 20, 0.4);
+        color: #FF7B1C;
+        font-weight: 800;
+        font-size: 1.15rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+
+    .emp-top-greeting {
+        font-size: 0.9375rem;
+        font-weight: 800;
+        color: #F8FAFC;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.25;
+    }
+
+    .emp-top-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        color: #38BDF8;
+        background: rgba(56, 189, 248, 0.12);
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        padding: 1px 7px;
+        border-radius: 999px;
+        margin-top: 2px;
+    }
+
+    .emp-top-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .emp-top-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: #1E293B;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #E2E8F0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        text-decoration: none;
+        position: relative;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .emp-top-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #FFFFFF;
+    }
+
+    .emp-top-badge {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        background: #06B6D4;
+        color: #0F172A;
+        font-size: 0.5625rem;
+        font-weight: 800;
+        padding: 1px 4px;
+        border-radius: 999px;
+        border: 1.5px solid #0F172A;
+        line-height: 1.2;
+        min-width: 14px;
+        text-align: center;
+    }
+
+    /* Employer 5-KPI Mobile Grid */
+    .emp-kpi-grid-mobile {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .emp-kpi-card-mobile {
+        background: #0F172A;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        padding: 14px 12px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.15s ease;
+    }
+
+    .emp-kpi-card-mobile.card-span-2 {
+        grid-column: span 2;
+        flex-direction: row;
+        align-items: center;
+        padding: 12px 16px;
+    }
+
+    .emp-kpi-val {
+        font-size: 1.45rem;
+        font-weight: 800;
+        color: #F8FAFC;
+        line-height: 1.1;
+        margin-bottom: 2px;
+    }
+
+    .emp-kpi-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #94A3B8;
+        line-height: 1.2;
+    }
+
+    .emp-kpi-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        margin-top: 6px;
+    }
+
+    .emp-kpi-card-mobile.card-span-2 .emp-kpi-icon {
+        margin-top: 0;
+        margin-left: auto;
+    }
+
+    @media (min-width: 640px) and (max-width: 991px) {
+        .emp-jobs-cards-mobile {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 14px !important;
+        }
+    }
+
+    /* Mobile Job Management Cards */
+    .emp-mobile-job-card {
+        background: #0F172A;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        padding: 16px;
+        margin-bottom: 12px;
+        position: relative;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+    }
+
+    .emp-job-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    .emp-job-card-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #F8FAFC;
+        margin: 0 0 2px 0;
+        line-height: 1.3;
+    }
+
+    .emp-job-card-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 8px 0 12px 0;
+    }
+
+    .emp-job-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #CBD5E1;
+        background: #1E293B;
+        padding: 3px 8px;
+        border-radius: 6px;
+    }
+
+    .emp-job-actions-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .emp-job-actions-grid .btn {
+        padding: 8px 10px;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        justify-content: center;
+        min-height: 40px;
+    }
+
+    /* 5-Step Create Job Mobile Wizard */
+    .create-job-wizard {
+        background: #0F172A;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 20px;
+    }
+
+    .wizard-steps-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        overflow-x: auto;
+        gap: 6px;
+        scrollbar-width: none;
+    }
+
+    .wizard-steps-header::-webkit-scrollbar {
+        display: none;
+    }
+
+    .wizard-step-node {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+        opacity: 0.45;
+        transition: all 0.2s ease;
+        flex: 1;
+        min-width: 58px;
+    }
+
+    .wizard-step-node.active {
+        opacity: 1;
+    }
+
+    .wizard-step-node.completed {
+        opacity: 0.9;
+    }
+
+    .wizard-step-bubble {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #1E293B;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        color: #94A3B8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 800;
+        transition: all 0.2s ease;
+    }
+
+    .wizard-step-node.active .wizard-step-bubble {
+        background: #FF5E14;
+        border-color: #FF5E14;
+        color: #FFFFFF;
+        box-shadow: 0 0 12px rgba(255, 94, 20, 0.4);
+    }
+
+    .wizard-step-node.completed .wizard-step-bubble {
+        background: rgba(34, 197, 94, 0.2);
+        border-color: #22C55E;
+        color: #22C55E;
+    }
+
+    .wizard-step-title {
+        font-size: 0.6875rem;
+        font-weight: 700;
+        color: #94A3B8;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        white-space: nowrap;
+    }
+
+    .wizard-step-node.active .wizard-step-title {
+        color: #FF7B1C;
+    }
+
+    .wizard-step-node.completed .wizard-step-title {
+        color: #E2E8F0;
+    }
+
+    .wizard-step-pane {
+        display: none;
+    }
+
+    .wizard-step-pane.active {
+        display: block;
+        animation: fadeIn 0.2s ease;
+    }
+
+    .wizard-nav-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .wizard-nav-footer .btn {
+        min-height: 44px;
+        font-weight: 700;
+        font-size: 0.875rem;
+    }
+
+    /* Mobile Candidate Applicant Cards */
+    .emp-mobile-applicant-card {
+        background: #0F172A;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        padding: 16px;
+        margin-bottom: 12px;
+        position: relative;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+    }
+
+    .emp-applicant-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    .emp-applicant-identity {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .emp-applicant-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(56, 189, 248, 0.15);
+        color: #38BDF8;
+        font-weight: 800;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+
+    .emp-applicant-name {
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: #F8FAFC;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        cursor: pointer;
+    }
+
+    .emp-applicant-role {
+        font-size: 0.75rem;
+        color: #94A3B8;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .emp-applicant-scores {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+        margin: 8px 0;
+    }
+
+    .emp-applicant-details {
+        font-size: 0.75rem;
+        color: #CBD5E1;
+        background: #1E293B;
+        padding: 8px 10px;
+        border-radius: 8px;
+        margin: 8px 0 12px 0;
+        line-height: 1.4;
+    }
+
+    .emp-applicant-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .emp-applicant-actions .btn {
+        min-height: 40px;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        justify-content: center;
+    }
+
+    .emp-applicant-actions .btn-full {
+        grid-column: span 2;
+    }
+
+    /* Sticky Pipeline Stage Scroller on Mobile */
+    .emp-pipeline-scroller {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        padding: 4px 2px 10px;
+        margin-bottom: 12px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+        position: sticky;
+        top: calc(var(--navbar-height, 64px) + 4px);
+        z-index: 25;
+        background: rgba(8, 8, 8, 0.9);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
+    .emp-pipeline-scroller::-webkit-scrollbar {
+        display: none;
+    }
+
+    .emp-stage-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        background: #0F172A;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #94A3B8;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: all 0.15s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .emp-stage-pill:hover,
+    .emp-stage-pill.active {
+        background: rgba(56, 189, 248, 0.15);
+        border-color: #38BDF8;
+        color: #38BDF8;
+    }
+
+    .emp-stage-pill-count {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 1px 6px;
+        border-radius: 999px;
+        font-size: 0.6875rem;
+        font-weight: 800;
+        color: #F8FAFC;
+    }
+
+    .emp-stage-pill.active .emp-stage-pill-count {
+        background: #38BDF8;
+        color: #0F172A;
+    }
+}
+
+/* ------------------------------------------------------------
+   8. Reduced Motion Accessibility Preference
+   ------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

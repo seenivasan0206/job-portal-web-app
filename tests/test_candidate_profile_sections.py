@@ -290,7 +290,7 @@ def test_all_item_sections_and_100_percent_completeness(client, test_user_id):
     # 8. Projects
     client.post('/api/candidate/profile/items', json={
         'section': 'projects',
-        'title': 'HireVolt Distributed Job Search Engine',
+        'title': 'HireVoltz Distributed Job Search Engine',
         'client': 'Self / Open Source',
         'project_status': 'Completed',
         'role': 'Lead Architect',

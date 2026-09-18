@@ -1,6 +1,6 @@
 import json
 import pytest
-from app import app, db_cursor, create_notification, check_notification_preference, send_interview_reminders, notify_recommended_job, trigger_job_alerts_for_job
+from app import app, db_cursor, create_notification, check_notification_preference, send_interview_reminders, notify_recommended_job, trigger_job_alerts_for_job, init_admin_user
 
 
 @pytest.fixture
@@ -42,11 +42,11 @@ def _cleanup_test_data(cursor, cand_id, emp_id):
 def setup_test_users():
     """Sets up an isolated candidate and employer in the database for testing."""
     with db_cursor() as cursor:
-        cursor.execute("SELECT id FROM user WHERE email = 'notif_cand@hirevolt.test'")
+        cursor.execute("SELECT id FROM user WHERE email = 'notif_cand@hirevoltz.test'")
         row = cursor.fetchone()
         cand_id = row['id'] if row else None
 
-        cursor.execute("SELECT id FROM employee WHERE email = 'notif_emp@hirevolt.test'")
+        cursor.execute("SELECT id FROM employee WHERE email = 'notif_emp@hirevoltz.test'")
         row_e = cursor.fetchone()
         emp_id = row_e['id'] if row_e else None
 
@@ -56,14 +56,14 @@ def setup_test_users():
         # Create fresh candidate
         cursor.execute("""
             INSERT INTO user (name, email, password, location, skills)
-            VALUES ('Notif Candidate', 'notif_cand@hirevolt.test', 'hashed_pw', 'Bangalore', 'Python, React')
+            VALUES ('Notif Candidate', 'notif_cand@hirevoltz.test', 'hashed_pw', 'Bangalore', 'Python, React')
         """)
         cand_id = cursor.lastrowid
 
         # Create fresh employer
         cursor.execute("""
             INSERT INTO employee (company_name, email, password, location, is_verified)
-            VALUES ('Notif Tech Corp', 'notif_emp@hirevolt.test', 'hashed_pw', 'Bangalore', 1)
+            VALUES ('Notif Tech Corp', 'notif_emp@hirevoltz.test', 'hashed_pw', 'Bangalore', 1)
         """)
         emp_id = cursor.lastrowid
 
@@ -82,7 +82,7 @@ def test_notification_schema_and_dispatcher_isolation(setup_test_users):
     ok = create_notification(
         user_id=cand_id,
         notification_type='general',
-        title='Welcome to HireVolt',
+        title='Welcome to HireVoltz',
         message='Your profile is live.',
         action_url='/user_dashboard'
     )
@@ -103,7 +103,7 @@ def test_notification_schema_and_dispatcher_isolation(setup_test_users):
         cand_notifs = cursor.fetchall()
         assert len(cand_notifs) == 1
         assert cand_notifs[0]['employer_id'] is None
-        assert cand_notifs[0]['title'] == 'Welcome to HireVolt'
+        assert cand_notifs[0]['title'] == 'Welcome to HireVoltz'
 
         cursor.execute("SELECT * FROM notifications WHERE employer_id = %s", (emp_id,))
         emp_notifs = cursor.fetchall()
@@ -128,12 +128,12 @@ def test_trigger_new_application(client, setup_test_users):
     with client.session_transaction() as sess:
         sess['user_id'] = cand_id
         sess['user_name'] = 'Notif Candidate'
-        sess['user_email'] = 'notif_cand@hirevolt.test'
+        sess['user_email'] = 'notif_cand@hirevoltz.test'
 
     res = client.post('/api/apply_job', data={
         'job_id': job_id,
         'name': 'Notif Candidate',
-        'email': 'notif_cand@hirevolt.test',
+        'email': 'notif_cand@hirevoltz.test',
         'cover_letter': 'Excited to apply!'
     })
     assert res.status_code == 200
@@ -168,7 +168,7 @@ def test_trigger_application_status_change_and_shortlist_and_rejection(client, s
 
         cursor.execute("""
             INSERT INTO applications (job_id, user_id, user_name, user_email, status)
-            VALUES (%s, %s, 'Notif Candidate', 'notif_cand@hirevolt.test', 'Applied')
+            VALUES (%s, %s, 'Notif Candidate', 'notif_cand@hirevoltz.test', 'Applied')
         """, (job_id, cand_id))
         app_id = cursor.lastrowid
 
@@ -290,7 +290,7 @@ def test_trigger_recommended_job_and_job_alerts(client, setup_test_users):
     emp_id = setup_test_users['emp_id']
 
     # 1. Job recommendation trigger
-    notify_recommended_job(cand_id, 999, 'Principal AI Engineer', 'HireVolt Labs')
+    notify_recommended_job(cand_id, 999, 'Principal AI Engineer', 'HireVoltz Labs')
     with db_cursor() as cursor:
         cursor.execute("SELECT * FROM notifications WHERE user_id = %s AND notification_type = 'recommended_job'", (cand_id,))
         rec_notif = cursor.fetchone()
@@ -460,3 +460,267 @@ def test_notification_preferences_suppression(client, setup_test_users):
     # Critical security event is never suppressed even if other prefs are off
     ok_sec = create_notification(user_id=cand_id, notification_type='security_event', title='Security Alert: Password Changed 🔒', message='Critical')
     assert ok_sec is True
+
+
+def test_candidate_notification_permissions_isolated(client, setup_test_users):
+    """Verifies candidate notification permissions, routes, CRUD, and strict isolation."""
+    cand_id = setup_test_users['cand_id']
+    emp_id = setup_test_users['emp_id']
+
+    # 1. Candidate visits notification page
+    with client.session_transaction() as sess:
+        sess['user_id'] = cand_id
+        sess['user_email'] = 'notif_cand@hirevoltz.test'
+
+    res_page = client.get('/candidate/notifications')
+    assert res_page.status_code == 200
+    assert 'Notification Center' in res_page.get_data(as_text=True)
+
+    res_gen = client.get('/notifications')
+    assert res_gen.status_code == 200
+
+    # 2. Candidate cannot access admin notification page
+    res_admin = client.get('/admin/notifications', follow_redirects=False)
+    assert res_admin.status_code == 302
+    assert '/admin/login' in res_admin.headers.get('Location', '')
+
+    # 3. Create candidate notification
+    create_notification(user_id=cand_id, notification_type='application_status', title='Shortlisted for Interview', message='You were shortlisted!', action_url='/user_dashboard')
+
+    # 4. Fetch notifications API
+    res_api = client.get('/api/notifications')
+    assert res_api.status_code == 200
+    data = res_api.get_json()
+    assert data['success'] is True
+    assert data['role'] == 'candidate'
+    assert data['unread_count'] >= 1
+    assert any(n['title'] == 'Shortlisted for Interview' for n in data['notifications'])
+    c_notif_id = data['notifications'][0]['id']
+
+    # 5. Mark read and delete
+    res_read = client.post(f'/api/notifications/{c_notif_id}/read')
+    assert res_read.status_code == 200
+
+    # 6. Candidate cannot touch employer notification
+    create_notification(employer_id=emp_id, notification_type='general', title='Employer Confidential', message='Only for recruiter')
+    with db_cursor() as cursor:
+        cursor.execute("SELECT id FROM notifications WHERE employer_id = %s", (emp_id,))
+        emp_notif_id = cursor.fetchone()['id']
+
+    res_cand_emp_read = client.post(f'/api/notifications/{emp_notif_id}/read')
+    assert res_cand_emp_read.status_code == 404
+
+    res_cand_emp_del = client.delete(f'/api/notifications/{emp_notif_id}')
+    assert res_cand_emp_del.status_code == 404
+
+
+def test_employer_notification_permissions_isolated(client, setup_test_users):
+    """Verifies employer notification permissions, recruiter routes, and isolation."""
+    cand_id = setup_test_users['cand_id']
+    emp_id = setup_test_users['emp_id']
+
+    # 1. Employer visits recruiter notification page
+    with client.session_transaction() as sess:
+        sess['employer_id'] = emp_id
+        sess['company_name'] = 'Notif Tech Corp'
+
+    res_rec = client.get('/recruiter/notifications')
+    assert res_rec.status_code == 200
+    assert 'Notification Center' in res_rec.get_data(as_text=True)
+
+    res_emp = client.get('/employer/notifications')
+    assert res_emp.status_code == 200
+
+    res_gen = client.get('/notifications')
+    assert res_gen.status_code == 200
+
+    # 2. Employer cannot access admin notifications
+    res_admin = client.get('/admin/notifications', follow_redirects=False)
+    assert res_admin.status_code == 302
+    assert '/admin/login' in res_admin.headers.get('Location', '')
+
+    # 3. Create employer notification
+    create_notification(employer_id=emp_id, notification_type='application_submitted', title='New Application Received', message='Candidate applied for Python role', action_url='/employer_dashboard')
+
+    # 4. Fetch notifications API
+    res_api = client.get('/api/notifications')
+    assert res_api.status_code == 200
+    data = res_api.get_json()
+    assert data['success'] is True
+    assert data['role'] == 'employer'
+    assert any(n['title'] == 'New Application Received' for n in data['notifications'])
+    emp_notif_id = data['notifications'][0]['id']
+
+    # 5. Mark read and delete
+    res_read = client.post(f'/api/notifications/{emp_notif_id}/read')
+    assert res_read.status_code == 200
+
+    # 6. Employer cannot touch candidate notification
+    create_notification(user_id=cand_id, notification_type='general', title='Candidate Private Alert', message='Private')
+    with db_cursor() as cursor:
+        cursor.execute("SELECT id FROM notifications WHERE user_id = %s", (cand_id,))
+        cand_notif_id = cursor.fetchone()['id']
+
+    res_emp_cand_read = client.post(f'/api/notifications/{cand_notif_id}/read')
+    assert res_emp_cand_read.status_code == 404
+
+    res_emp_cand_del = client.delete(f'/api/notifications/{cand_notif_id}')
+    assert res_emp_cand_del.status_code == 404
+
+
+def test_admin_notification_permissions_isolated(client):
+    """Verifies admin notification permissions, admin route access, and protection against unauthorized users."""
+    init_admin_user()
+
+    # Get admin user
+    with db_cursor() as cursor:
+        cursor.execute("SELECT id, email FROM user WHERE is_admin = 1 LIMIT 1")
+        admin = cursor.fetchone()
+        assert admin is not None
+        admin_id = admin['id']
+
+    # Clean up previous admin notifications
+    with db_cursor() as cursor:
+        cursor.execute("DELETE FROM notifications WHERE user_id = %s", (admin_id,))
+
+    # 1. Unauthenticated user cannot access /admin/notifications or /api/notifications
+    client.get('/admin/logout')
+    res_unauth_page = client.get('/admin/notifications', follow_redirects=False)
+    assert res_unauth_page.status_code == 302
+    assert '/admin/login' in res_unauth_page.headers.get('Location', '')
+
+    res_unauth_api = client.get('/api/notifications')
+    assert res_unauth_api.status_code == 401
+
+    # 2. Authenticate as Admin
+    with client.session_transaction() as sess:
+        sess['user_id'] = admin_id
+        sess['user_name'] = 'HireVoltz Admin'
+        sess['user_email'] = admin['email']
+        sess['role'] = 'admin'
+        sess['is_admin'] = True
+
+    # 3. Admin can view /admin/notifications and /notifications
+    res_admin_page = client.get('/admin/notifications')
+    assert res_admin_page.status_code == 200
+    assert 'Notification Center' in res_admin_page.get_data(as_text=True)
+
+    res_gen = client.get('/notifications')
+    assert res_gen.status_code == 200
+
+    # 4. Create admin notification
+    create_notification(user_id=admin_id, notification_type='security_event', title='Administrative Security Event', message='Suspicious login activity blocked.', action_url='/admin/audit-logs')
+
+    # 5. Fetch API as admin
+    res_api = client.get('/api/notifications')
+    assert res_api.status_code == 200
+    data = res_api.get_json()
+    assert data['success'] is True
+    assert data['role'] == 'admin'
+    assert any(n['title'] == 'Administrative Security Event' for n in data['notifications'])
+    admin_notif_id = data['notifications'][0]['id']
+
+    # 6. Admin marks read and deletes
+    res_read = client.post(f'/api/notifications/{admin_notif_id}/read')
+    assert res_read.status_code == 200
+
+    res_del = client.delete(f'/api/notifications/{admin_notif_id}')
+    assert res_del.status_code == 200
+
+
+def test_category_grouping_and_metadata(client, setup_test_users):
+    """Verifies that all 6 notification categories (Applications, Interviews, Jobs, Assessments, Messages, Security) group correctly."""
+    cand_id = setup_test_users['cand_id']
+
+    # Insert one notification for each required category
+    create_notification(cand_id, notification_type='application_submitted', title='App Test', message='Applied to Senior Dev')
+    create_notification(cand_id, notification_type='interview_scheduled', title='Interview Test', message='Interview at 3 PM')
+    create_notification(cand_id, notification_type='job_alert', title='Job Alert Test', message='New matching role in Bangalore')
+    create_notification(cand_id, notification_type='assessment_result', title='Assessment Test', message='Passed Python exam')
+    create_notification(cand_id, notification_type='new_message', title='Message Test', message='Message from hiring manager')
+    create_notification(cand_id, notification_type='security_event', title='Security Test', message='Password successfully updated')
+
+    with client.session_transaction() as sess:
+        sess['user_id'] = cand_id
+
+    # 1. Test Applications grouping
+    res = client.get('/api/notifications?type=applications')
+    assert res.status_code == 200
+    data = res.get_json()
+    assert all(n['category_group'] == 'applications' for n in data['notifications'])
+    assert any(n['title'] == 'App Test' for n in data['notifications'])
+
+    # 2. Test Interviews grouping
+    res = client.get('/api/notifications?type=interviews')
+    assert res.status_code == 200
+    data = res.get_json()
+    assert all(n['category_group'] == 'interviews' for n in data['notifications'])
+    assert any(n['title'] == 'Interview Test' for n in data['notifications'])
+
+    # 3. Test Jobs grouping
+    res = client.get('/api/notifications?type=jobs')
+    assert res.status_code == 200
+    data = res.get_json()
+    assert all(n['category_group'] == 'jobs' for n in data['notifications'])
+    assert any(n['title'] == 'Job Alert Test' for n in data['notifications'])
+
+    # 4. Test Assessments grouping
+    res = client.get('/api/notifications?type=assessments')
+    assert res.status_code == 200
+    data = res.get_json()
+    assert all(n['category_group'] == 'assessments' for n in data['notifications'])
+    assert any(n['title'] == 'Assessment Test' for n in data['notifications'])
+
+    # 5. Test Messages grouping
+    res = client.get('/api/notifications?type=messages')
+    assert res.status_code == 200
+    data = res.get_json()
+    assert all(n['category_group'] == 'messages' for n in data['notifications'])
+    assert any(n['title'] == 'Message Test' for n in data['notifications'])
+
+    # 6. Test Security grouping
+    res = client.get('/api/notifications?type=security')
+    assert res.status_code == 200
+    data = res.get_json()
+    assert all(n['category_group'] == 'security' for n in data['notifications'])
+    assert any(n['title'] == 'Security Test' for n in data['notifications'])
+
+
+def test_mobile_notification_center_template_structure(client, setup_test_users):
+    """Verifies that templates/notifications.html renders mobile notification center elements and preserves desktop isolation."""
+    cand_id = setup_test_users['cand_id']
+
+    with client.session_transaction() as sess:
+        sess['user_id'] = cand_id
+
+    res = client.get('/candidate/notifications')
+    assert res.status_code == 200
+    html = res.get_data(as_text=True)
+
+    # 1. Desktop & Mobile view wrappers
+    assert 'notif-desktop-view' in html
+    assert 'notif-mobile-view' in html
+
+    # 2. Mobile Header with Unread Counter and Action Buttons
+    assert 'mobile-notif-unread-badge' in html
+    assert 'markAllAsRead()' in html
+    assert 'clearAllNotifications()' in html
+
+    # 3. All 6 Core Category Pills + All & Unread
+    assert 'data-filter="all"' in html
+    assert 'data-filter="unread"' in html
+    assert 'data-filter="applications"' in html
+    assert 'data-filter="interviews"' in html
+    assert 'data-filter="jobs"' in html
+    assert 'data-filter="assessments"' in html
+    assert 'data-filter="messages"' in html
+    assert 'data-filter="security"' in html
+
+    # 4. Mobile Notification Cards Container and Pagination
+    assert 'notif-mobile-list-wrapper' in html
+    assert 'notif-mobile-pagination-wrapper' in html
+
+    # 5. Responsive CSS isolation (Desktop >= 992px, Mobile <= 991px)
+    assert '@media (min-width: 992px)' in html
+    assert '@media (max-width: 991px)' in html
+    assert '.notif-desktop-view' in html

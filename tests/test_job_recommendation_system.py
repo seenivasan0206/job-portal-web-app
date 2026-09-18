@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-HireVolt AI/ML Job Recommendation Engine Test Suite
+HireVoltz AI/ML Job Recommendation Engine Test Suite
 ===================================================
 Tests covering:
 1. Canonical skill normalization and synonym dictionary mapping.

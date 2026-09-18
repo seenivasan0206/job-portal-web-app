@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-HireVolt - Professional Salary Intelligence Data Repository
+HireVoltz - Professional Salary Intelligence Data Repository
 Comprehensive compensation benchmarks across 125+ job roles, experience bands,
 major domestic and international locations, and technical skill stacks.
 """
@@ -210,6 +210,37 @@ ALL_LOCATIONS = [
     "Germany (Berlin)",
     "Canada (Toronto)",
 ]
+
+# Structured metadata supporting city, state, and country search resolution
+LOCATION_METADATA = {
+    "Bangalore": {"city": "Bangalore", "state": "Karnataka", "country": "India", "label": "Bangalore, Karnataka"},
+    "Hyderabad": {"city": "Hyderabad", "state": "Telangana", "country": "India", "label": "Hyderabad, Telangana"},
+    "Chennai": {"city": "Chennai", "state": "Tamil Nadu", "country": "India", "label": "Chennai, Tamil Nadu"},
+    "Pune": {"city": "Pune", "state": "Maharashtra", "country": "India", "label": "Pune, Maharashtra"},
+    "Mumbai": {"city": "Mumbai", "state": "Maharashtra", "country": "India", "label": "Mumbai, Maharashtra"},
+    "Delhi NCR": {"city": "Delhi NCR", "state": "Delhi / NCR", "country": "India", "label": "Delhi NCR, Delhi"},
+    "Noida": {"city": "Noida", "state": "Uttar Pradesh", "country": "India", "label": "Noida, Uttar Pradesh"},
+    "Gurgaon": {"city": "Gurgaon", "state": "Haryana", "country": "India", "label": "Gurgaon, Haryana"},
+    "Kolkata": {"city": "Kolkata", "state": "West Bengal", "country": "India", "label": "Kolkata, West Bengal"},
+    "Ahmedabad": {"city": "Ahmedabad", "state": "Gujarat", "country": "India", "label": "Ahmedabad, Gujarat"},
+    "Coimbatore": {"city": "Coimbatore", "state": "Tamil Nadu", "country": "India", "label": "Coimbatore, Tamil Nadu"},
+    "Madurai": {"city": "Madurai", "state": "Tamil Nadu", "country": "India", "label": "Madurai, Tamil Nadu"},
+    "Trichy": {"city": "Trichy", "state": "Tamil Nadu", "country": "India", "label": "Trichy, Tamil Nadu"},
+    "Salem": {"city": "Salem", "state": "Tamil Nadu", "country": "India", "label": "Salem, Tamil Nadu"},
+    "Kochi": {"city": "Kochi", "state": "Kerala", "country": "India", "label": "Kochi, Kerala"},
+    "Thiruvananthapuram": {"city": "Thiruvananthapuram", "state": "Kerala", "country": "India", "label": "Thiruvananthapuram, Kerala"},
+    "Chandigarh": {"city": "Chandigarh", "state": "Punjab / Haryana", "country": "India", "label": "Chandigarh, Punjab/Haryana"},
+    "Jaipur": {"city": "Jaipur", "state": "Rajasthan", "country": "India", "label": "Jaipur, Rajasthan"},
+    "Indore": {"city": "Indore", "state": "Madhya Pradesh", "country": "India", "label": "Indore, Madhya Pradesh"},
+    "Remote (India)": {"city": "Remote", "state": "All States", "country": "India", "label": "Remote (India)"},
+    "Hybrid": {"city": "Hybrid", "state": "Multiple", "country": "India", "label": "Hybrid (Flexible)"},
+    "United States (Remote)": {"city": "Remote", "state": "Various", "country": "United States", "label": "United States (Remote)"},
+    "United Kingdom (London)": {"city": "London", "state": "Greater London", "country": "United Kingdom", "label": "London, United Kingdom"},
+    "Singapore": {"city": "Singapore", "state": "Central", "country": "Singapore", "label": "Singapore"},
+    "United Arab Emirates (Dubai)": {"city": "Dubai", "state": "Dubai", "country": "United Arab Emirates", "label": "Dubai, UAE"},
+    "Germany (Berlin)": {"city": "Berlin", "state": "Berlin", "country": "Germany", "label": "Berlin, Germany"},
+    "Canada (Toronto)": {"city": "Toronto", "state": "Ontario", "country": "Canada", "label": "Toronto, Canada"},
+}
 
 EXPERIENCE_BANDS = [
     "0–1 Years",

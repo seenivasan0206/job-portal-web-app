@@ -2,7 +2,7 @@
 
 ## Secret Management
 
-All secrets for SecureHire are loaded exclusively from environment variables
+All secrets for HireVoltz are loaded exclusively from environment variables
 via a `.env` file (loaded by `python-dotenv`). **No secret is ever hardcoded**
 in source code.
 
@@ -28,7 +28,7 @@ the app will not start without proper configuration.
 If you suspect the Google App Password has been exposed:
 
 1. Go to your Google Account → Security → **2-Step Verification** → **App passwords**.
-2. Find the app password previously used for SecureHire and **revoke** it.
+2. Find the app password previously used for HireVoltz and **revoke** it.
 3. Generate a new app password for the same Gmail account.
 4. Update `EMAIL_PASSWORD` in your `.env` file.
 5. Restart the Flask application.

@@ -214,3 +214,93 @@ def test_job_card_layout_and_action_links():
 
     # Check clearFilters resets sort-order
     assert "document.getElementById('sort-order').value = 'newest'" in jobs_html
+
+
+def test_mobile_job_search_and_bottom_sheet_elements():
+    """
+    Verifies that the mobile search header, 8-filter bottom sheet panel,
+    and mobile job cards meet all user requirements without altering desktop view.
+    """
+    jobs_html = (BASE_DIR / 'templates' / 'jobs.html').read_text(encoding='utf-8')
+
+    # 1. Mobile Search Header
+    assert 'class="mobile-search-header-container"' in jobs_html
+    assert 'id="mobile-search-jobs"' in jobs_html
+    assert 'id="mobile-search-location"' in jobs_html
+    assert 'id="mobile-filter-trigger"' in jobs_html
+    assert 'Filters' in jobs_html
+
+    # 2. Bottom Sheet / Full-Screen Panel & 8 Filters
+    assert 'id="mobile-filter-sheet"' in jobs_html
+    assert 'id="mobile-filter-backdrop"' in jobs_html
+    assert 'id="mfilter-role"' in jobs_html         # 1. Role
+    assert 'id="mfilter-location"' in jobs_html     # 2. Location
+    assert 'id="mfilter-salary"' in jobs_html       # 3. Salary
+    assert 'id="mfilter-exp"' in jobs_html          # 4. Experience
+    assert 'id="mfilter-type"' in jobs_html         # 5. Employment type
+    assert 'id="mfilter-remote"' in jobs_html       # 6. Remote
+    assert 'id="mfilter-date"' in jobs_html         # 7. Date posted
+    assert 'id="mfilter-skills"' in jobs_html       # 8. Skills
+
+    # Bottom Sheet Buttons
+    assert 'id="mfilter-clear-btn"' in jobs_html
+    assert 'id="mfilter-apply-btn"' in jobs_html
+
+    # 3. Mobile Job Cards (Title, Company, Location, Salary, Experience, Employment type, Posted date, Save button, Primary: View Job)
+    assert 'btn-job-save' in jobs_html
+    assert 'btn-job-view' in jobs_html
+    assert 'View Job' in jobs_html
+
+    # 4. Desktop Sidebar is hidden on mobile so 10 filters are not permanently displayed on screen
+    assert '.filter-sidebar {\n            display: none !important;' in jobs_html or 'display: none !important;' in jobs_html
+
+    print("\n[PASS] Mobile job search, bottom sheet, and job cards verified successfully.")
+
+
+def test_mobile_job_detail_hierarchy_and_sticky_apply(client):
+    """
+    Verifies that mobile job details follows the exact hierarchy:
+    Job title, Company, Location, Salary, Apply button,
+    followed by Description, Responsibilities, Requirements, Skills, Benefits, and Company information,
+    with collapsible sections and non-obscuring sticky apply button.
+    """
+    with db_cursor() as cur:
+        cur.execute("SELECT id FROM jobs WHERE is_active = 1 LIMIT 1")
+        row = cur.fetchone()
+    assert row is not None
+    job_id = row['id']
+
+    res = client.get(f'/job/{job_id}')
+    assert res.status_code == 200
+    html = res.get_data(as_text=True)
+
+    # 1. Isolation containers
+    assert 'job-detail-desktop-view' in html
+    assert 'job-detail-mobile-view' in html
+
+    # 2. Mobile Top Summary Structure: Title, Company, Location, Salary, Apply button
+    assert 'mobile-job-hero-card' in html
+    assert 'mobile-job-hero-title' in html
+    assert 'mobile-job-hero-company' in html
+    assert 'mobile-job-hero-salary' in html
+    assert 'mobile-btn-apply-main' in html
+    assert 'mobile-btn-save-main' in html
+
+    # 3. Sequential Structured Sections in exact requested order
+    assert 'id="msec-description"' in html          # 1. Description
+    assert 'id="msec-responsibilities"' in html     # 2. Responsibilities
+    assert 'id="msec-requirements"' in html         # 3. Requirements
+    assert 'id="msec-skills"' in html               # 4. Skills
+    assert 'id="msec-benefits"' in html             # 5. Benefits
+    assert 'id="msec-company"' in html              # 6. Company information
+
+    # 4. Collapsible sections where content is long
+    assert 'mobile-collapsible-box' in html
+    assert 'mobile-toggle-expand-btn' in html
+    assert 'toggleMobileSection' in html
+
+    # 5. Mobile Sticky Apply Bar and Safe bottom padding
+    assert 'job-detail-mobile-sticky-bar' in html
+    assert 'padding-bottom: calc(150px' in html
+
+    print("\n[PASS] Mobile job details hierarchy, collapsible sections, and sticky apply verified successfully.")

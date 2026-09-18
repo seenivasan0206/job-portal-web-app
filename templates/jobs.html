@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block title %}Find Jobs — HireVolt{% endblock %} {% block extra_head %}
+{% extends "base.html" %} {% block title %}Find Jobs — HireVoltz{% endblock %} {% block extra_head %}
 <style>
     .jobs-page-layout {
         display: grid;
@@ -84,11 +84,6 @@
     
     .filter-sidebar .form-control,
     .filter-sidebar .form-select {
-        height: 30px !important;
-        min-height: 30px !important;
-        padding: 4px 9px !important;
-        font-size: 12px !important;
-        border-radius: 6px !important;
         background: var(--color-surface-alt);
         border: 1px solid var(--color-border);
         color: var(--color-text);
@@ -106,24 +101,7 @@
         position: relative;
     }
     
-    .filter-sidebar .input-icon-wrapper i {
-        position: absolute;
-        left: 9px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 11px;
-        color: var(--color-text-muted);
-        pointer-events: none;
-    }
-    
-    .filter-sidebar .input-icon-wrapper input {
-        padding-left: 28px !important;
-    }
-    
     .filter-sidebar .btn-apply-filters {
-        height: 34px !important;
-        padding: 6px 14px !important;
-        font-size: 12px !important;
         font-weight: 700 !important;
         border-radius: 6px !important;
         margin-top: 8px !important;
@@ -133,6 +111,66 @@
         gap: 6px;
         width: 100%;
         box-shadow: 0 4px 12px rgba(255, 94, 20, 0.25);
+    }
+
+    /* Desktop Compact Controls */
+    @media (min-width: 992px) {
+        .filter-sidebar .form-control,
+        .filter-sidebar .form-select {
+            height: 30px !important;
+            min-height: 30px !important;
+            padding: 4px 9px !important;
+            font-size: 12px !important;
+            border-radius: 6px !important;
+        }
+        .filter-sidebar .input-icon-wrapper i {
+            position: absolute;
+            left: 9px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 11px;
+            color: var(--color-text-muted);
+            pointer-events: none;
+        }
+        .filter-sidebar .input-icon-wrapper input {
+            padding-left: 28px !important;
+        }
+        .filter-sidebar .btn-apply-filters {
+            height: 34px !important;
+            padding: 6px 14px !important;
+            font-size: 12px !important;
+        }
+    }
+
+    /* Mobile & Tablet Accessible Touch Targets & 16px font to prevent iOS Auto-Zoom */
+    @media (max-width: 991px) {
+        .filter-sidebar .form-control,
+        .filter-sidebar .form-select {
+            height: 44px !important;
+            min-height: 44px !important;
+            padding: 8px 12px !important;
+            font-size: 16px !important;
+            border-radius: 8px !important;
+        }
+        .filter-sidebar .input-icon-wrapper i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: var(--color-text-muted);
+            pointer-events: none;
+        }
+        .filter-sidebar .input-icon-wrapper input {
+            padding-left: 38px !important;
+        }
+        .filter-sidebar .btn-apply-filters {
+            height: 44px !important;
+            min-height: 44px !important;
+            padding: 10px 16px !important;
+            font-size: 14px !important;
+            border-radius: 8px !important;
+        }
     }
     
     .custom-salary-row {
@@ -430,6 +468,17 @@
         cursor: not-allowed;
         pointer-events: none;
     }
+
+    @media (max-width: 991px) {
+        .pagination-btn {
+            min-height: 40px;
+            min-width: 40px;
+            justify-content: center;
+            font-size: 14px;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+    }
     /* Empty State Chips */
     
     .empty-suggestions {
@@ -468,15 +517,574 @@
             justify-content: space-between;
         }
     }
+
+    /* =========================================================================
+       MOBILE SEARCH & BOTTOM SHEET STYLES (Strictly <= 991px)
+       ========================================================================= */
+    .mobile-search-header-container {
+        display: none;
+    }
+    .mobile-filter-sheet-backdrop {
+        display: none;
+    }
+    .mobile-filter-sheet {
+        display: none;
+    }
+    .btn-job-apply-desktop {
+        display: inline-flex;
+    }
+    .btn-job-view {
+        display: inline-flex;
+        background: var(--color-surface-alt);
+        border: 1px solid var(--color-border);
+        color: var(--color-text);
+    }
+    .btn-job-save {
+        display: inline-flex;
+    }
+
+    @media (max-width: 991px) {
+        .filter-sidebar {
+            display: none !important;
+        }
+        .mobile-filter-btn {
+            display: none !important;
+        }
+        .jobs-page-layout {
+            display: block !important;
+            padding-top: var(--space-2);
+        }
+
+        /* Mobile Search Header */
+        .mobile-search-header-container {
+            display: block;
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: var(--space-4);
+            box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.4);
+        }
+        .mobile-search-inputs-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .mobile-search-field {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .mobile-field-icon {
+            position: absolute;
+            left: 14px;
+            font-size: 14px;
+            color: #94a3b8;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .mobile-search-input {
+            width: 100%;
+            height: 46px; /* 44px+ touch target */
+            padding: 8px 36px 8px 40px;
+            font-size: 16px !important; /* Prevents iOS auto-zoom */
+            background: #090d16;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            color: #f8fafc;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-sizing: border-box;
+        }
+        .mobile-search-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+        .mobile-input-clear {
+            position: absolute;
+            right: 12px;
+            background: transparent;
+            border: none;
+            color: #64748b;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 4px;
+            display: none;
+            z-index: 2;
+        }
+        .mobile-input-clear.show {
+            display: block;
+        }
+        .mobile-search-actions-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+        }
+        .mobile-filter-trigger-btn {
+            height: 46px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            color: #f8fafc;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .mobile-filter-trigger-btn:active {
+            background: #334155;
+        }
+        .mobile-search-submit-btn {
+            height: 46px;
+            min-width: 96px;
+            background: linear-gradient(135deg, #FF5E14, #FF7B1C);
+            border: none;
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(255, 94, 20, 0.35);
+        }
+        .mobile-filter-count-badge {
+            background: #FF5E14;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 10px;
+        }
+
+        /* Quick Filter Chips */
+        .mobile-quick-chips-scroll {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-top: 12px;
+            margin-top: 10px;
+            border-top: 1px solid #1e293b;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        .mobile-quick-chips-scroll::-webkit-scrollbar {
+            display: none;
+        }
+        .mobile-quick-chip {
+            white-space: nowrap;
+            background: #161e2e;
+            border: 1px solid #2d3748;
+            color: #cbd5e1;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.15s ease;
+        }
+        .mobile-quick-chip.active {
+            background: rgba(255, 94, 20, 0.18);
+            border-color: #FF5E14;
+            color: #FF7B1C;
+        }
+
+        /* Mobile Bottom Sheet / Full Screen Filter Panel */
+        .mobile-filter-sheet-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 10000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .mobile-filter-sheet-backdrop.open {
+            display: block;
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .mobile-filter-sheet {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-height: 88vh;
+            background: #0f172a;
+            border-top: 1px solid #334155;
+            border-radius: 20px 20px 0 0;
+            z-index: 10001;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.7);
+        }
+        .mobile-filter-sheet.open {
+            display: flex;
+            transform: translateY(0);
+        }
+        .mobile-sheet-drag-handle {
+            width: 40px;
+            height: 4px;
+            background: #475569;
+            border-radius: 2px;
+            margin: 10px auto 4px;
+            cursor: pointer;
+        }
+        .mobile-sheet-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 18px;
+            border-bottom: 1px solid #1e293b;
+        }
+        .mobile-sheet-close-btn {
+            width: 36px;
+            height: 36px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 50%;
+            color: #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .mobile-sheet-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 18px 24px;
+            overscroll-behavior: contain;
+        }
+        .mobile-filter-group {
+            margin-bottom: 16px;
+        }
+        .mobile-filter-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #94a3b8;
+            margin-bottom: 6px;
+            display: block;
+        }
+        .mobile-filter-input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .mobile-filter-input-wrap i {
+            position: absolute;
+            left: 12px;
+            font-size: 13px;
+            color: #64748b;
+            pointer-events: none;
+        }
+        .mobile-filter-input {
+            width: 100%;
+            height: 44px; /* Touch target */
+            padding: 8px 12px 8px 36px;
+            font-size: 16px !important; /* Prevents iOS auto-zoom */
+            background: #090d16;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            color: #f8fafc;
+            outline: none;
+            box-sizing: border-box;
+        }
+        .mobile-filter-input:focus, .mobile-filter-select:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+        .mobile-filter-select {
+            width: 100%;
+            height: 44px;
+            padding: 8px 12px;
+            font-size: 16px !important;
+            background: #090d16;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            color: #f8fafc;
+            outline: none;
+            box-sizing: border-box;
+        }
+        .mobile-custom-salary-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .mobile-sheet-footer {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 12px;
+            padding: 14px 18px calc(14px + env(safe-area-inset-bottom, 0px));
+            border-top: 1px solid #1e293b;
+            background: #090d16;
+        }
+        .btn-mobile-sheet-clear {
+            height: 46px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            color: #cbd5e1;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn-mobile-sheet-apply {
+            height: 46px;
+            background: linear-gradient(135deg, #FF5E14, #FF7B1C);
+            border: none;
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(255, 94, 20, 0.35);
+        }
+
+        /* Mobile Job Cards */
+        .job-list-card {
+            padding: 16px;
+            border-radius: 16px;
+            margin-bottom: 14px;
+        }
+        .desktop-card-badges {
+            display: none !important;
+        }
+        .job-card-description {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 12px !important;
+            font-size: 13px !important;
+        }
+        .job-card-footer {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch !important;
+            gap: 12px;
+            padding-top: 12px !important;
+        }
+        .job-card-salary-val {
+            font-size: 15px !important;
+            color: #34d399 !important; /* High-contrast emerald */
+        }
+        .job-card-actions {
+            width: 100%;
+            display: grid !important;
+            grid-template-columns: 46px 1fr !important;
+            gap: 10px !important;
+        }
+        .btn-job-save {
+            width: 46px !important;
+            height: 46px !important;
+            padding: 0 !important;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px !important;
+            font-size: 16px;
+            background: #1e293b !important;
+            border: 1px solid #334155 !important;
+            color: #cbd5e1 !important;
+        }
+        .btn-job-view {
+            height: 46px !important;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700 !important;
+            font-size: 14.5px !important;
+            border-radius: 12px !important;
+            background: linear-gradient(135deg, #FF5E14, #FF7B1C) !important;
+            color: #ffffff !important;
+            border: none !important;
+            box-shadow: 0 4px 12px rgba(255, 94, 20, 0.3) !important;
+        }
+        .btn-job-apply-desktop {
+            display: none !important;
+        }
+    }
+
 </style>
 {% endblock %} {% block body %}
 <div class="app-container">
-    <!-- Mobile Filter Toggle Button -->
-    <button type="button" class="btn btn-secondary mobile-filter-btn" onclick="toggleMobileFilters()">
-        <i class="fas fa-sliders-h" style="color:var(--color-primary);"></i>
-        <span>Filter Opportunities</span>
-        <span class="badge-count" id="mobile-filter-badge" style="display:none;">0</span>
-    </button>
+    <!-- Mobile Search Header (Sticky/One-Handed discovery on <= 991px) -->
+    <div class="mobile-search-header-container">
+        <div class="mobile-search-inputs-grid">
+            <div class="mobile-search-field">
+                <i class="fas fa-search mobile-field-icon"></i>
+                <input type="search" id="mobile-search-jobs" class="mobile-search-input" placeholder="Search jobs, skills, roles..." autocomplete="off" enterkeyhint="search" oninput="handleMobileSearchInput('mobile-search-jobs', 'mobile-clear-jobs')" onkeydown="if(event.key==='Enter') applyMobileSearchHeader()">
+                <button type="button" class="mobile-input-clear" id="mobile-clear-jobs" onclick="clearMobileInput('mobile-search-jobs', this)"><i class="fas fa-times-circle"></i></button>
+            </div>
+            <div class="mobile-search-field">
+                <i class="fas fa-map-marker-alt mobile-field-icon"></i>
+                <input type="search" id="mobile-search-location" class="mobile-search-input" placeholder="City, state, or Remote" autocomplete="off" enterkeyhint="search" oninput="handleMobileSearchInput('mobile-search-location', 'mobile-clear-location')" onkeydown="if(event.key==='Enter') applyMobileSearchHeader()">
+                <button type="button" class="mobile-input-clear" id="mobile-clear-location" onclick="clearMobileInput('mobile-search-location', this)"><i class="fas fa-times-circle"></i></button>
+            </div>
+        </div>
+        <div class="mobile-search-actions-row">
+            <button type="button" class="mobile-filter-trigger-btn" id="mobile-filter-trigger" onclick="openMobileFilterSheet()" aria-label="Open Filter Opportunities">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <i class="fas fa-sliders-h" style="color:#FF5E14;"></i>
+                    <span>Filters</span>
+                </div>
+                <span class="mobile-filter-count-badge" id="mobile-filter-sheet-count" style="display:none;">0</span>
+            </button>
+            <button type="button" class="mobile-search-submit-btn" onclick="applyMobileSearchHeader()" aria-label="Search Jobs">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </div>
+        <!-- 1-Tap Quick Filter Pills -->
+        <div class="mobile-quick-chips-scroll" id="mobile-quick-chips">
+            <button type="button" class="mobile-quick-chip" data-filter="work_mode" data-val="Remote" onclick="toggleQuickChip('work_mode', 'Remote', this)">Remote</button>
+            <button type="button" class="mobile-quick-chip" data-filter="job_type" data-val="Full-time" onclick="toggleQuickChip('job_type', 'Full-time', this)">Full-time</button>
+            <button type="button" class="mobile-quick-chip" data-filter="experience" data-val="Fresher" onclick="toggleQuickChip('experience', 'Fresher', this)">Fresher</button>
+            <button type="button" class="mobile-quick-chip" data-filter="salary_bracket" data-val="6-10" onclick="toggleQuickChip('salary_bracket', '6-10', this)">₹6-10 LPA</button>
+            <button type="button" class="mobile-quick-chip" data-filter="salary_bracket" data-val="10-15" onclick="toggleQuickChip('salary_bracket', '10-15', this)">₹10-15 LPA</button>
+            <button type="button" class="mobile-quick-chip" data-filter="salary_bracket" data-val="15-25" onclick="toggleQuickChip('salary_bracket', '15-25', this)">₹15-25 LPA</button>
+            <button type="button" class="mobile-quick-chip" data-filter="date_posted" data-val="24h" onclick="toggleQuickChip('date_posted', '24h', this)">Past 24h</button>
+            <button type="button" class="mobile-quick-chip" data-filter="date_posted" data-val="7d" onclick="toggleQuickChip('date_posted', '7d', this)">Past Week</button>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Sheet / Full-Screen Panel for Filters -->
+    <div class="mobile-filter-sheet-backdrop" id="mobile-filter-backdrop" onclick="closeMobileFilterSheet()"></div>
+    <div class="mobile-filter-sheet" id="mobile-filter-sheet" role="dialog" aria-modal="true" aria-labelledby="mobile-filter-sheet-title">
+        <div class="mobile-sheet-drag-handle" onclick="closeMobileFilterSheet()"></div>
+        <div class="mobile-sheet-header">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <h3 id="mobile-filter-sheet-title" style="margin:0; font-size:16px; font-weight:700; color:#f8fafc;">
+                    <i class="fas fa-sliders-h" style="color:#FF5E14; margin-right:6px;"></i> Filter Opportunities
+                </h3>
+                <span class="mobile-filter-count-badge" id="mobile-sheet-active-badge" style="display:none;">0</span>
+            </div>
+            <button type="button" class="mobile-sheet-close-btn" onclick="closeMobileFilterSheet()" aria-label="Close filters">
+                <i class="fas fa-xmark"></i>
+            </button>
+        </div>
+        <div class="mobile-sheet-content" data-lenis-prevent>
+            <!-- 1. Role -->
+            <div class="mobile-filter-group">
+                <label class="mobile-filter-label" for="mfilter-role">Role / Job Title</label>
+                <div class="mobile-filter-input-wrap">
+                    <i class="fas fa-briefcase"></i>
+                    <input type="text" id="mfilter-role" class="mobile-filter-input" placeholder="e.g. Data Analyst, Software Engineer">
+                </div>
+            </div>
+
+            <!-- 2. Location -->
+            <div class="mobile-filter-group">
+                <label class="mobile-filter-label" for="mfilter-location">Location</label>
+                <div class="mobile-filter-input-wrap">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <input type="text" id="mfilter-location" class="mobile-filter-input" placeholder="e.g. Bangalore, Chennai, Remote">
+                </div>
+            </div>
+
+            <!-- 3. Salary -->
+            <div class="mobile-filter-group">
+                <label class="mobile-filter-label" for="mfilter-salary">Salary Range</label>
+                <select id="mfilter-salary" class="mobile-filter-select" onchange="handleMobileSalarySelect(this.value)">
+                    <option value="">Any Salary</option>
+                    <option value="0-3">₹0 - ₹3 LPA</option>
+                    <option value="3-6">₹3 - ₹6 LPA</option>
+                    <option value="4-8">₹4 - ₹8 LPA</option>
+                    <option value="6-10">₹6 - ₹10 LPA</option>
+                    <option value="10-15">₹10 - ₹15 LPA</option>
+                    <option value="15-25">₹15 - ₹25 LPA</option>
+                    <option value="25+">₹25+ LPA</option>
+                    <option value="custom">Custom LPA Range...</option>
+                </select>
+                <div id="mfilter-custom-salary" class="mobile-custom-salary-row" style="display:none; margin-top:8px;">
+                    <input type="number" id="mfilter-salary-min" class="mobile-filter-input" placeholder="Min LPA" min="0" step="0.5">
+                    <input type="number" id="mfilter-salary-max" class="mobile-filter-input" placeholder="Max LPA" min="0" step="0.5">
+                </div>
+            </div>
+
+            <!-- 4. Experience -->
+            <div class="mobile-filter-group">
+                <label class="mobile-filter-label" for="mfilter-exp">Experience</label>
+                <select id="mfilter-exp" class="mobile-filter-select">
+                    <option value="">Any Experience</option>
+                    <option value="Fresher">Fresher (0-1 Years)</option>
+                    <option value="1-3 Years">1 - 3 Years</option>
+                    <option value="3-5 Years">3 - 5 Years</option>
+                    <option value="5-8 Years">5 - 8 Years (Senior)</option>
+                    <option value="8+ Years">8+ Years (Lead / Principal)</option>
+                </select>
+            </div>
+
+            <!-- 5. Employment Type -->
+            <div class="mobile-filter-group">
+                <label class="mobile-filter-label" for="mfilter-type">Employment Type</label>
+                <select id="mfilter-type" class="mobile-filter-select">
+                    <option value="">All Job Types</option>
+                    <option value="Full-time">Full-time</option>
+                    <option value="Part-time">Part-time</option>
+                    <option value="Contract">Contract</option>
+                    <option value="Internship">Internship</option>
+                    <option value="Freelance">Freelance</option>
+                </select>
+            </div>
+
+            <!-- 6. Remote / Work Mode -->
+            <div class="mobile-filter-group">
+                <label class="mobile-filter-label" for="mfilter-remote">Remote / Workplace Mode</label>
+                <select id="mfilter-remote" class="mobile-filter-select">
+                    <option value="">All Work Modes</option>
+                    <option value="Remote">Remote Only</option>
+                    <option value="Hybrid">Hybrid</option>
+                    <option value="Onsite">On-site</option>
+                </select>
+            </div>
+
+            <!-- 7. Date Posted -->
+            <div class="mobile-filter-group">
+                <label class="mobile-filter-label" for="mfilter-date">Date Posted</label>
+                <select id="mfilter-date" class="mobile-filter-select">
+                    <option value="">All Time</option>
+                    <option value="24h">Past 24 Hours</option>
+                    <option value="7d">Past 7 Days</option>
+                    <option value="30d">Past 30 Days</option>
+                </select>
+            </div>
+
+            <!-- 8. Skills -->
+            <div class="mobile-filter-group">
+                <label class="mobile-filter-label" for="mfilter-skills">Skills Required</label>
+                <div class="mobile-filter-input-wrap">
+                    <i class="fas fa-code"></i>
+                    <input type="text" id="mfilter-skills" class="mobile-filter-input" placeholder="e.g. Python, SQL, React, AWS">
+                </div>
+            </div>
+        </div>
+        <div class="mobile-sheet-footer">
+            <button type="button" class="btn-mobile-sheet-clear" id="mfilter-clear-btn" onclick="clearMobileFilters()">
+                Clear
+            </button>
+            <button type="button" class="btn-mobile-sheet-apply" id="mfilter-apply-btn" onclick="applyMobileSheetFilters()">
+                Apply Filters
+            </button>
+        </div>
+    </div>
 
     <div class="jobs-page-layout">
         <!-- Left Column: Filters Sidebar (13+ Dimensions) -->
@@ -758,9 +1366,9 @@
                             {{ job.salary_display or job.salary or (job.salary_min and job.salary_max and '₹' + job.salary_min|string + ' - ₹' + job.salary_max|string or 'Competitive Compensation') }}
                         </div>
                         <div class="job-card-actions">
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="handleJobBookmark({{ job_id }}, this)" title="Save Job" aria-label="Save Job"><i class="far fa-bookmark"></i></button>
-                            <a href="/job/{{ job_id }}" class="btn btn-secondary btn-sm">View Details</a>
-                            <button type="button" class="btn btn-primary btn-sm" onclick="handleJobApply({{ job_id }})">Apply Now</button>
+                            <button type="button" class="btn btn-secondary btn-sm btn-job-save" onclick="handleJobBookmark({{ job_id }}, this)" title="Save Job" aria-label="Save Job"><i class="far fa-bookmark"></i></button>
+                            <a href="/job/{{ job_id }}" class="btn btn-primary btn-sm btn-job-view">View Job</a>
+                            <button type="button" class="btn btn-primary btn-sm btn-job-apply-desktop" onclick="handleJobApply({{ job_id }})">Apply Now</button>
                         </div>
                     </div>
                 </div>
@@ -1110,9 +1718,9 @@
                     <div class="job-card-footer" style="display:flex; align-items:center; justify-content:space-between; padding-top:var(--space-4); border-top:1px solid var(--color-border-subtle);">
                         <div style="font-weight:700; color:var(--color-primary); font-size:var(--font-size-sm);">${escapeHtml(salary)}</div>
                         <div class="job-card-actions">
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="handleJobBookmark(${jobId}, this)" title="Save Job" aria-label="Save Job"><i class="far fa-bookmark"></i></button>
-                            <a href="/job/${jobId}" class="btn btn-secondary btn-sm">View Details</a>
-                            <button type="button" class="btn btn-primary btn-sm" onclick="handleJobApply(${jobId})">Apply Now</button>
+                            <button type="button" class="btn btn-secondary btn-sm btn-job-save" onclick="handleJobBookmark(${jobId}, this)" title="Save Job" aria-label="Save Job"><i class="far fa-bookmark"></i></button>
+                            <a href="/job/${jobId}" class="btn btn-primary btn-sm btn-job-view">View Job</a>
+                            <button type="button" class="btn btn-primary btn-sm btn-job-apply-desktop" onclick="handleJobApply(${jobId})">Apply Now</button>
                         </div>
                     </div>
                 </div>`;
@@ -1159,6 +1767,7 @@
 
         if (pills.length > 0) {
             bar.style.display = 'flex';
+        updateMobileBadges(pills.length);
             bar.innerHTML = pills.map(p => `
                 <span class="active-filter-pill">
                     <span>${escapeHtml(p.label)}</span>
@@ -1178,6 +1787,7 @@
             }
         } else {
             bar.style.display = 'none';
+        updateMobileBadges(0);
             bar.innerHTML = '';
             if (badge) badge.style.display = 'none';
             if (mobileBadge) mobileBadge.style.display = 'none';
@@ -1376,5 +1986,195 @@
 
         renderActiveFilterPills(getFilterValues());
     });
+
+    // =========================================================================
+    // MOBILE SEARCH & BOTTOM SHEET CONTROLLER
+    // =========================================================================
+    function openMobileFilterSheet() {
+        // Sync desktop inputs to mobile filter sheet fields
+        document.getElementById('mfilter-role').value = document.getElementById('search-title').value || document.getElementById('mobile-search-jobs').value || '';
+        document.getElementById('mfilter-location').value = document.getElementById('search-location').value || document.getElementById('mobile-search-location').value || '';
+        document.getElementById('mfilter-salary').value = document.getElementById('filter-salary-bracket').value || '';
+        document.getElementById('mfilter-exp').value = document.getElementById('filter-exp').value || '';
+        document.getElementById('mfilter-type').value = document.getElementById('filter-job-type').value || '';
+        document.getElementById('mfilter-remote').value = document.getElementById('filter-work-mode').value || '';
+        document.getElementById('mfilter-date').value = document.getElementById('filter-date-posted').value || '';
+        document.getElementById('mfilter-skills').value = document.getElementById('search-skill').value || '';
+
+        handleMobileSalarySelect(document.getElementById('mfilter-salary').value);
+        if (document.getElementById('mfilter-salary').value === 'custom') {
+            document.getElementById('mfilter-salary-min').value = document.getElementById('filter-salary-min').value || '';
+            document.getElementById('mfilter-salary-max').value = document.getElementById('filter-salary-max').value || '';
+        }
+
+        document.getElementById('mobile-filter-backdrop').classList.add('open');
+        document.getElementById('mobile-filter-sheet').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeMobileFilterSheet() {
+        const sheet = document.getElementById('mobile-filter-sheet');
+        const backdrop = document.getElementById('mobile-filter-backdrop');
+        if (sheet) sheet.classList.remove('open');
+        if (backdrop) backdrop.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    function handleMobileSalarySelect(val) {
+        const customRow = document.getElementById('mfilter-custom-salary');
+        if (customRow) {
+            customRow.style.display = val === 'custom' ? 'grid' : 'none';
+        }
+    }
+
+    function handleMobileSearchInput(inputId, clearBtnId) {
+        const val = document.getElementById(inputId).value;
+        const btn = document.getElementById(clearBtnId);
+        if (btn) {
+            btn.style.display = val && val.length > 0 ? 'block' : 'none';
+        }
+    }
+
+    function clearMobileInput(inputId, btn) {
+        const input = document.getElementById(inputId);
+        if (input) {
+            input.value = '';
+            input.focus();
+        }
+        if (btn) btn.style.display = 'none';
+        applyMobileSearchHeader();
+    }
+
+    function applyMobileSearchHeader() {
+        const jobVal = (document.getElementById('mobile-search-jobs').value || '').trim();
+        const locVal = (document.getElementById('mobile-search-location').value || '').trim();
+
+        document.getElementById('search-title').value = jobVal;
+        document.getElementById('search-location').value = locVal;
+
+        applyFilters(1);
+    }
+
+    function applyMobileSheetFilters() {
+        // Sync mobile sheet values back to primary desktop inputs
+        document.getElementById('search-title').value = (document.getElementById('mfilter-role').value || '').trim();
+        document.getElementById('search-location').value = (document.getElementById('mfilter-location').value || '').trim();
+        document.getElementById('mobile-search-jobs').value = document.getElementById('search-title').value;
+        document.getElementById('mobile-search-location').value = document.getElementById('search-location').value;
+
+        const salVal = document.getElementById('mfilter-salary').value;
+        document.getElementById('filter-salary-bracket').value = salVal;
+        if (salVal === 'custom') {
+            document.getElementById('custom-salary-container').style.display = 'grid';
+            document.getElementById('filter-salary-min').value = document.getElementById('mfilter-salary-min').value;
+            document.getElementById('filter-salary-max').value = document.getElementById('mfilter-salary-max').value;
+        } else {
+            document.getElementById('custom-salary-container').style.display = 'none';
+            document.getElementById('filter-salary-min').value = '';
+            document.getElementById('filter-salary-max').value = '';
+        }
+
+        document.getElementById('filter-exp').value = document.getElementById('mfilter-exp').value;
+        document.getElementById('filter-job-type').value = document.getElementById('mfilter-type').value;
+        document.getElementById('filter-work-mode').value = document.getElementById('mfilter-remote').value;
+        document.getElementById('filter-date-posted').value = document.getElementById('mfilter-date').value;
+        document.getElementById('search-skill').value = (document.getElementById('mfilter-skills').value || '').trim();
+
+        closeMobileFilterSheet();
+        applyFilters(1);
+    }
+
+    function clearMobileFilters() {
+        document.getElementById('mfilter-role').value = '';
+        document.getElementById('mfilter-location').value = '';
+        document.getElementById('mfilter-salary').value = '';
+        document.getElementById('mfilter-salary-min').value = '';
+        document.getElementById('mfilter-salary-max').value = '';
+        document.getElementById('mfilter-exp').value = '';
+        document.getElementById('mfilter-type').value = '';
+        document.getElementById('mfilter-remote').value = '';
+        document.getElementById('mfilter-date').value = '';
+        document.getElementById('mfilter-skills').value = '';
+        handleMobileSalarySelect('');
+
+        const mobJob = document.getElementById('mobile-search-jobs');
+        const mobLoc = document.getElementById('mobile-search-location');
+        if (mobJob) mobJob.value = '';
+        if (mobLoc) mobLoc.value = '';
+
+        document.querySelectorAll('.mobile-quick-chip').forEach(c => c.classList.remove('active'));
+
+        closeMobileFilterSheet();
+        clearFilters();
+    }
+
+    function toggleQuickChip(filterKey, filterVal, chipEl) {
+        const isActive = chipEl.classList.contains('active');
+        document.querySelectorAll(`.mobile-quick-chip[data-filter="${filterKey}"]`).forEach(c => c.classList.remove('active'));
+
+        let targetInputId = '';
+        if (filterKey === 'work_mode') targetInputId = 'filter-work-mode';
+        else if (filterKey === 'job_type') targetInputId = 'filter-job-type';
+        else if (filterKey === 'experience') targetInputId = 'filter-exp';
+        else if (filterKey === 'salary_bracket') targetInputId = 'filter-salary-bracket';
+        else if (filterKey === 'date_posted') targetInputId = 'filter-date-posted';
+
+        if (targetInputId) {
+            const el = document.getElementById(targetInputId);
+            if (el) {
+                if (isActive) {
+                    el.value = '';
+                } else {
+                    el.value = filterVal;
+                    chipEl.classList.add('active');
+                }
+            }
+        }
+        applyFilters(1);
+    }
+
+    // Update active badges on mobile triggers
+    function updateMobileBadges(count) {
+        const triggerBadge = document.getElementById('mobile-filter-sheet-count');
+        const sheetBadge = document.getElementById('mobile-sheet-active-badge');
+        if (triggerBadge) {
+            triggerBadge.textContent = count;
+            triggerBadge.style.display = count > 0 ? 'inline-block' : 'none';
+        }
+        if (sheetBadge) {
+            sheetBadge.textContent = count;
+            sheetBadge.style.display = count > 0 ? 'inline-block' : 'none';
+        }
+    }
+
+    // Sync clearFilters to also reset mobile inputs and badges
+    const origClearFilters = window.clearFilters;
+    window.clearFilters = function() {
+        const mobJob = document.getElementById('mobile-search-jobs');
+        const mobLoc = document.getElementById('mobile-search-location');
+        if (mobJob) mobJob.value = '';
+        if (mobLoc) mobLoc.value = '';
+        updateMobileBadges(0);
+        document.querySelectorAll('.mobile-quick-chip').forEach(c => c.classList.remove('active'));
+        if (typeof origClearFilters === 'function') origClearFilters();
+    };
+
+    // Sync initial mobile search values from desktop inputs or URL
+    document.addEventListener('DOMContentLoaded', () => {
+        const titleEl = document.getElementById('search-title');
+        const locEl = document.getElementById('search-location');
+        const mobJob = document.getElementById('mobile-search-jobs');
+        const mobLoc = document.getElementById('mobile-search-location');
+
+        if (titleEl && mobJob && titleEl.value) {
+            mobJob.value = titleEl.value;
+            handleMobileSearchInput('mobile-search-jobs', 'mobile-clear-jobs');
+        }
+        if (locEl && mobLoc && locEl.value) {
+            mobLoc.value = locEl.value;
+            handleMobileSearchInput('mobile-search-location', 'mobile-clear-location');
+        }
+    });
+
 </script>
 {% endblock %}

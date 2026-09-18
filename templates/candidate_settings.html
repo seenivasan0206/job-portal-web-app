@@ -1,15 +1,58 @@
 {% extends "base.html" %}
 
-{% block title %}Candidate Settings — HireVolt{% endblock %}
+{% block title %}Candidate Settings — HireVoltz{% endblock %}
+
+{% block extra_head %}
+<style>
+    .settings-header-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    @media (max-width: 640px) {
+        .settings-header-actions {
+            width: 100%;
+        }
+        .settings-header-actions .btn {
+            flex: 1 1 auto;
+            text-align: center;
+            justify-content: center;
+        }
+    }
+    @media (max-width: 768px) {
+        .card {
+            padding: 16px 14px !important;
+            border-radius: 14px !important;
+        }
+        #cand-notif-prefs-form > div {
+            grid-template-columns: 1fr !important;
+        }
+        #cand-pass-form {
+            max-width: 100% !important;
+        }
+        #cand-notif-prefs-form button[type="submit"],
+        #cand-pass-form button[type="submit"] {
+            width: 100%;
+            min-height: 44px;
+            justify-content: center;
+            display: flex;
+            align-items: center;
+        }
+        input.form-control, select.form-control {
+            font-size: 16px !important;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block body %}
 <div class="app-container" style="padding-top:var(--space-6); padding-bottom:var(--space-12); max-width:880px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-6);">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:var(--space-6); flex-wrap:wrap; gap:var(--space-4);">
         <div>
             <h1 style="font-size:var(--font-size-2xl); font-weight:800; margin-bottom:2px;">Candidate Settings</h1>
             <p style="font-size:var(--font-size-sm); color:var(--color-text-secondary); margin:0;">Configure notification alerts, password security, and account preferences.</p>
         </div>
-        <div style="display:flex; gap:8px;">
+        <div class="settings-header-actions">
             <a href="/candidate/notifications" class="btn btn-secondary btn-sm">
                 <i class="fas fa-bell"></i> Notifications
             </a>
@@ -26,7 +69,7 @@
             <span class="badge" style="background:rgba(2, 132, 199, 0.1); color:#0284C7; font-size:0.75rem; font-weight:700;">Granular Alerts</span>
         </div>
         <p style="font-size:var(--font-size-sm); color:var(--color-text-secondary); margin-bottom:var(--space-5);">
-            Choose which notifications and alerts you wish to receive in real-time across HireVolt.
+            Choose which notifications and alerts you wish to receive in real-time across HireVoltz.
         </p>
         
         <form id="cand-notif-prefs-form" onsubmit="event.preventDefault(); saveCandNotificationPreferences();">

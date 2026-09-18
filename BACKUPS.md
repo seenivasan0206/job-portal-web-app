@@ -1,6 +1,6 @@
 # Database Backup & Disaster Recovery Strategy
 
-This document outlines the database backup, retention, and disaster recovery procedures for SecureHire (MySQL).
+This document outlines the database backup, retention, and disaster recovery procedures for HireVoltz (MySQL).
 
 ---
 

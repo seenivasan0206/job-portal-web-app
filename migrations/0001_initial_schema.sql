@@ -105,4 +105,4 @@ CREATE TABLE IF NOT EXISTS job_categories (
 INSERT IGNORE INTO job_categories (name) VALUES
     ('IT & Software'), ('Banking & Finance'), ('Healthcare'),
     ('Engineering'), ('Manufacturing'), ('Education'),
-    ('Government'), ('Retail'), ('Marketing'), ('Other');
+    ('Design Engineer'), ('Retail'), ('Marketing'), ('Other');
