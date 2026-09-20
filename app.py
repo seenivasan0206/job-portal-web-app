@@ -55,7 +55,11 @@ from job_recommendation_engine import (
 load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-LOGS_DIR = os.path.join(BASE_DIR, 'logs')
+if os.getenv("VERCEL"):
+    LOGS_DIR = os.path.join('/tmp', 'logs')
+else:
+    LOGS_DIR = os.path.join(BASE_DIR, 'logs')
+
 if not os.path.exists(LOGS_DIR):
     os.makedirs(LOGS_DIR, exist_ok=True)
 
@@ -71,14 +75,17 @@ if not logger.handlers:
     _console_handler.setFormatter(log_formatter)
     logger.addHandler(_console_handler)
 
-    _file_handler = RotatingFileHandler(
-        os.path.join(LOGS_DIR, 'securehire.log'),
-        maxBytes=10 * 1024 * 1024,  # 10MB per file
-        backupCount=5,               # keep 5 rotated backups (max 50MB total)
-        encoding='utf-8'
-    )
-    _file_handler.setFormatter(log_formatter)
-    logger.addHandler(_file_handler)
+    try:
+        _file_handler = RotatingFileHandler(
+            os.path.join(LOGS_DIR, 'securehire.log'),
+            maxBytes=10 * 1024 * 1024,  # 10MB per file
+            backupCount=5,               # keep 5 rotated backups (max 50MB total)
+            encoding='utf-8'
+        )
+        _file_handler.setFormatter(log_formatter)
+        logger.addHandler(_file_handler)
+    except OSError:
+        pass
 
 app = Flask(__name__, static_folder=os.path.join(BASE_DIR, 'static'), template_folder=os.path.join(BASE_DIR, 'templates'))
 
@@ -156,7 +163,10 @@ def _limiter_request_filter():
 
 
 # --- CONFIGURATION ---
-UPLOAD_FOLDER = 'resumes'
+if os.getenv("VERCEL"):
+    UPLOAD_FOLDER = os.path.join('/tmp', 'resumes')
+else:
+    UPLOAD_FOLDER = 'resumes'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'doc', 'docx'}
 ALLOWED_PHOTO_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 MAX_UPLOAD_MB = int(os.getenv('MAX_UPLOAD_MB', '5'))
@@ -164,7 +174,7 @@ MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024
 app.config['MAX_CONTENT_LENGTH'] = MAX_UPLOAD_BYTES + 512 * 1024
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # --- DATABASE CONFIGURATION ---
 db_config = {
@@ -2089,7 +2099,10 @@ def log_admin_audit(action, entity_type=None, entity_id=None, previous_status=No
 
 
 # --- COMPANY TRUST, SSRF-SAFE CHECKING & VERIFICATION LOGIC ---
-VERIFICATION_DOCS_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads', 'verification_docs')
+if os.getenv("VERCEL"):
+    VERIFICATION_DOCS_FOLDER = os.path.join('/tmp', 'uploads', 'verification_docs')
+else:
+    VERIFICATION_DOCS_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads', 'verification_docs')
 os.makedirs(VERIFICATION_DOCS_FOLDER, exist_ok=True)
 
 PUBLIC_EMAIL_DOMAINS = {

@@ -8,7 +8,7 @@ services:
     env_file:
       - .env
     environment:
-      - DB_HOST=mysql
+      - DB_HOST=db
       - DB_USER=jobportal
       - DB_NAME=jobportal_db
       - DB_PASSWORD=${DB_PASSWORD:-mysql}
@@ -57,7 +57,7 @@ services:
     env_file:
       - .env
     environment:
-      - DB_HOST=mysql
+      - DB_HOST=db
       - DB_USER=jobportal
       - DB_NAME=jobportal_db
       - DB_PASSWORD=${DB_PASSWORD:-mysql}
