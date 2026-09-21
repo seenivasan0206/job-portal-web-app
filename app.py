@@ -523,7 +523,18 @@ def load_sentence_model():
 
 
 def _get_sentence_model():
-    """Return the pre-loaded sentence model, or None if unavailable."""
+    """Load and return the sentence model only when needed."""
+    global _SENTENCE_MODEL
+
+    if _SENTENCE_MODEL is None:
+        try:
+            from sentence_transformers import SentenceTransformer
+            _SENTENCE_MODEL = SentenceTransformer('all-MiniLM-L6-v2')
+        except ImportError:
+            logger.info("sentence-transformers not installed; using TF-IDF fallback")
+        except Exception as e:
+            logger.warning(f"Failed to load sentence-transformers model: {e}")
+
     return _SENTENCE_MODEL
 
 def require_admin():
@@ -2526,8 +2537,9 @@ def enrich_job_presentation(job):
 
     return job
 
-# --- LOAD ML MODEL AT STARTUP ---
-load_sentence_model()
+# --- ML MODEL ---
+# Loaded lazily when needed to reduce startup memory usage.
+
 # --- NLP SEARCH LOGIC ---
 def get_nlp_search_results(jobs, query):
     if not jobs:
