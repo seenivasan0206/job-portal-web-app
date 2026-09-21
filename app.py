@@ -182,6 +182,7 @@ db_config = {
     'password': DB_PASSWORD,
     'host': DB_HOST,
     'database': DB_NAME,
+    'port': 17779,
 }
 
 OTP_TTL_SECONDS = 120  # 2 minutes, matching email copy
