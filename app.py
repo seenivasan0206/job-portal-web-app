@@ -715,7 +715,7 @@ def _create_table_safe(cursor, table_name, ddl):
 
 # --- INITIALIZE DATABASE ---
 def init_db():
-    conn = mysql.connector.connect(user=DB_USER, password=DB_PASSWORD, host=DB_HOST)
+    conn = mysql.connector.connect(user=DB_USER, password=DB_PASSWORD, host=DB_HOST, port=17779)
     cursor = conn.cursor()
     cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{DB_NAME}`")
     cursor.execute(f"USE `{DB_NAME}`")
